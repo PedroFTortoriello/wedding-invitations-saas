@@ -1,0 +1,133 @@
+import Image from "next/image";
+import type { WeddingSite } from "@/types/wedding";
+import styles from "./civil-minimalista.module.css";
+
+type CivilMinimalistTemplateProps = {
+  wedding: WeddingSite;
+};
+
+export function CivilMinimalistTemplate({ wedding }: CivilMinimalistTemplateProps) {
+  const [firstName, secondName] = wedding.coupleNames.split(" & ");
+  const location = wedding.locations[0];
+  const storyImage = wedding.gallery[6]?.src ?? wedding.heroImage;
+  const portraitImage = wedding.gallery[1]?.src ?? wedding.heroImage;
+  const detailImage = wedding.gallery[7]?.src ?? wedding.heroImage;
+  const activeGifts = wedding.gifts.filter((gift) => gift.active);
+
+  return (
+    <main className={styles.template}>
+      <section className={styles.hero} aria-label={`Site de casamento de ${wedding.coupleNames}`}>
+        <Image
+          src="/assets/canva-intimate/hero-canva.jpg"
+          alt=""
+          width={2400}
+          height={1598}
+          priority
+          className={styles.heroImage}
+        />
+        <div className={styles.heroShade} />
+        <div className={styles.heroNames}>
+          <h1>
+            <span>{firstName}</span>
+            <span>{secondName}</span>
+          </h1>
+        </div>
+        <div className={styles.heroMeta}>
+          <time dateTime={wedding.weddingDate}>{wedding.weddingDateLabel}</time>
+          
+        </div>
+      </section>
+
+      <section className={styles.story}>
+        <div className={styles.storyTitle}>
+          <p>Nossa</p>
+          <h2>História de amor</h2>
+        </div>
+        <div className={styles.storyImageWrap}>
+          <Image src={storyImage} alt="História do casal" width={900} height={1100} className={styles.storyImage} />
+        </div>
+        <article className={styles.storyCopy}>
+          <p>{wedding.welcomeText}</p>
+          <p>
+            {wedding.storyMoments[0]?.description} {wedding.storyMoments[1]?.description}
+          </p>
+        </article>
+      </section>
+
+      <section className={styles.splitDark}>
+        <div className={styles.portraitPanel}>
+          <Image src={portraitImage} alt="Retrato do casal" width={900} height={1200} className={styles.portrait} />
+        </div>
+        <div className={styles.detailsPanel}>
+          <p className={styles.eyebrow}>Detalhes da cerimônia</p>
+          <h2>{wedding.detailsTitle}</h2>
+          <dl>
+            <div>
+              <dt>Quando</dt>
+              <dd>
+                {wedding.weddingDateLabel}
+                <br />
+                {wedding.weddingTime}
+              </dd>
+            </div>
+            <div>
+              <dt>Onde</dt>
+              <dd>
+                {location?.venue}
+                <br />
+                {location?.city}
+              </dd>
+            </div>
+            <div>
+              <dt>Traje</dt>
+              <dd>Traje social, tons neutros e elegantes.</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section className={styles.gallery}>
+        <Image src={detailImage} alt="Detalhe editorial do casal" width={900} height={1100} />
+        <article>
+          <p>Reserve o fim de semana</p>
+          <h2>Celebração intimista</h2>
+          <span>{wedding.finalText}</span>
+        </article>
+      </section>
+
+      <section id="presentes" className={styles.gifts}>
+        <div className={styles.giftsIntro}>
+          <p>Presentes</p>
+          <h2>Lista de presentes</h2>
+          <span>Escolha uma sugestão especial. Cada item abre em sua própria página para concluir o presente.</span>
+        </div>
+        <div className={styles.giftCards}>
+          {activeGifts.slice(0, 4).map((gift) => (
+            <a
+              key={gift.id}
+              href={gift.link}
+              target={gift.link.startsWith("#") ? undefined : "_blank"}
+              rel={gift.link.startsWith("#") ? undefined : "noopener noreferrer"}
+            >
+              {gift.image ? <Image src={gift.image} alt="" width={360} height={260} /> : null}
+              <strong>{gift.title}</strong>
+              <span>{gift.price}</span>
+              <p>{gift.description}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section className={styles.finalCta}>
+        <p>{wedding.monogram}</p>
+        <h2>Venha celebrar conosco</h2>
+        <div>
+          <a href={location?.mapUrl ?? "#"} target="_blank" rel="noreferrer">
+            Abrir local
+          </a>
+          <a href="#presentes">Ver lista de presentes</a>
+        </div>
+      </section>
+    </main>
+  );
+}
