@@ -52,9 +52,9 @@ export default function OnboardingPage() {
             ))}
           </div>
           <div className="mt-5 rounded-3xl bg-[#f7f0e5] p-5">
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#5b6842]">Receita da plataforma</p>
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#5b6842]">Modelo de presentes</p>
             <h2 className="mt-3 font-serif text-4xl leading-none">{cashGiftRevenueModel.title}</h2>
-            <p className="mt-2 text-sm font-bold text-[#354022]">{cashGiftRevenueModel.minimumFeeLabel}</p>
+            <p className="mt-2 text-sm font-bold text-[#354022]">{cashGiftRevenueModel.highlight}</p>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               {cashGiftRevenueModel.features.map((feature) => (
                 <div key={feature} className="rounded-2xl border border-[#5b6842]/12 bg-[#fffaf1] p-4 text-sm font-bold text-[#5f5148]">

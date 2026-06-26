@@ -5,7 +5,7 @@ A premium, editorial wedding-website platform for Brazilian couples. Built as **
 ## Overview
 
 - **What it does:** Renders polished, mobile-first wedding websites from a structured content model, across four distinct editorial templates. Couples get a marketing landing page, a guided onboarding flow, a site editor, guest/RSVP and message views, and a cash-gift registry. Platform operators get a read-only admin area for weddings, users, templates, and Pix revenue.
-- **Business objective:** Monetize wedding-site cash gifts by charging a small platform fee (default **1.5%**) on each Pix contribution, while offering couples a beautiful, no-code wedding presence.
+- **Business objective:** Monetize by charging couples a single **R$ 89,90** publishing fee per site. Cash gifts go **100% to the couple** via their own Pix key (0% platform fee) — the platform never touches gift money.
 - **Target audience:** Brazilian couples planning a wedding (Pix payments, Portuguese pt-BR copy), plus the SaaS operator running the platform.
 - **Core benefits:**
   - Premium, editorial template designs ready out of the box.
@@ -21,7 +21,7 @@ A premium, editorial wedding-website platform for Brazilian couples. Built as **
 
 ### Public Wedding Sites & Templates
 
-- **Marketing landing page (Vows):** Fixed nav with anchor links (Modelos, Recursos, Presentes em dinheiro) and CTAs to signup/checkout. Hero markets premium editorial wedding sites; benefits grid; template showcases with preview links; and a cash-gift revenue pitch (1.5% Pix fee).
+- **Marketing landing page (Vows):** Fixed nav with anchor links (Modelos, Recursos, Presentes em dinheiro) and CTAs to signup/checkout. Hero markets premium editorial wedding sites; benefits grid; template showcases with preview links; and a cash-gift pitch (0% fee — gifts go straight to the couple's Pix).
 - **Public wedding site by slug** (`/casamento/[slug]`): Server-rendered site resolved by slug, with SEO metadata and OpenGraph built from the wedding content. Renders the flagship **Clássico Romântico** template.
 - **Four editorial templates:**
   - **Clássico Romântico** (flagship) — decomposed into section components: scroll-animated hero with floating gallery, story timeline, editorial gallery with lightbox, live countdown, details cards with modals, cash-gift / Pix gift list, final text, and footer. Sticky nav with monogram and RSVP button; requestAnimationFrame + IntersectionObserver scroll effects; theme CSS variables injected from the wedding's theme.
@@ -37,19 +37,19 @@ A premium, editorial wedding-website platform for Brazilian couples. Built as **
 
 - **AppShell navigation:** Shared sidebar + header chrome with active-state highlighting and a link to the published site.
 - **Overview metrics:** Site status, live countdown, RSVP confirmations (computed from demo guests), and message count, plus a cash-gift revenue summary.
-- **Onboarding flow** *(demo)*: An 8-step guided creation checklist plus a prefilled (uncontrolled) form and the cash-gift revenue model card.
+- **Onboarding flow** *(demo)*: An 8-step guided creation checklist plus a prefilled (uncontrolled) form and the cash-gift model card.
 - **Site editor** *(demo)*: Identity panel and section cards prefilled from demo content; a public preview link.
 - **Gift link importer** *(functional):* Validates a product URL and POSTs to `/api/gifts/extract`, then renders an editable preview from the real scrape response.
 - **Live editor demo** (`/editor-demo`) *(in-memory)*: Real local interactivity — couple names, date, welcome message, primary color, and hero image selection with a live preview.
 - **Guests & RSVP table** *(demo)*: Read-only table of demo guests with status badges, companions, and dietary notes.
 - **Cash-gift registry** *(demo + functional Pix)*: Revenue cards, a list of gifts, a received-transactions list, and the functional **PixChargeGenerator** for active gifts.
 - **Guest messages inbox** *(demo)*: Read-only list of demo messages.
-- **Cash-gift checkout / financial simulation** *(demo)*: Displays computed gross/fee/net totals over demo transactions. No payment processor or billing.
+- **Cash-gift summary** *(demo)*: Displays total gifts received over demo transactions — 100% to the couple, 0% platform fee. No payment processor or billing.
 
 ### Payments — Pix (the real payment mechanism)
 
 - **BR Code (EMV) Pix payload generation** *(functional):* Builds a valid Brazilian Pix "Copia e Cola" static EMV payload by hand (TLV fields, GUI `br.gov.bcb.pix`, MCC, currency 986/BRL, amount, country BR, merchant name/city, txid) with a CRC16-CCITT checksum.
-- **Pix charge creation with fee split** *(functional):* Validates amount and guest name, generates a txid, computes fee (default 1.5%) and net, and returns a complete charge with a 30-minute expiry. Discrete, reusable helpers `createPixTxid`, `calculatePixFee`, `buildPixPayload`, and `getPixSettings` are exported from `src/lib/pix.ts`.
+- **Pix charge creation** *(functional):* Validates amount and guest name, generates a txid, and returns a complete charge (full gross amount — no platform fee) with a 30-minute expiry. The payload is built for the **couple's own Pix key** (passed in per wedding; there is no global/env key). Discrete, reusable helpers `createPixTxid`, `crc16`, `buildPixPayload`, and `createPixCharge` are exported from `src/lib/pix.ts`.
 - **QR code SVG rendering** *(functional):* Renders the payload as an SVG QR code via the `qrcode` library.
 - **Payment confirmation** *(mock):* A simulator endpoint stamps the charge as `paid` — there is no real settlement, webhook, or bank verification.
 
@@ -118,15 +118,7 @@ cd wedding-invitations-saas
 # 2. Install dependencies
 npm install
 
-# 3. Configure environment (optional — demo fallbacks exist)
-#    Create a .env file in the project root (see Environment Variables below)
-#    e.g.:
-#    PIX_KEY=your-pix-key
-#    PIX_MERCHANT_NAME=YOUR MERCHANT NAME
-#    PIX_MERCHANT_CITY=SAO PAULO
-#    PIX_FEE_PERCENT=1.5
-
-# 4. Run the dev server
+# 3. Run the dev server
 npm run dev
 ```
 
@@ -134,14 +126,7 @@ The app starts on `http://localhost:3000`. Visit `/` for the landing page and `/
 
 ## Environment Variables
 
-All Pix variables are optional and fall back to demo values; set them for any real-world use of the Pix payload generator. They are read only in `src/lib/pix.ts`.
-
-| Variable | Purpose |
-| --- | --- |
-| `PIX_KEY` | Pix recipient key (chave Pix) embedded in the EMV merchant account info (field 26/01). Defaults to a demo key. |
-| `PIX_MERCHANT_NAME` | Merchant name in EMV field 59. Defaults to a demo merchant name. |
-| `PIX_MERCHANT_CITY` | Merchant city in EMV field 60. Defaults to a demo city. |
-| `PIX_FEE_PERCENT` | Platform fee percentage applied to compute fee/net amounts. Defaults to `1.5`. |
+The Pix payload uses each couple's **own Pix key**, name, and city from their `WeddingSite` record — there are **no global Pix environment variables** and no platform fee on gifts. The app currently needs no environment variables to run; `src/lib/pix.ts` reads none.
 
 ## Scripts
 
@@ -159,7 +144,7 @@ The project targets **Vercel** and uses the standard Next.js build pipeline.
 
 1. Push the repository to your Git provider and import it into Vercel (or run `vercel`).
 2. No `vercel.json` overrides exist, so Vercel uses the default Next.js settings (`next build`).
-3. Configure the `PIX_*` environment variables in the Vercel project settings if you need non-demo Pix values.
+3. No Pix environment variables are required — each couple's Pix key lives on their site record, not in env.
 4. Remote images are allowlisted from `images.unsplash.com` via `next.config.ts`; add any additional hosts there if you change image sources.
 
 For self-hosting, run `npm run build` followed by `npm run start` behind your preferred Node.js host.
@@ -235,9 +220,9 @@ All endpoints are POST-only Next.js route handlers and are stateless (nothing is
 ### `POST /api/pix/charge`
 - **Purpose:** Generate a Brazilian Pix charge (EMV BR Code + QR) for a cash gift. Fully local — no payment provider is contacted.
 - **Request (JSON):** `{ weddingSiteId: string, guestName: string, amount: number, message?: string, giftId?: string }`. `amount` must be ≥ 1 and `guestName` non-empty.
-- **Response (200, JSON):** `{ id, txid, status: 'pending', grossAmount, feeAmount, netAmount, feePercent, pixKey, merchantName, merchantCity, payload, expiresAt, qrCodeSvg }`.
+- **Response (200, JSON):** `{ id, txid, status: 'pending', grossAmount, pixKey, merchantName, merchantCity, payload, expiresAt, qrCodeSvg }`. The full `grossAmount` goes to the couple — there are no fee fields.
 - **Errors:** `400 { error: string }` on validation failure.
-- **Behavior:** Validates input, generates a txid, computes fee (default 1.5%) and net amounts, builds the EMV "Copia e Cola" payload with a CRC16-CCITT checksum, renders an SVG QR code, and sets a 30-minute expiry. The charge is not stored. Uses the Next.js default runtime (no explicit runtime declaration).
+- **Behavior:** Resolves the wedding to get the **couple's own Pix key / name / city**, validates input, generates a txid, builds the EMV "Copia e Cola" payload with a CRC16-CCITT checksum, renders an SVG QR code, and sets a 30-minute expiry. No platform fee is computed; the charge is not stored. Uses the Next.js default runtime (no explicit runtime declaration).
 
 ### `POST /api/pix/simulate`
 - **Purpose:** Demo-only — pretend a previously generated Pix charge was paid. No real settlement.

@@ -14,6 +14,9 @@ export { demoWedding };
 
 export const platformName = "Vows";
 
+/** Taxa única de publicação paga pelo casal. Única fonte de receita da plataforma. */
+export const PUBLISH_FEE_BRL = 89.9;
+
 export const demoUser: PlatformUser = {
   id: "user_pedro_rafaela",
   name: "Pedro e Rafaela",
@@ -33,15 +36,14 @@ export const adminUser: PlatformUser = {
 export const cashGiftRevenueModel: CashGiftRevenueModel = {
   id: "cash-gifts-pix",
   title: "Presentes em dinheiro",
-  subtitle: "Para receber presentes com liberdade e economia.",
-  feePercent: 1.5,
-  minimumFeeLabel: "A partir de 1,5% via Pix",
+  subtitle: "Receba presentes via Pix direto na sua chave. A plataforma não toca no dinheiro.",
+  highlight: "0% de taxa · 100% para o casal",
   currency: "BRL",
   features: [
-    "Presentes convertidos em dinheiro",
-    "Painel para acompanhar recebimentos",
-    "Pix rápido e transparente",
-    "Taxa muito inferior às principais plataformas"
+    "Pix direto na chave do casal",
+    "0% de taxa sobre presentes",
+    "A plataforma não intermedia o dinheiro",
+    "Acompanhe os recebimentos no painel"
   ]
 };
 
@@ -84,8 +86,6 @@ export const cashGiftTransactions: CashGiftTransaction[] = [
     guestName: "Mariana Souza",
     message: "Para a lua de mel ficar ainda mais especial.",
     grossAmount: 350,
-    feeAmount: 5.25,
-    netAmount: 344.75,
     currency: "BRL",
     status: "paid",
     paymentMethod: "pix",
@@ -98,8 +98,6 @@ export const cashGiftTransactions: CashGiftTransaction[] = [
     guestName: "Tia Ana",
     message: "Um carinho para a casa nova.",
     grossAmount: 500,
-    feeAmount: 7.5,
-    netAmount: 492.5,
     currency: "BRL",
     status: "paid",
     paymentMethod: "pix",
@@ -111,8 +109,6 @@ export const cashGiftTransactions: CashGiftTransaction[] = [
     weddingSiteId: demoWedding.id,
     guestName: "Lucas Ferreira",
     grossAmount: 220,
-    feeAmount: 3.3,
-    netAmount: 216.7,
     currency: "BRL",
     status: "pending",
     paymentMethod: "pix",
@@ -182,6 +178,7 @@ export const demoWeddings: WeddingSite[] = [
     status: "draft",
     coupleNames: "Maria Clara & Joao Miguel",
     monogram: "M&J",
+    pixKey: "maria.joao@email.com",
     seo: {
       title: "Maria Clara & Joao Miguel",
       description: "Site de casamento de Maria Clara e Joao Miguel."
@@ -206,9 +203,8 @@ export const platformMetrics: PlatformMetrics = {
   totalWeddings: demoWeddings.length,
   publishedWeddings: demoWeddings.filter((wedding) => wedding.status === "published").length,
   draftWeddings: demoWeddings.filter((wedding) => wedding.status === "draft").length,
-  revenue: cashGiftTransactions.reduce((total, gift) => total + gift.feeAmount, 0),
+  revenue: demoWeddings.filter((wedding) => wedding.status === "published").length * PUBLISH_FEE_BRL,
   grossCashGifts: cashGiftTransactions.reduce((total, gift) => total + gift.grossAmount, 0),
-  netCashGifts: cashGiftTransactions.reduce((total, gift) => total + gift.netAmount, 0),
   conversionRate: 18.4
 };
 

@@ -47,9 +47,9 @@ export default function DashboardPage() {
 
         <article className="rounded-[1.6rem] border border-[#5b6842]/12 bg-[#354022] p-6 text-white shadow-[0_18px_52px_rgba(53,64,34,0.15)]">
           <p className="text-xs font-black uppercase tracking-[0.28em] text-[#dfe6cc]">Presentes em dinheiro</p>
-          <h2 className="mt-3 font-serif text-5xl leading-none">{cashGiftRevenueModel.minimumFeeLabel}</h2>
+          <h2 className="mt-3 font-serif text-5xl leading-none">{cashGiftRevenueModel.highlight}</h2>
           <p className="mt-4 text-sm leading-6 text-white/84">
-            Recebidos {formatCurrency(platformMetrics.grossCashGifts)} em presentes Pix. Líquido estimado para o casal: {formatCurrency(platformMetrics.netCashGifts)}.
+            Recebidos {formatCurrency(platformMetrics.grossCashGifts)} em presentes Pix — 100% para o casal, direto na chave Pix do casal.
           </p>
           <StatusBadge status="paid" />
           <Link href="/checkout" className="mt-7 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#fffaf1] text-sm font-black text-[#354022]">

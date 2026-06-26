@@ -215,7 +215,7 @@ export default function LandingPage() {
         <div className="grid gap-8 rounded-[2rem] bg-[#354022] p-8 text-white md:grid-cols-[0.9fr_1.1fr] md:p-12">
           <div>
             <p className="mb-4 text-xs font-black uppercase tracking-[0.38em] text-[#dfe6cc]">
-              {cashGiftRevenueModel.minimumFeeLabel}
+              {cashGiftRevenueModel.highlight}
             </p>
             <h2 className="font-serif text-6xl italic leading-none md:text-8xl">{cashGiftRevenueModel.title}</h2>
             <p className="mt-6 max-w-xl text-lg leading-8 text-white/84">{cashGiftRevenueModel.subtitle}</p>

@@ -6,21 +6,21 @@ export default function GiftsPage() {
   return (
     <AppShell
       title="Presentes em dinheiro"
-      subtitle="Configure cotas simbolicas, acompanhe Pix recebidos e veja o valor liquido para o casal."
+      subtitle="Configure cotas simbólicas e acompanhe os presentes Pix — 100% para o casal, sem taxa."
       active="gifts"
     >
       <section className="mb-6 grid gap-4 md:grid-cols-3">
         <article className="rounded-[1.4rem] border border-[#5b6842]/12 bg-[#354022] p-6 text-white shadow-[0_18px_52px_rgba(53,64,34,0.12)]">
           <p className="text-xs font-black uppercase tracking-[0.24em] text-[#dfe6cc]">Modelo</p>
-          <h2 className="mt-3 font-serif text-4xl leading-none">{cashGiftRevenueModel.minimumFeeLabel}</h2>
+          <h2 className="mt-3 font-serif text-4xl leading-none">{cashGiftRevenueModel.highlight}</h2>
         </article>
         <article className="rounded-[1.4rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
           <p className="text-xs font-black uppercase tracking-[0.24em] text-[#5b6842]">Recebido</p>
           <h2 className="mt-3 font-serif text-4xl leading-none">{formatCurrency(platformMetrics.grossCashGifts)}</h2>
         </article>
         <article className="rounded-[1.4rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-[#5b6842]">Liquido</p>
-          <h2 className="mt-3 font-serif text-4xl leading-none">{formatCurrency(platformMetrics.netCashGifts)}</h2>
+          <p className="text-xs font-black uppercase tracking-[0.24em] text-[#5b6842]">Para o casal</p>
+          <h2 className="mt-3 font-serif text-4xl leading-none">100%</h2>
         </article>
       </section>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -47,7 +47,7 @@ export default function GiftsPage() {
                 <p className="text-sm text-[#5f5148]">{gift.message ?? "Presente em dinheiro via Pix"}</p>
               </div>
               <span className="text-sm font-black">{formatCurrency(gift.grossAmount)}</span>
-              <span className="text-sm font-black text-[#354022]">{formatCurrency(gift.netAmount)} liquido</span>
+              <span className="text-sm font-black text-[#354022]">100% para o casal</span>
             </div>
           ))}
         </div>

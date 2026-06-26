@@ -176,18 +176,14 @@ export function PixChargeGenerator({ wedding, gifts, compact = false }: PixCharg
             </div>
             <div className="mx-auto w-fit rounded-3xl bg-[#fffaf1] p-4" dangerouslySetInnerHTML={{ __html: charge.qrCodeSvg }} />
             <div className="grid gap-3 rounded-3xl bg-[#fffaf1] p-4">
-              <div className="grid gap-2 sm:grid-cols-3">
+              <div className="grid gap-2 sm:grid-cols-2">
                 <div>
                   <span className="text-xs font-black uppercase tracking-[0.2em] text-[#5b6842]">Valor</span>
                   <strong className="block text-lg">R$ {charge.grossAmount.toFixed(2).replace(".", ",")}</strong>
                 </div>
                 <div>
-                  <span className="text-xs font-black uppercase tracking-[0.2em] text-[#5b6842]">Taxa</span>
-                  <strong className="block text-lg">R$ {charge.feeAmount.toFixed(2).replace(".", ",")}</strong>
-                </div>
-                <div>
-                  <span className="text-xs font-black uppercase tracking-[0.2em] text-[#5b6842]">Liquido</span>
-                  <strong className="block text-lg">R$ {charge.netAmount.toFixed(2).replace(".", ",")}</strong>
+                  <span className="text-xs font-black uppercase tracking-[0.2em] text-[#5b6842]">Para o casal</span>
+                  <strong className="block text-lg">100% via Pix</strong>
                 </div>
               </div>
               <textarea
@@ -219,7 +215,7 @@ export function PixChargeGenerator({ wedding, gifts, compact = false }: PixCharg
             <div className="max-w-sm p-6">
               <p className="font-serif text-5xl italic leading-none">QR Code Pix</p>
               <p className="mt-4 text-sm leading-6 text-[#5f5148]">
-                A cobranca aparece aqui com QR Code, txid, valor bruto, taxa e valor liquido.
+                A cobranca aparece aqui com QR Code, txid e valor — 100% vai direto para o Pix do casal.
               </p>
             </div>
           </div>

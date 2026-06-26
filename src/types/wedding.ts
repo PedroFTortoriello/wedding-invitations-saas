@@ -77,6 +77,8 @@ export type WeddingSite = {
   templateName: string;
   coupleNames: string;
   monogram: string;
+  /** Chave Pix do próprio casal — presentes em dinheiro caem 100% aqui, sem intermediação da plataforma. */
+  pixKey: string;
   weddingDate: string;
   weddingDateLabel: string;
   weddingTime: string;
@@ -116,8 +118,7 @@ export type CashGiftRevenueModel = {
   id: string;
   title: string;
   subtitle: string;
-  feePercent: number;
-  minimumFeeLabel: string;
+  highlight: string;
   currency: "BRL";
   features: string[];
 };
@@ -128,8 +129,6 @@ export type CashGiftTransaction = {
   guestName: string;
   message?: string;
   grossAmount: number;
-  feeAmount: number;
-  netAmount: number;
   currency: "BRL";
   status: CashGiftStatus;
   paymentMethod: "pix";
@@ -172,6 +171,5 @@ export type PlatformMetrics = {
   draftWeddings: number;
   revenue: number;
   grossCashGifts: number;
-  netCashGifts: number;
   conversionRate: number;
 };

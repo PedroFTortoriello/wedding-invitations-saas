@@ -11,9 +11,6 @@ export type PixChargeResponse = {
   txid: string;
   status: "pending" | "paid";
   grossAmount: number;
-  feeAmount: number;
-  netAmount: number;
-  feePercent: number;
   pixKey: string;
   merchantName: string;
   merchantCity: string;

@@ -1,18 +1,33 @@
 import QRCode from "qrcode";
 import { NextResponse } from "next/server";
 import { createPixCharge } from "@/lib/pix";
+import { getDemoWeddingById } from "@/lib/demo-wedding";
 import type { PixChargeRequest, PixChargeResponse } from "@/types/pix";
 
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Partial<PixChargeRequest>;
-    const charge = await createPixCharge({
-      weddingSiteId: String(body.weddingSiteId || ""),
-      guestName: String(body.guestName || ""),
-      amount: Number(body.amount),
-      message: body.message ? String(body.message) : undefined,
-      giftId: body.giftId ? String(body.giftId) : undefined
-    });
+    const weddingSiteId = String(body.weddingSiteId || "");
+    const wedding = getDemoWeddingById(weddingSiteId);
+
+    if (!wedding) {
+      return NextResponse.json({ error: "Casamento não encontrado para gerar o Pix." }, { status: 400 });
+    }
+
+    const charge = await createPixCharge(
+      {
+        weddingSiteId,
+        guestName: String(body.guestName || ""),
+        amount: Number(body.amount),
+        message: body.message ? String(body.message) : undefined,
+        giftId: body.giftId ? String(body.giftId) : undefined
+      },
+      {
+        pixKey: wedding.pixKey,
+        merchantName: wedding.coupleNames,
+        merchantCity: wedding.locations[0]?.city ?? ""
+      }
+    );
     const qrCodeSvg = await QRCode.toString(charge.payload, {
       type: "svg",
       margin: 1,
