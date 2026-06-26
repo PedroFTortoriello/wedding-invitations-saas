@@ -2,6 +2,7 @@ export type WeddingSiteStatus = "draft" | "published" | "suspended" | "expired";
 export type UserRole = "admin" | "client";
 export type CashGiftStatus = "pending" | "paid" | "refunded";
 export type GuestStatus = "pending" | "confirmed" | "declined";
+export type PixKeyType = "cpf" | "cnpj" | "email" | "phone" | "random";
 
 export type WeddingLocation = {
   id: string;
@@ -79,6 +80,10 @@ export type WeddingSite = {
   monogram: string;
   /** Chave Pix do próprio casal — presentes em dinheiro caem 100% aqui, sem intermediação da plataforma. */
   pixKey: string;
+  /** Tipo da chave Pix do casal (exibição/validação). */
+  pixKeyType: PixKeyType;
+  /** Nome do titular da conta que recebe os presentes — vai no campo 59 do EMV. */
+  pixHolderName: string;
   weddingDate: string;
   weddingDateLabel: string;
   weddingTime: string;

@@ -102,6 +102,9 @@ create table if not exists public.weddings (
   status        public.wedding_status not null default 'draft',
   couple_names  text not null,
   pix_key       text,
+  pix_key_type  text,
+  pix_holder_name text,
+  pix_holder_document text, -- server-only PII (CPF/CNPJ); never exposed to the public site
   content       jsonb not null default '{}'::jsonb,
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now()

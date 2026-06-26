@@ -24,7 +24,7 @@ export async function POST(request: Request) {
       },
       {
         pixKey: wedding.pixKey,
-        merchantName: wedding.coupleNames,
+        merchantName: wedding.pixHolderName || wedding.coupleNames,
         merchantCity: wedding.locations[0]?.city ?? ""
       }
     );

@@ -179,6 +179,7 @@ export const demoWeddings: WeddingSite[] = [
     coupleNames: "Maria Clara & Joao Miguel",
     monogram: "M&J",
     pixKey: "maria.joao@email.com",
+    pixHolderName: "Maria Clara",
     seo: {
       title: "Maria Clara & Joao Miguel",
       description: "Site de casamento de Maria Clara e Joao Miguel."

@@ -25,6 +25,9 @@ export type Database = {
           status: WeddingStatus;
           couple_names: string;
           pix_key: string | null;
+          pix_key_type: string | null;
+          pix_holder_name: string | null;
+          pix_holder_document: string | null;
           content: Json;
           created_at: string;
           updated_at: string;
@@ -36,6 +39,9 @@ export type Database = {
           status?: WeddingStatus;
           couple_names: string;
           pix_key?: string | null;
+          pix_key_type?: string | null;
+          pix_holder_name?: string | null;
+          pix_holder_document?: string | null;
           content: Json;
           created_at?: string;
           updated_at?: string;
@@ -47,6 +53,9 @@ export type Database = {
           status?: WeddingStatus;
           couple_names?: string;
           pix_key?: string | null;
+          pix_key_type?: string | null;
+          pix_holder_name?: string | null;
+          pix_holder_document?: string | null;
           content?: Json;
           created_at?: string;
           updated_at?: string;

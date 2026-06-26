@@ -141,6 +141,15 @@ describe("createPixCharge", () => {
     expect(charge.payload.slice(-4)).toBe(refCrc16(charge.payload.slice(0, -4)));
   });
 
+  it("encodes the couple's account holder name into EMV field 59", async () => {
+    const charge = await createPixCharge(
+      { weddingSiteId: "w", guestName: "Maria", amount: 50 },
+      { pixKey: "pedro.rafaela@email.com", merchantName: "Pedro Tortoriello", merchantCity: "Salto, SP" }
+    );
+    expect(parseEmv(charge.payload)["59"]).toBe("PEDRO TORTORIELLO");
+    expect(parseEmv(charge.payload)["26"]).toContain("pedro.rafaela@email.com");
+  });
+
   it.each([0.5, 0.999, 0, -5, Number.NaN, Number.POSITIVE_INFINITY])(
     "rejects invalid amount %p",
     async (amount) => {

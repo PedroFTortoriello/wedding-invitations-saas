@@ -27,6 +27,8 @@ export const demoWedding: WeddingSite = {
   coupleNames: "Pedro Tortoriello & Rafaela da Cunha",
   monogram: "P&R",
   pixKey: "pedro.rafaela@email.com",
+  pixKeyType: "email",
+  pixHolderName: "Pedro Tortoriello",
   weddingDate: "2026-12-05T16:30:00-03:00",
   weddingDateLabel: "5 de dezembro de 2026",
   weddingTime: "16:30",
