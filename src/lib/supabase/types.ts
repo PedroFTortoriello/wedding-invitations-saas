@@ -31,6 +31,7 @@ export type Database = {
           content: Json;
           created_at: string;
           updated_at: string;
+          publish_paid_at: string | null;
         };
         Insert: {
           id?: string;
@@ -45,6 +46,7 @@ export type Database = {
           content: Json;
           created_at?: string;
           updated_at?: string;
+          publish_paid_at?: string | null;
         };
         Update: {
           id?: string;
@@ -59,6 +61,7 @@ export type Database = {
           content?: Json;
           created_at?: string;
           updated_at?: string;
+          publish_paid_at?: string | null;
         };
         Relationships: [];
       };
@@ -146,10 +149,50 @@ export type Database = {
         };
         Relationships: [];
       };
+      publish_payments: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          provider: string;
+          provider_charge_id: string | null;
+          amount_cents: number;
+          status: string;
+          checkout_url: string | null;
+          paid_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          provider?: string;
+          provider_charge_id?: string | null;
+          amount_cents: number;
+          status?: string;
+          checkout_url?: string | null;
+          paid_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          wedding_id?: string;
+          provider?: string;
+          provider_charge_id?: string | null;
+          amount_cents?: number;
+          status?: string;
+          checkout_url?: string | null;
+          paid_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
       is_admin: { Args: Record<string, never>; Returns: boolean };
+      mark_publish_paid: {
+        Args: { p_charge_id: string; p_wedding_id: string; p_amount_cents?: number | null };
+        Returns: boolean;
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
