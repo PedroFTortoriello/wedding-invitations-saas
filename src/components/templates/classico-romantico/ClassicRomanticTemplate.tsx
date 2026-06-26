@@ -20,22 +20,6 @@ type ClassicRomanticTemplateProps = {
 };
 
 const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
-const lerp = (start: number, end: number, t: number) => start + (end - start) * t;
-const smoothstep = (edge0: number, edge1: number, value: number) => {
-  const t = clamp((value - edge0) / (edge1 - edge0));
-  return t * t * (3 - 2 * t);
-};
-const easeInOut = (t: number) => {
-  const x = clamp(t);
-  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-};
-
-const floatMotion = [
-  { x: -210, y: 112, scale: 0.9 },
-  { x: -150, y: 92, scale: 0.92 },
-  { x: 170, y: 86, scale: 0.91 },
-  { x: 205, y: 160, scale: 0.93 }
-];
 
 export function ClassicRomanticTemplate({ wedding }: ClassicRomanticTemplateProps) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -49,76 +33,15 @@ export function ClassicRomanticTemplate({ wedding }: ClassicRomanticTemplateProp
     if (!root) return;
 
     const siteNav = root.querySelector<HTMLElement>("[data-site-nav]");
-    const heroSection = root.querySelector<HTMLElement>("[data-hero-section]");
-    const heroCard = root.querySelector<HTMLElement>("[data-hero-card]");
-    const floatPhotos = Array.from(root.querySelectorAll<HTMLElement>("[data-float]"));
     const storySection = root.querySelector<HTMLElement>("[data-story-section]");
     const storyCards = Array.from(root.querySelectorAll<HTMLElement>("[data-ceremony-card]"));
     const ceremonyDots = Array.from(root.querySelectorAll<HTMLElement>("[data-ceremony-dot]"));
 
     let ticking = false;
 
-    const updateHero = () => {
-      if (!heroSection || !heroCard) return;
-      const mobile = window.matchMedia("(max-width: 900px)").matches;
-
-      if (mobile) {
-        siteNav?.classList.add(styles["is-compact"]);
-        [
-          "--hero-w",
-          "--hero-h",
-          "--hero-top",
-          "--hero-scale",
-          "--hero-y",
-          "--hero-img-scale",
-          "--hero-title-opacity",
-          "--hero-title-y",
-          "--hero-line-opacity",
-          "--hero-line-y",
-          "--hero-shadow"
-        ].forEach((property) => heroCard.style.removeProperty(property));
-        floatPhotos.forEach((photo) => {
-          photo.style.opacity = "0";
-          photo.style.transform = "";
-        });
-        return;
-      }
-
-      const total = Math.max(1, heroSection.offsetHeight - window.innerHeight);
-      const progress = clamp(-heroSection.getBoundingClientRect().top / total);
-      const shrink = easeInOut(smoothstep(0.04, 0.92, progress));
-      const reveal = easeInOut(smoothstep(0.16, 0.78, progress));
-      const titleFade = 1 - smoothstep(0.08, 0.52, progress);
-      const lineFade = 1 - smoothstep(0.02, 0.3, progress);
-
-      const startW = window.innerWidth - 40;
-      const startH = window.innerHeight - 40;
-      const targetW = clamp(window.innerWidth * 0.258, 330, 495);
-      const targetH = clamp(window.innerHeight * 0.68, 520, 735);
-      const targetTop = Math.max(118, (window.innerHeight - targetH) / 2 + 20);
-
-      heroCard.style.setProperty("--hero-w", `${lerp(startW, targetW, shrink).toFixed(1)}px`);
-      heroCard.style.setProperty("--hero-h", `${lerp(startH, targetH, shrink).toFixed(1)}px`);
-      heroCard.style.setProperty("--hero-top", `${lerp(20, targetTop, shrink).toFixed(1)}px`);
-      heroCard.style.setProperty("--hero-scale", "1");
-      heroCard.style.setProperty("--hero-y", "0px");
-      heroCard.style.setProperty("--hero-img-scale", lerp(1, 1.02, shrink).toFixed(4));
-      heroCard.style.setProperty("--hero-title-opacity", titleFade.toFixed(3));
-      heroCard.style.setProperty("--hero-title-y", `${lerp(0, 18, 1 - titleFade).toFixed(1)}px`);
-      heroCard.style.setProperty("--hero-line-opacity", lineFade.toFixed(3));
-      heroCard.style.setProperty("--hero-line-y", `${lerp(0, 18, 1 - lineFade).toFixed(1)}px`);
-      heroCard.style.setProperty("--hero-shadow", shrink > 0.05 ? "0 24px 62px rgba(0,0,0,0.12)" : "none");
-      siteNav?.classList.toggle(styles["is-compact"], progress > 0.16);
-
-      floatPhotos.forEach((photo, index) => {
-        const motion = floatMotion[index] ?? floatMotion[0];
-        const staggered = easeInOut(clamp((reveal - index * 0.045) / 0.82));
-        const x = lerp(motion.x, 0, staggered);
-        const y = lerp(motion.y, 0, staggered);
-        const scale = lerp(motion.scale, 1, staggered);
-        photo.style.opacity = String(clamp(staggered * 1.1));
-        photo.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) scale(${scale.toFixed(3)})`;
-      });
+    const updateNav = () => {
+      if (!siteNav) return;
+      siteNav.classList.toggle(styles["is-compact"], window.scrollY > window.innerHeight * 0.6);
     };
 
     const updateStory = () => {
@@ -151,7 +74,7 @@ export function ClassicRomanticTemplate({ wedding }: ClassicRomanticTemplateProp
       if (ticking) return;
       ticking = true;
       window.requestAnimationFrame(() => {
-        updateHero();
+        updateNav();
         updateStory();
         ticking = false;
       });
