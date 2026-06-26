@@ -15,7 +15,7 @@ export { demoWedding };
 export const platformName = "Vows";
 
 /** Taxa única de publicação paga pelo casal. Única fonte de receita da plataforma. */
-export const PUBLISH_FEE_BRL = 89.9;
+export const PUBLISH_FEE_BRL = 149.9;
 
 export const demoUser: PlatformUser = {
   id: "user_pedro_rafaela",

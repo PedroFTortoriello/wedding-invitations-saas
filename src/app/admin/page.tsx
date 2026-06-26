@@ -1,6 +1,6 @@
 import { AdminShell } from "@/components/app/AdminShell";
 import { MetricCard } from "@/components/app/MetricCard";
-import { formatCurrency, platformMetrics } from "@/lib/platform-data";
+import { formatCurrency, platformMetrics, PUBLISH_FEE_BRL } from "@/lib/platform-data";
 
 export default function AdminDashboardPage() {
   return (
@@ -13,7 +13,7 @@ export default function AdminDashboardPage() {
         <MetricCard label="Usuarios" value={String(platformMetrics.totalUsers)} helper="Contas cadastradas na plataforma." />
         <MetricCard label="Casamentos" value={String(platformMetrics.totalWeddings)} helper="Sites criados no sistema." />
         <MetricCard label="Publicados" value={String(platformMetrics.publishedWeddings)} helper="Sites visíveis para convidados." />
-        <MetricCard label="Receita" value={formatCurrency(platformMetrics.revenue)} helper="Taxa de publicação (R$ 89,90) por site publicado." />
+        <MetricCard label="Receita" value={formatCurrency(platformMetrics.revenue)} helper={`Taxa de publicação (${formatCurrency(PUBLISH_FEE_BRL)}) por site publicado.`} />
       </div>
     </AdminShell>
   );
