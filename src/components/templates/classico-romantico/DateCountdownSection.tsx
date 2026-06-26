@@ -41,35 +41,27 @@ function getCountdown(target: number): CountdownState {
 export function DateCountdownSection({
   wedding
 }: DateCountdownSectionProps) {
-  const [mounted, setMounted] = useState(false);
-
   const target = useMemo(
     () =>
       new Date(wedding.weddingDate).getTime(),
     [wedding.weddingDate]
   );
 
+  // null until mounted on the client — avoids an SSR/hydration mismatch on the
+  // time-dependent countdown (the section renders nothing on the server).
   const [countdown, setCountdown] =
-    useState<CountdownState>({
-      days: 0,
-      hours: 0,
-      minutes: 0,
-      seconds: 0
-    });
+    useState<CountdownState | null>(null);
 
   useEffect(() => {
-    setMounted(true);
+    const update = () => setCountdown(getCountdown(target));
+    update();
 
-    setCountdown(getCountdown(target));
-
-    const interval = window.setInterval(() => {
-      setCountdown(getCountdown(target));
-    }, 1000);
+    const interval = window.setInterval(update, 1000);
 
     return () => window.clearInterval(interval);
   }, [target]);
 
-  if (!mounted) {
+  if (!countdown) {
     return null;
   }
 
