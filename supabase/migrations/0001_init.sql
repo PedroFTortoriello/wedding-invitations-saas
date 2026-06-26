@@ -4,6 +4,14 @@
 -- read/write their own weddings (owner_id = auth.uid()); published weddings are
 -- publicly readable (for the guest-facing site); admins (profiles.role='admin')
 -- can read everything.
+--
+-- Safe to re-run: every statement is idempotent (if not exists / or replace /
+-- drop ... if exists).
+
+-- Allow functions that reference tables created later in this script (e.g.
+-- is_admin() -> profiles); their bodies are validated at runtime instead of
+-- at creation time.
+set check_function_bodies = off;
 
 -- ---------------------------------------------------------------------------
 -- Enums
@@ -86,10 +94,18 @@ begin
 end;
 $$;
 
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute function public.handle_new_user();
+-- Wrapped so the migration still completes even if this project restricts
+-- triggers on auth.users. If it is skipped, the app creates the profile from
+-- the signup flow instead (upsert into public.profiles).
+do $$
+begin
+  drop trigger if exists on_auth_user_created on auth.users;
+  create trigger on_auth_user_created
+    after insert on auth.users
+    for each row execute function public.handle_new_user();
+exception when others then
+  raise notice 'skipping auth.users trigger (%): profiles will be created from the app on signup.', sqlerrm;
+end $$;
 
 -- ---------------------------------------------------------------------------
 -- weddings (owned by a user). Rich content kept in JSONB; queryable columns
