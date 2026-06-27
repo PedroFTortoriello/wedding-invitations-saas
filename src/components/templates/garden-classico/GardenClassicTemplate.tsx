@@ -56,12 +56,12 @@ export function GardenClassicTemplate({
 
           <p>Vão se casar</p>
 
-          <a href="#confirmacao">
+          <a href="#confirmacao" data-reveal>
             Confirmar presença
           </a>
         </div>
 
-        <div className={styles.heroMeta}>
+        <div className={styles.heroMeta} data-reveal style={{ transitionDelay: "120ms" }}>
           <time dateTime={wedding.weddingDate}>
             {wedding.weddingDateLabel},{" "}
             {wedding.weddingTime}
@@ -75,16 +75,17 @@ export function GardenClassicTemplate({
       </section>
 
       <section className={styles.about}>
-        <div className={styles.aboutImage}>
+        <div className={styles.aboutImage} data-reveal>
           <Image
             src={wedding.footerImage}
             alt="Foto do casal"
             width={900}
             height={1200}
+            loading="lazy"
           />
         </div>
 
-        <article>
+        <article data-reveal style={{ transitionDelay: "90ms" }}>
           <p>O COMEÇO</p>
 
           <h2>DO NOSSO PARA SEMPRE</h2>
@@ -100,7 +101,7 @@ export function GardenClassicTemplate({
         </article>
       </section>
 
-      <section className={styles.photoBreak}>
+      <section className={styles.photoBreak} data-reveal>
         <Image
           src={
             wedding.locations[0]?.image ??
@@ -109,11 +110,13 @@ export function GardenClassicTemplate({
           alt="Local do casamento"
           width={1600}
           height={1067}
+          sizes="100vw"
+          loading="lazy"
         />
       </section>
 
       <section className={styles.program}>
-        <div>
+        <div data-reveal>
           <p>Programação</p>
 
           <h2>
@@ -122,8 +125,8 @@ export function GardenClassicTemplate({
         </div>
 
         <ul>
-          {schedule.map(([time, label]) => (
-            <li key={time}>
+          {schedule.map(([time, label], index) => (
+            <li key={time} data-reveal style={{ transitionDelay: `${index * 70}ms` }}>
               <strong>{time}</strong>
 
               <span>{label}</span>
@@ -133,7 +136,7 @@ export function GardenClassicTemplate({
       </section>
 
       <section className={styles.details}>
-        <article>
+        <article data-reveal>
           <p>Detalhes</p>
 
           <h2>
@@ -160,6 +163,9 @@ export function GardenClassicTemplate({
               alt={`Galeria ${index + 1}`}
               width={720}
               height={960}
+              loading="lazy"
+              data-reveal
+              style={{ transitionDelay: `${index * 70}ms` }}
             />
           ))}
         </div>
@@ -169,7 +175,7 @@ export function GardenClassicTemplate({
         id="presentes"
         className={styles.gifts}
       >
-        <article>
+        <article data-reveal>
           <p>Presentes</p>
 
           <h2>Lista de presentes</h2>
@@ -193,8 +199,10 @@ export function GardenClassicTemplate({
         <div className={styles.giftList}>
           {activeGifts
             .slice(0, 4)
-            .map((gift) => (
+            .map((gift, index) => (
               <a
+                data-reveal
+                style={{ transitionDelay: `${index * 70}ms` }}
                 key={gift.id}
                 href={gift.link}
                 target={
@@ -214,6 +222,7 @@ export function GardenClassicTemplate({
                     alt=""
                     width={320}
                     height={220}
+                    loading="lazy"
                   />
                 ) : null}
 
@@ -324,14 +333,14 @@ export function GardenClassicTemplate({
         id="confirmacao"
         className={styles.rsvp}
       >
-        <p>{wedding.monogram}</p>
+        <p data-reveal>{wedding.monogram}</p>
 
-        <h2>
+        <h2 data-reveal style={{ transitionDelay: "90ms" }}>
           Esperamos você para celebrar
           conosco
         </h2>
 
-        <a href="#presentes">
+        <a href="#presentes" data-reveal style={{ transitionDelay: "180ms" }}>
           Ver lista de presentes
         </a>
       </section>

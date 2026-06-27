@@ -32,21 +32,21 @@ export function CivilMinimalistTemplate({ wedding }: CivilMinimalistTemplateProp
             <span>{secondName}</span>
           </h1>
         </div>
-        <div className={styles.heroMeta}>
+        <div className={styles.heroMeta} data-reveal>
           <time dateTime={wedding.weddingDate}>{wedding.weddingDateLabel}</time>
-          
+          {location?.city ? <span>{location.city}</span> : null}
         </div>
       </section>
 
       <section className={styles.story}>
-        <div className={styles.storyTitle}>
+        <div className={styles.storyTitle} data-reveal style={{ transitionDelay: "0ms" }}>
           <p>Nossa</p>
           <h2>História de amor</h2>
         </div>
-        <div className={styles.storyImageWrap}>
+        <div className={styles.storyImageWrap} data-reveal style={{ transitionDelay: "80ms" }}>
           <Image src={storyImage} alt="História do casal" width={900} height={1100} className={styles.storyImage} />
         </div>
-        <article className={styles.storyCopy}>
+        <article className={styles.storyCopy} data-reveal style={{ transitionDelay: "160ms" }}>
           <p>{wedding.welcomeText}</p>
           <p>
             {wedding.storyMoments[0]?.description} {wedding.storyMoments[1]?.description}
@@ -58,7 +58,7 @@ export function CivilMinimalistTemplate({ wedding }: CivilMinimalistTemplateProp
         <div className={styles.portraitPanel}>
           <Image src={portraitImage} alt="Retrato do casal" width={900} height={1200} className={styles.portrait} />
         </div>
-        <div className={styles.detailsPanel}>
+        <div className={styles.detailsPanel} data-reveal>
           <p className={styles.eyebrow}>Detalhes da cerimônia</p>
           <h2>{wedding.detailsTitle}</h2>
           <dl>
@@ -87,8 +87,16 @@ export function CivilMinimalistTemplate({ wedding }: CivilMinimalistTemplateProp
       </section>
 
       <section className={styles.gallery}>
-        <Image src={detailImage} alt="Detalhe editorial do casal" width={900} height={1100} />
-        <article>
+        <Image
+          src={detailImage}
+          alt="Detalhe editorial do casal"
+          width={900}
+          height={1100}
+          loading="lazy"
+          data-reveal
+          style={{ transitionDelay: "0ms" }}
+        />
+        <article data-reveal style={{ transitionDelay: "90ms" }}>
           <p>Reserve o fim de semana</p>
           <h2>Celebração intimista</h2>
           <span>{wedding.finalText}</span>
@@ -96,20 +104,22 @@ export function CivilMinimalistTemplate({ wedding }: CivilMinimalistTemplateProp
       </section>
 
       <section id="presentes" className={styles.gifts}>
-        <div className={styles.giftsIntro}>
+        <div className={styles.giftsIntro} data-reveal>
           <p>Presentes</p>
           <h2>Lista de presentes</h2>
           <span>Escolha uma sugestão especial. Cada item abre em sua própria página para concluir o presente.</span>
         </div>
         <div className={styles.giftCards}>
-          {activeGifts.slice(0, 4).map((gift) => (
+          {activeGifts.slice(0, 4).map((gift, index) => (
             <a
               key={gift.id}
               href={gift.link}
               target={gift.link.startsWith("#") ? undefined : "_blank"}
               rel={gift.link.startsWith("#") ? undefined : "noopener noreferrer"}
+              data-reveal
+              style={{ transitionDelay: `${index * 70}ms` }}
             >
-              {gift.image ? <Image src={gift.image} alt="" width={360} height={260} /> : null}
+              {gift.image ? <Image src={gift.image} alt="" width={360} height={260} loading="lazy" /> : null}
               <strong>{gift.title}</strong>
               <span>{gift.price}</span>
               <p>{gift.description}</p>
@@ -120,8 +130,8 @@ export function CivilMinimalistTemplate({ wedding }: CivilMinimalistTemplateProp
 
       <section className={styles.finalCta}>
         <p>{wedding.monogram}</p>
-        <h2>Venha celebrar conosco</h2>
-        <div>
+        <h2 data-reveal>Venha celebrar conosco</h2>
+        <div data-reveal style={{ transitionDelay: "120ms" }}>
           <a href={location?.mapUrl ?? "#"} target="_blank" rel="noreferrer">
             Abrir local
           </a>
