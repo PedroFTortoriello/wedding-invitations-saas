@@ -4,6 +4,24 @@ import type { PixKeyType, WeddingSite } from "@/types/wedding";
 
 export type WeddingRow = Database["public"]["Tables"]["weddings"]["Row"];
 
+// Colunas necessárias para renderizar um site — exclui PII server-only
+// (pix_holder_document) para nunca expô-la no site público.
+export type WeddingRenderRow = Pick<
+  WeddingRow,
+  | "id"
+  | "owner_id"
+  | "slug"
+  | "status"
+  | "couple_names"
+  | "pix_key"
+  | "pix_key_type"
+  | "pix_holder_name"
+  | "content"
+>;
+
+export const WEDDING_RENDER_COLUMNS =
+  "id, owner_id, slug, status, couple_names, pix_key, pix_key_type, pix_holder_name, content";
+
 // Campos do WeddingSite promovidos a colunas consultáveis em `weddings`.
 // Todo o resto vive em `content` (JSONB).
 const COLUMN_KEYS = [
@@ -103,7 +121,7 @@ export function extractContent(site: WeddingSite): WeddingContent {
 }
 
 /** Reconstrói um WeddingSite completo a partir de uma linha do banco. */
-export function rowToWeddingSite(row: WeddingRow): WeddingSite {
+export function rowToWeddingSite(row: WeddingRenderRow): WeddingSite {
   const stored = (row.content ?? {}) as Partial<WeddingContent>;
   return {
     ...baseContent(),

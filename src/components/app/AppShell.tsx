@@ -40,13 +40,9 @@ export function AppShell({ children, title, subtitle, active }: AppShellProps) {
             </Link>
           ))}
         </nav>
-        <Link
-          href="/casamento/pedro-e-rafaela"
-          className="btn btn-secondary mt-8 w-full min-h-11 text-sm"
-        >
-          Ver site publicado
-        </Link>
-        <SignOutButton />
+        <div className="mt-8">
+          <SignOutButton />
+        </div>
       </aside>
       <div className="lg:pl-72">
         <header className="sticky top-0 z-30 border-b border-[#5b6842]/10 bg-[#f7f0e5]/88 px-4 py-4 backdrop-blur md:px-8">
