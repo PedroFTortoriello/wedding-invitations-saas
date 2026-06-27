@@ -184,6 +184,42 @@ export const demoWedding: WeddingSite = {
       image: romanticImages.botanicalDetail,
       description: "Escolha o valor e deixe um carinho do seu jeito para o casal.",
       active: true
+    },
+    {
+      id: "noite-de-spa",
+      title: "Noite de Spa a Dois",
+      price: "R$ 320,00",
+      link: "#presentes",
+      image: romanticImages.hands,
+      description: "Um descanso merecido depois de toda a correria dos preparativos.",
+      active: true
+    },
+    {
+      id: "aulas-de-danca",
+      title: "Aulas de Dança",
+      price: "R$ 150,00",
+      link: "#presentes",
+      image: romanticImages.ceremonyAisle,
+      description: "Para abrir a pista com confiança e rodar a noite inteira.",
+      active: true
+    },
+    {
+      id: "adega-da-casa",
+      title: "Adega para a Casa Nova",
+      price: "R$ 600,00",
+      link: "#presentes",
+      image: romanticImages.ringEditorial,
+      description: "Boas garrafas para brindar cada conquista da vida a dois.",
+      active: true
+    },
+    {
+      id: "brunch-de-domingo",
+      title: "Brunch de Domingo",
+      price: "Valor livre",
+      link: "#presentes",
+      image: romanticImages.reception,
+      description: "Uma cota para os domingos de café, pão quente e risadas sem pressa.",
+      active: true
     }
   ],
   gallery: [

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import Image from "next/image";
 import type { WeddingGift, WeddingSite } from "@/types/wedding";
 import type { PixChargeResponse } from "@/types/pix";
@@ -65,26 +65,52 @@ const SKINS: Record<GiftVariant, CSSProperties> = {
   } as CSSProperties
 };
 
+/** Gifts shown before the in-place "Ver todos" expansion. */
+const VISIBLE_GIFTS = 6;
+
 type GiftRegistryProps = {
   wedding: WeddingSite;
   variant: GiftVariant;
+  /** Section anchor scrolled back into view when collapsing. */
+  sectionId?: string;
 };
 
-export function GiftRegistry({ wedding, variant }: GiftRegistryProps) {
+export function GiftRegistry({ wedding, variant, sectionId = "presentes" }: GiftRegistryProps) {
   const gifts = wedding.gifts.filter((gift) => gift.active);
   const [selected, setSelected] = useState<WeddingGift | null>(null);
+  const [expanded, setExpanded] = useState(false);
+  const gridId = useId();
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  const hasMore = gifts.length > VISIBLE_GIFTS;
+  const visible = expanded || !hasMore ? gifts : gifts.slice(0, VISIBLE_GIFTS);
+
+  function toggle() {
+    const next = !expanded;
+    setExpanded(next);
+    if (!next) {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const target = document.getElementById(sectionId) ?? rootRef.current;
+      target?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    }
+  }
 
   return (
-    <div className={styles.root} style={SKINS[variant]}>
-      <ul className={styles.grid}>
-        {gifts.map((gift, index) => {
+    <div className={styles.root} style={SKINS[variant]} ref={rootRef}>
+      <ul className={styles.grid} id={gridId}>
+        {visible.map((gift, index) => {
           const price = parseGiftPrice(gift.price);
+          const isExtra = index >= VISIBLE_GIFTS;
           return (
             <li
               key={gift.id}
-              className={styles.card}
-              data-reveal
-              style={{ transitionDelay: `${index * 70}ms` }}
+              className={isExtra ? `${styles.card} ${styles.cardEnter}` : styles.card}
+              data-reveal={isExtra ? undefined : ""}
+              style={
+                isExtra
+                  ? { animationDelay: `${(index - VISIBLE_GIFTS) * 50}ms` }
+                  : { transitionDelay: `${index * 70}ms` }
+              }
             >
               <div className={styles.media}>
                 {gift.image ? (
@@ -116,6 +142,20 @@ export function GiftRegistry({ wedding, variant }: GiftRegistryProps) {
           );
         })}
       </ul>
+
+      {hasMore ? (
+        <div className={styles.toggleRow}>
+          <button
+            type="button"
+            className={styles.toggle}
+            onClick={toggle}
+            aria-expanded={expanded}
+            aria-controls={gridId}
+          >
+            {expanded ? "Ver menos" : `Ver todos os ${gifts.length} presentes`}
+          </button>
+        </div>
+      ) : null}
 
       {selected ? (
         <GiftPixDialog wedding={wedding} gift={selected} onClose={() => setSelected(null)} />

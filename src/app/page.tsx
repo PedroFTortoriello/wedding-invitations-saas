@@ -37,7 +37,7 @@ export default function LandingPage() {
           </div>
           <Link
             href="/cadastro"
-            className="btn btn-primary min-h-10 px-5 text-sm"
+            className="btn btn-primary !text-on-forest min-h-10 px-5 text-sm"
           >
             Criar meu site
           </Link>
@@ -60,7 +60,7 @@ export default function LandingPage() {
           <div className="hero-rise mt-9 flex flex-col gap-3 [animation-delay:240ms] sm:flex-row">
             <Link
               href="/cadastro"
-              className="btn btn-primary min-h-14 px-8 text-base"
+              className="btn btn-primary min-h-14 px-8 !text-on-forest"
             >
               Criar meu site
             </Link>
@@ -127,7 +127,7 @@ export default function LandingPage() {
             </p>
             <Link
               href="/casamento/pedro-e-rafaela"
-              className="btn btn-primary mt-8"
+              className="btn btn-primary mt-8 !text-on-forest"
             >
               Abrir demonstração romântica
             </Link>
@@ -184,7 +184,7 @@ export default function LandingPage() {
             </p>
             <Link
               href="/modelo/civil-minimalista/pedro-e-rafaela"
-              className="btn mt-8 bg-[#020202] text-on-forest hover:-translate-y-0.5"
+              className="btn mt-8 bg-[#020202] !text-on-forest hover:-translate-y-0.5"
             >
               Abrir demonstração do modelo
             </Link>
@@ -203,7 +203,7 @@ export default function LandingPage() {
             </p>
             <Link
               href="/modelo/garden-classico/pedro-e-rafaela"
-              className="btn mt-8 bg-[#304254] text-on-forest hover:-translate-y-0.5"
+              className="btn mt-8 bg-[#304254] !text-on-forest hover:-translate-y-0.5"
             >
               Abrir demonstração Jardim
             </Link>
@@ -250,7 +250,7 @@ export default function LandingPage() {
             ))}
             <Link
               href="/checkout"
-              className="btn btn-inverse mt-2 w-fit px-8"
+              className="btn btn-inverse !text-[#020202] mt-2 w-fit px-8"
             >
               Criar nosso site agora
             </Link>
