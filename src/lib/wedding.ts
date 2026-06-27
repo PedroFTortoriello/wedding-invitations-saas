@@ -93,6 +93,15 @@ export function contentToJson(content: WeddingContent): Json {
   return content as unknown as Json;
 }
 
+/** Extrai a parte de conteúdo (JSONB) de um WeddingSite completo, sem as colunas. */
+export function extractContent(site: WeddingSite): WeddingContent {
+  const content: Record<string, unknown> = { ...site };
+  for (const key of COLUMN_KEYS) {
+    delete content[key];
+  }
+  return content as WeddingContent;
+}
+
 /** Reconstrói um WeddingSite completo a partir de uma linha do banco. */
 export function rowToWeddingSite(row: WeddingRow): WeddingSite {
   const stored = (row.content ?? {}) as Partial<WeddingContent>;
