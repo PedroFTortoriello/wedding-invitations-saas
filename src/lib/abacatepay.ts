@@ -36,11 +36,61 @@ type V2CheckoutResponse = {
   };
 };
 
+type V2ProductResponse = {
+  success?: boolean;
+  error?: unknown;
+  data?: { id?: string; externalId?: string };
+};
+
+const PUBLISH_PRODUCT_EXTERNAL_ID = "publish-fee";
+
+// Cache do id do produto da taxa por instância — evita recriar a cada checkout.
+let cachedPublishProductId: string | null = null;
+
+/**
+ * Resolve o id do produto da taxa de publicação. Ordem:
+ *  1) ABACATEPAY_PUBLISH_PRODUCT_ID (recomendado — zero chamadas extras);
+ *  2) cache em memória da instância;
+ *  3) cria o produto na v2 e cacheia (fallback de conveniência).
+ * Obs.: sem endpoint público de "buscar produto", o fallback pode criar um
+ * produto novo a cada cold start se a AbacatePay não deduplicar por externalId;
+ * por isso logamos o id para você fixar em env.
+ */
+async function resolvePublishProductId(apiKey: string): Promise<string> {
+  const envId = process.env.ABACATEPAY_PUBLISH_PRODUCT_ID;
+  if (envId) return envId;
+  if (cachedPublishProductId) return cachedPublishProductId;
+
+  const response = await fetch(`${ABACATEPAY_BASE_URL}/products/create`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      externalId: PUBLISH_PRODUCT_EXTERNAL_ID,
+      name: "Publicação do site de casamento",
+      description: "Taxa única para publicar o site de casamento.",
+      price: PUBLISH_FEE_CENTS,
+      currency: "BRL"
+    })
+  });
+
+  const json = (await response.json().catch(() => null)) as V2ProductResponse | null;
+  const id = json?.data?.id;
+  if (!response.ok || json?.success === false || !id) {
+    console.error("AbacatePay products/create falhou", response.status, JSON.stringify(json));
+    throw new Error(`Não foi possível preparar o produto da taxa de publicação (HTTP ${response.status}).`);
+  }
+
+  cachedPublishProductId = id;
+  console.warn(
+    `AbacatePay: produto da taxa criado automaticamente (${id}). Fixe ABACATEPAY_PUBLISH_PRODUCT_ID=${id} no .env para evitar recriação.`
+  );
+  return id;
+}
+
 /**
  * Cria o checkout hospedado (PIX + cartão) da taxa única de publicação na API v2
- * (POST /v2/checkouts/create). Na v2 os itens referenciam um PRODUTO pré-criado
- * (ABACATEPAY_PUBLISH_PRODUCT_ID), então o produto da taxa precisa existir na
- * conta — crie-o uma vez com `node scripts/abacatepay-create-product.mjs`.
+ * (POST /v2/checkouts/create). Os itens da v2 referenciam um PRODUTO; o id vem de
+ * ABACATEPAY_PUBLISH_PRODUCT_ID (recomendado) ou é criado automaticamente.
  */
 export async function createPublishCharge(input: CreatePublishChargeInput): Promise<PublishCharge> {
   const apiKey = process.env.ABACATEPAY_API_KEY;
@@ -48,12 +98,7 @@ export async function createPublishCharge(input: CreatePublishChargeInput): Prom
     throw new Error("AbacatePay não configurado: defina ABACATEPAY_API_KEY no .env.");
   }
 
-  const productId = process.env.ABACATEPAY_PUBLISH_PRODUCT_ID;
-  if (!productId) {
-    throw new Error(
-      "AbacatePay v2 não configurado: defina ABACATEPAY_PUBLISH_PRODUCT_ID no .env (id do produto da taxa de publicação). Crie o produto com `node scripts/abacatepay-create-product.mjs`."
-    );
-  }
+  const productId = await resolvePublishProductId(apiKey);
 
   const response = await fetch(`${ABACATEPAY_BASE_URL}/checkouts/create`, {
     method: "POST",

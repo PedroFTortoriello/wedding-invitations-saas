@@ -20,10 +20,10 @@ infraestrutura (Fase 0), que depende das suas contas.
 ### 0.2 AbacatePay (taxa de publicação — R$ 149,90, API v2)
 1. **Rotacione** a chave que esteve no `.env` local (trate-a como comprometida).
 2. Pegue a `API key` de produção (v2).
-3. **Crie o produto da taxa** (a v2 cobra a partir de um produto pré-criado).
-   Com `ABACATEPAY_API_KEY` no `.env`, rode uma vez:
-   `node scripts/abacatepay-create-product.mjs`
-   e cole o id retornado em `ABACATEPAY_PUBLISH_PRODUCT_ID`.
+3. **Produto da taxa** (a v2 cobra a partir de um produto). Se deixar
+   `ABACATEPAY_PUBLISH_PRODUCT_ID` em branco, o app cria o produto automaticamente
+   no 1º pagamento e loga o id. Recomendado, porém, criá-lo uma vez e fixar o id
+   (com `ABACATEPAY_API_KEY` no `.env`): `node scripts/abacatepay-create-product.mjs`.
 4. Configure a URL do webhook no painel:
    `https://SEU-DOMINIO/api/webhooks/abacatepay?webhookSecret=SEGREDO`
    (o `SEGREDO` precisa bater com `ABACATEPAY_WEBHOOK_SECRET`).
