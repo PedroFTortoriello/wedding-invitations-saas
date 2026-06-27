@@ -1,11 +1,22 @@
 import { NextResponse } from "next/server";
 import { extractGiftFromUrl } from "@/lib/gift-scraper";
+import { createClient } from "@/lib/supabase/server";
 import type { GiftExtractionRequest } from "@/types/gift-extraction";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
+    // Faz fetch server-side de uma URL informada pelo usuário (o scraper bloqueia
+    // hosts privados). Exige sessão para não ser um proxy de fetch anônimo.
+    const supabase = await createClient();
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Faça login para importar presentes." }, { status: 401 });
+    }
+
     const body = (await request.json()) as Partial<GiftExtractionRequest>;
     const url = typeof body.url === "string" ? body.url.trim() : "";
 
