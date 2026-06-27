@@ -121,7 +121,7 @@ export function GiftLinkImporter() {
         }}
       >
         <input
-          className="min-h-12 rounded-2xl border border-[#5b6842]/14 bg-white px-4 text-sm text-ink outline-none focus:border-[#5b6842]/45"
+          className="min-h-12 rounded-2xl border border-[#5b6842]/14 bg-white px-4 text-sm text-ink focus:border-[#5b6842]/45"
           value={link}
           onChange={(event) => setLink(event.target.value)}
           placeholder={copy.placeholder}

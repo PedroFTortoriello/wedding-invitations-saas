@@ -345,6 +345,14 @@ select {
   font: inherit;
 }
 
+/* Visible keyboard focus for every form control (P6/P7 microinteraction). */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--forest);
+  outline-offset: 1px;
+}
+
 ::selection {
   background: rgba(91, 104, 66, 0.22);
 }
