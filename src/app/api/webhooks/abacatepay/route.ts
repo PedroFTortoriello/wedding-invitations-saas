@@ -58,5 +58,14 @@ export async function POST(request: Request) {
 
   // recognized === false: the charge/wedding/amount matched nothing we created
   // (foreign or forged event) — ack so retries stop without changing any state.
+  if (recognized !== true) {
+    // Pagamento confirmado que não casou com nenhuma cobrança nossa: pode ser
+    // evento externo OU um descasamento de formato/valor — vale investigar.
+    console.error(
+      "AbacatePay webhook: pagamento não reconhecido",
+      JSON.stringify({ event: (payload as { event?: string })?.event, chargeId: result.chargeId, weddingId: result.weddingId, amountCents: result.amountCents })
+    );
+  }
+
   return NextResponse.json({ received: true, recognized: recognized === true });
 }

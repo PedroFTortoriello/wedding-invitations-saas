@@ -17,20 +17,24 @@ infraestrutura (Fase 0), que depende das suas contas.
 4. Em **Project Settings → API**, copie `Project URL`, `anon public key` e
    `service_role key`.
 
-### 0.2 AbacatePay (taxa de publicação — R$ 149,90)
+### 0.2 AbacatePay (taxa de publicação — R$ 149,90, API v2)
 1. **Rotacione** a chave que esteve no `.env` local (trate-a como comprometida).
-2. Pegue a `API key` de produção.
-3. Configure a URL do webhook no painel:
+2. Pegue a `API key` de produção (v2).
+3. **Crie o produto da taxa** (a v2 cobra a partir de um produto pré-criado).
+   Com `ABACATEPAY_API_KEY` no `.env`, rode uma vez:
+   `node scripts/abacatepay-create-product.mjs`
+   e cole o id retornado em `ABACATEPAY_PUBLISH_PRODUCT_ID`.
+4. Configure a URL do webhook no painel:
    `https://SEU-DOMINIO/api/webhooks/abacatepay?webhookSecret=SEGREDO`
    (o `SEGREDO` precisa bater com `ABACATEPAY_WEBHOOK_SECRET`).
-4. Opcional: ative o HMAC `X-Webhook-Signature` setando
+5. Opcional: ative o HMAC `X-Webhook-Signature` setando
    `ABACATEPAY_WEBHOOK_SIGNING_SECRET` (deixe vazio até confirmar o digest na doc).
 
 ### 0.3 Variáveis de ambiente (Vercel → Project → Settings → Environment Variables)
 Veja `.env.example`. Necessárias:
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (server-only)
-- `ABACATEPAY_API_KEY`, `ABACATEPAY_WEBHOOK_SECRET`
+- `ABACATEPAY_API_KEY`, `ABACATEPAY_PUBLISH_PRODUCT_ID`, `ABACATEPAY_WEBHOOK_SECRET`
 - `ABACATEPAY_WEBHOOK_SIGNING_SECRET` (opcional)
 - `APP_URL` = URL pública real (ex.: `https://vows.com.br`)
 
