@@ -12,7 +12,6 @@ const PAID_EVENTS = new Set(["billing.paid", "checkout.completed", "transparent.
 export type CreatePublishChargeInput = {
   weddingId: string;
   appUrl: string;
-  customer?: { name?: string; email?: string };
 };
 
 export type PublishCharge = {
@@ -58,8 +57,10 @@ export async function createPublishCharge(input: CreatePublishChargeInput): Prom
         }
       ],
       returnUrl: `${input.appUrl}/dashboard`,
-      completionUrl: `${input.appUrl}/dashboard?publicacao=paga`,
-      ...(input.customer ? { customer: input.customer } : {})
+      completionUrl: `${input.appUrl}/dashboard?publicacao=paga`
+      // O checkout hospedado coleta os dados do pagador (nome, e-mail, CPF,
+      // telefone). Não enviamos `customer` parcial: a AbacatePay exige os 4
+      // campos (name, email, cellphone, taxId) e rejeitaria com 422.
     })
   });
 
@@ -67,6 +68,7 @@ export async function createPublishCharge(input: CreatePublishChargeInput): Prom
   const data = (json?.data ?? json ?? {}) as NonNullable<BillingResponse["data"]>;
 
   if (!response.ok || !data.url || !data.id) {
+    console.error("AbacatePay billing/create falhou", response.status, JSON.stringify(json));
     throw new Error(`AbacatePay não retornou uma cobrança válida (HTTP ${response.status}).`);
   }
 

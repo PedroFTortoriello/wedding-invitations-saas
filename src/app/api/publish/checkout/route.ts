@@ -48,11 +48,7 @@ export async function POST(request: Request) {
     }
 
     const appUrl = process.env.APP_URL || new URL(request.url).origin;
-    const charge = await createPublishCharge({
-      weddingId,
-      appUrl,
-      customer: wedding.couple_names ? { name: wedding.couple_names } : undefined
-    });
+    const charge = await createPublishCharge({ weddingId, appUrl });
 
     await admin.from("publish_payments").insert({
       wedding_id: weddingId,
