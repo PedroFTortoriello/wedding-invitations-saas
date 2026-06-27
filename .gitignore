@@ -46,3 +46,6 @@ Thumbs.db
 /index.html1
 /script.js
 /styles.css
+
+# Local project-instructions file (not part of the product)
+CLAUDE.md
