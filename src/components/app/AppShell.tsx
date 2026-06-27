@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { platformName } from "@/lib/platform-data";
+import { SignOutButton } from "@/components/app/SignOutButton";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -45,6 +46,7 @@ export function AppShell({ children, title, subtitle, active }: AppShellProps) {
         >
           Ver site publicado
         </Link>
+        <SignOutButton />
       </aside>
       <div className="lg:pl-72">
         <header className="sticky top-0 z-30 border-b border-[#5b6842]/10 bg-[#f7f0e5]/88 px-4 py-4 backdrop-blur md:px-8">
