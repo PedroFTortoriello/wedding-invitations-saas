@@ -1,15 +1,25 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
 /**
- * Publish gate: a wedding can only go live AFTER the publishing fee is confirmed
- * paid (weddings.publish_paid_at, set exclusively by the AbacatePay webhook).
- * Returns 402 Payment Required if the fee is unpaid.
+ * Publica o site: só é permitido DEPOIS que a taxa foi confirmada paga
+ * (weddings.publish_paid_at, gravado exclusivamente pelo webhook da AbacatePay).
+ * Exige sessão e posse. Retorna 402 se a taxa estiver em aberto.
  */
 export async function POST(request: Request) {
   try {
+    const supabase = await createClient();
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Faça login para publicar." }, { status: 401 });
+    }
+
     const body = (await request.json()) as { weddingSiteId?: string };
     const weddingId = String(body.weddingSiteId || "");
 
@@ -17,15 +27,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Informe o site do casamento." }, { status: 400 });
     }
 
-    const supabase = createAdminClient();
-    const { data: wedding, error } = await supabase
+    const admin = createAdminClient();
+    const { data: wedding, error } = await admin
       .from("weddings")
-      .select("id, status, publish_paid_at")
+      .select("id, owner_id, status, publish_paid_at")
       .eq("id", weddingId)
       .single();
 
     if (error || !wedding) {
       return NextResponse.json({ error: "Casamento não encontrado." }, { status: 404 });
+    }
+
+    if (wedding.owner_id !== user.id) {
+      return NextResponse.json({ error: "Sem permissão para este site." }, { status: 403 });
     }
 
     if (!wedding.publish_paid_at) {
@@ -35,7 +49,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { error: updateError } = await supabase
+    const { error: updateError } = await admin
       .from("weddings")
       .update({ status: "published" })
       .eq("id", weddingId);

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getOwnedWeddingRow } from "@/lib/wedding-server";
 import { rowToWeddingSite } from "@/lib/wedding";
 import { formatCurrency } from "@/lib/platform-data";
+import { PublishPanel } from "./PublishPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,12 @@ function daysUntil(iso: string): number {
   return Math.max(0, Math.ceil((target - Date.now()) / 86400000));
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams
+}: {
+  searchParams: Promise<{ publicacao?: string }>;
+}) {
+  const { publicacao } = await searchParams;
   const row = await getOwnedWeddingRow();
   if (!row) {
     redirect("/onboarding");
@@ -67,6 +73,12 @@ export default async function DashboardPage() {
       subtitle="Acompanhe publicação, convidados, presentes e personalização do site em um painel único."
       active="dashboard"
     >
+      {publicacao === "paga" && !isPublished ? (
+        <p className="mb-6 rounded-2xl bg-forest/10 px-4 py-3 text-sm font-bold text-forest">
+          Pagamento recebido. Clique em “Publicar agora” para colocar seu site no ar.
+        </p>
+      ) : null}
+
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Status do site" value={isPublished ? "Publicado" : "Rascunho"} helper={isPublished ? "Seu link público está ativo." : "Publique para deixar o site no ar."} />
         <MetricCard label="Contagem regressiva" value={`${daysLeft} dias`} helper={site.weddingDateLabel} />
@@ -95,6 +107,7 @@ export default async function DashboardPage() {
               Editar site
             </Link>
           </div>
+          <PublishPanel weddingId={row.id} status={site.status} paid={Boolean(row.publish_paid_at)} />
         </article>
 
         <article className="card-forest p-6 text-on-forest">
