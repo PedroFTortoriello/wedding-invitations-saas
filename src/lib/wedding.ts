@@ -1,4 +1,4 @@
-import { demoWedding } from "@/lib/demo-wedding";
+import { romanticImages } from "@/lib/demo-wedding";
 import type { Database, Json } from "@/lib/supabase/types";
 import type { PixKeyType, WeddingSite } from "@/types/wedding";
 
@@ -52,13 +52,67 @@ export function isTemplateId(value: string): value is WeddingSite["templateId"] 
   return (TEMPLATE_IDS as string[]).includes(value);
 }
 
-/** Conteúdo-base (do demo) sem as colunas — usado como fallback e como semente. */
+/**
+ * Conteúdo inicial NEUTRO de um casamento novo — sem dados do casal-demo.
+ * Copy genérica e editável, imagens de placeholder e zero cotas de presente.
+ * O casal preenche tudo no editor / na gestão de presentes.
+ */
+const STARTER_CONTENT: WeddingContent = {
+  templateId: "classico-romantico",
+  templateName: "Clássico Romântico",
+  monogram: "♥",
+  weddingDate: "",
+  weddingDateLabel: "Em breve",
+  weddingTime: "",
+  heroImage: romanticImages.luxuryVenue,
+  floatingImages: [],
+  invitationWords: ["um", "convite", "para", "celebrar", "o", "amor"],
+  welcomeText:
+    "Estamos felizes em compartilhar este momento com vocês. Em breve, todos os detalhes da nossa celebração estarão aqui.",
+  storyEyebrow: "nossa história",
+  storyTitle: "Como tudo começou",
+  storyMoments: [
+    { id: "encontro", number: "I", title: "O encontro", headline: "", description: "Onde dois caminhos viraram um só." },
+    { id: "escolha", number: "II", title: "A escolha", headline: "", description: "O sim que nasce dos dias comuns." },
+    {
+      id: "celebracao",
+      number: "III",
+      title: "A celebração",
+      headline: "",
+      description: "O convite para celebrar ao lado de quem amamos."
+    }
+  ],
+  detailsTitle: "Detalhes do grande dia",
+  detailsSubtitle: "Local, horário e tudo o que seus convidados precisam saber.",
+  locations: [{ id: "principal", title: "Local", venue: "", city: "", note: "", mapUrl: "", image: romanticImages.reception }],
+  detailCards: [],
+  gifts: [],
+  gallery: [],
+  finalText: "Mal podemos esperar para celebrar esse dia com você.",
+  footerImage: romanticImages.ceremonyAisle,
+  footerText: "com amor, os noivos.",
+  rsvp: {
+    enabled: true,
+    title: "Confirme sua presença",
+    subtitle: "RSVP",
+    allowCompanions: true,
+    successMessage: "Presença confirmada. Será uma alegria ter você com a gente."
+  },
+  theme: {
+    background: "#f8f3ea",
+    surface: "#fffaf4",
+    text: "#2e2722",
+    muted: "#73685f",
+    primary: "#7b8063",
+    primaryDark: "#3e4230",
+    primarySoft: "#e6e2d5"
+  },
+  seo: { title: "Nosso casamento", description: "Site do nosso casamento." }
+};
+
+/** Cópia profunda do conteúdo inicial neutro — fallback e semente. */
 function baseContent(): WeddingContent {
-  const content: Record<string, unknown> = { ...demoWedding };
-  for (const key of COLUMN_KEYS) {
-    delete content[key];
-  }
-  return content as WeddingContent;
+  return JSON.parse(JSON.stringify(STARTER_CONTENT)) as WeddingContent;
 }
 
 /** Iniciais do casal -> monograma "P&R". */
