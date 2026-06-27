@@ -301,19 +301,25 @@
 }
 
 /*
- * Scroll-reveal — strictly enhances an already-visible default. The opacity:0
- * from-state of hero-rise only exists where scroll-driven animations are
- * supported AND motion is allowed; every other renderer (older browsers,
- * crawlers, prefers-reduced-motion) shows the content immediately, so a
- * section can never ship blank.
+ * Scroll-reveal (P7) — IntersectionObserver-driven, centralized via
+ * <RevealObserver/>. Any element with data-reveal fades + rises when it
+ * scrolls into view. The hidden state is gated behind `.js` (added pre-paint)
+ * AND prefers-reduced-motion: no-preference, so without JS, under reduced
+ * motion, or for crawlers the content is always visible — never shipped blank.
+ * Stagger lists/cards with an inline transition-delay per item.
  */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .reveal {
-      animation: hero-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 35%;
-    }
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-reveal] {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+  }
+  .js [data-reveal][data-shown="true"] {
+    opacity: 1;
+    transform: none;
   }
 }
 

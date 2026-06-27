@@ -95,14 +95,16 @@ export default function LandingPage() {
 
       <section id="recursos" className="section-tight bg-forest text-on-forest">
         <div className="wrap">
-          <header className="measure">
+          <header className="measure" data-reveal>
             <p className="t-eyebrow text-on-forest/70">Por que a Vows</p>
             <h2 className="mt-4 t-h1 italic">Tudo o que um site de casamento precisa.</h2>
           </header>
-          <div className="reveal mt-12 grid gap-5 md:grid-cols-4">
+          <div className="mt-12 grid gap-5 md:grid-cols-4">
             {benefits.map((benefit, index) => (
               <article
                 key={benefit.title}
+                data-reveal
+                style={{ transitionDelay: `${index * 70}ms` }}
                 className="rounded-2xl border border-on-forest/15 bg-on-forest/[0.06] p-7"
               >
                 <span className="t-eyebrow text-gold">{String(index + 1).padStart(2, "0")}</span>
@@ -116,7 +118,7 @@ export default function LandingPage() {
 
       <section id="templates" className="section bg-bg">
         <div className="wrap grid gap-10 md:grid-cols-[0.9fr_1.1fr] md:items-center">
-          <div>
+          <div data-reveal>
             <p className="t-eyebrow text-ink-soft">Primeiro modelo oficial</p>
             <h2 className="mt-4 t-display italic">Clássico Romântico</h2>
             <p className="mt-6 measure t-lead text-ink">
@@ -130,7 +132,7 @@ export default function LandingPage() {
               Abrir demonstração romântica
             </Link>
           </div>
-          <div className="reveal grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-3" data-reveal>
             {[romanticImages.toast, romanticImages.hands, romanticImages.ceremonyAisle].map(
               (src, index) => (
                 <div key={src} className={index === 1 ? "pt-10" : ""}>
@@ -152,7 +154,8 @@ export default function LandingPage() {
         <div className="wrap grid gap-10 md:grid-cols-[1.05fr_0.95fr] md:items-center">
           <Link
             href="/modelo/civil-minimalista/pedro-e-rafaela"
-            className="reveal group overflow-hidden rounded-[2rem] bg-[#020202] p-3 shadow-[0_28px_90px_rgba(2,2,2,0.22)]"
+            data-reveal
+            className="group overflow-hidden rounded-[2rem] bg-[#020202] p-3 shadow-[0_28px_90px_rgba(2,2,2,0.22)]"
           >
             <div className="relative aspect-[16/10] overflow-hidden rounded-[1.45rem]">
               <Image
@@ -169,7 +172,10 @@ export default function LandingPage() {
               </div>
             </div>
           </Link>
-          <div className="md:relative md:z-10 md:-ml-16 md:rounded-3xl md:bg-bg md:p-10 md:shadow-[0_28px_80px_rgba(45,43,37,0.16)]">
+          <div
+            data-reveal
+            className="md:relative md:z-10 md:-ml-16 md:rounded-3xl md:bg-bg md:p-10 md:shadow-[0_28px_80px_rgba(45,43,37,0.16)]"
+          >
             <p className="t-eyebrow text-ink-soft">Novo modelo de site</p>
             <h2 className="mt-4 t-display italic">Civil Minimalista</h2>
             <p className="mt-6 measure t-lead text-ink">
@@ -188,7 +194,7 @@ export default function LandingPage() {
 
       <section className="section bg-bg">
         <div className="wrap grid gap-10 md:grid-cols-[0.95fr_1.05fr] md:items-center">
-          <div>
+          <div data-reveal>
             <p className="t-eyebrow text-ink-soft">Novo modelo jardim</p>
             <h2 className="mt-4 t-display italic">Jardim Clássico</h2>
             <p className="mt-6 measure t-lead text-ink">
@@ -204,7 +210,8 @@ export default function LandingPage() {
           </div>
           <Link
             href="/modelo/garden-classico/pedro-e-rafaela"
-            className="reveal group overflow-hidden rounded-[2rem] bg-[#cdc1ab] p-3 shadow-[0_28px_90px_rgba(109,96,78,0.22)]"
+            data-reveal
+            className="group overflow-hidden rounded-[2rem] bg-[#cdc1ab] p-3 shadow-[0_28px_90px_rgba(109,96,78,0.22)]"
           >
             <div className="relative aspect-[4/5] overflow-hidden rounded-[1.45rem]">
               <Image
@@ -226,12 +233,12 @@ export default function LandingPage() {
 
       <section id="receita" className="section-tight bg-forest text-on-forest">
         <div className="wrap grid gap-10 md:grid-cols-[0.9fr_1.1fr] md:items-center">
-          <div>
+          <div data-reveal>
             <p className="t-eyebrow text-on-forest/70">{cashGiftRevenueModel.highlight}</p>
             <h2 className="mt-4 t-display italic">{cashGiftRevenueModel.title}</h2>
             <p className="mt-6 measure t-lead text-on-forest/90">{cashGiftRevenueModel.subtitle}</p>
           </div>
-          <div className="grid content-center gap-3">
+          <div className="grid content-center gap-3" data-reveal>
             {cashGiftRevenueModel.features.map((feature) => (
               <article
                 key={feature}

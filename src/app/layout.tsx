@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { RevealObserver } from "@/components/motion/RevealObserver";
 
 export const metadata: Metadata = {
   title: {
@@ -15,8 +16,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
-      <body>{children}</body>
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body>
+        {/* Pre-paint flag so scroll-reveal only hides content when JS is live (no blank ship). */}
+        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+        {children}
+        <RevealObserver />
+      </body>
     </html>
   );
 }
