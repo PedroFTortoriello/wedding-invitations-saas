@@ -22,11 +22,11 @@ export function AdminShell({ children, title, subtitle, active }: AdminShellProp
       <header className="border-b border-white/10 px-4 py-5 md:px-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div>
-            <Link href="/" className="font-serif text-4xl italic">
+            <Link href="/" className="t-h2 italic">
               {platformName} Admin
             </Link>
-            <h1 className="mt-5 font-serif text-6xl italic leading-none">{title}</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-on-forest">{subtitle}</p>
+            <h1 className="mt-5 t-h1 italic">{title}</h1>
+            <p className="mt-3 max-w-2xl t-lead text-on-forest">{subtitle}</p>
           </div>
           <nav className="flex gap-2 overflow-x-auto">
             {adminNav.map((item) => (

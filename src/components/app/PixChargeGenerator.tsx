@@ -100,8 +100,8 @@ export function PixChargeGenerator({ wedding, gifts, compact = false }: PixCharg
   return (
     <section className="mt-6 grid gap-6 rounded-[1.8rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)] xl:grid-cols-[0.9fr_1.1fr]">
       <div>
-        <p className="text-xs font-black uppercase tracking-[0.28em] text-ink-soft">Gerar cobranca Pix</p>
-        <h2 className="mt-3 font-serif text-5xl italic leading-none">{compact ? "Gerar Pix" : "Presenteie em dinheiro"}</h2>
+        <p className="t-eyebrow text-ink-soft">Gerar cobranca Pix</p>
+        <h2 className="mt-3 t-h1 italic">{compact ? "Gerar Pix" : "Presenteie em dinheiro"}</h2>
         <p className="mt-4 text-sm leading-6 text-ink-soft">
           Escolha uma cota simbolica, gere o Pix copia-e-cola e mostre o QR Code para pagamento.
         </p>
@@ -178,11 +178,11 @@ export function PixChargeGenerator({ wedding, gifts, compact = false }: PixCharg
             <div className="grid gap-3 rounded-3xl bg-[#fffaf1] p-4">
               <div className="grid gap-2 sm:grid-cols-2">
                 <div>
-                  <span className="text-xs font-black uppercase tracking-[0.2em] text-ink-soft">Valor</span>
+                  <span className="t-eyebrow text-ink-soft">Valor</span>
                   <strong className="block text-lg">R$ {charge.grossAmount.toFixed(2).replace(".", ",")}</strong>
                 </div>
                 <div>
-                  <span className="text-xs font-black uppercase tracking-[0.2em] text-ink-soft">Para o casal</span>
+                  <span className="t-eyebrow text-ink-soft">Para o casal</span>
                   <strong className="block text-lg">100% via Pix</strong>
                 </div>
               </div>
@@ -213,7 +213,7 @@ export function PixChargeGenerator({ wedding, gifts, compact = false }: PixCharg
         ) : (
           <div className={`${compact ? "min-h-[22rem]" : "min-h-[28rem]"} grid place-items-center rounded-[1.2rem] border border-dashed border-[#5b6842]/20 text-center`}>
             <div className="max-w-sm p-6">
-              <p className="font-serif text-5xl italic leading-none">QR Code Pix</p>
+              <p className="t-h1 italic">QR Code Pix</p>
               <p className="mt-4 text-sm leading-6 text-ink-soft">
                 A cobranca aparece aqui com QR Code, txid e valor — 100% vai direto para o Pix do casal.
               </p>

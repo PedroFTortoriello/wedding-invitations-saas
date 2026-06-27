@@ -10,8 +10,8 @@ export default function CheckoutPage() {
     >
       <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
         <article className="rounded-[1.8rem] bg-[#354022] p-8 text-white shadow-[0_22px_70px_rgba(53,64,34,0.18)]">
-          <p className="text-xs font-black uppercase tracking-[0.32em] text-on-forest">{cashGiftRevenueModel.highlight}</p>
-          <h2 className="mt-5 font-serif text-7xl italic leading-none">{cashGiftRevenueModel.title}</h2>
+          <p className="t-eyebrow text-on-forest">{cashGiftRevenueModel.highlight}</p>
+          <h2 className="mt-5 t-display italic">{cashGiftRevenueModel.title}</h2>
           <p className="mt-5 max-w-xl text-lg leading-8 text-on-forest">{cashGiftRevenueModel.subtitle}</p>
           <ul className="mt-8 grid gap-3">
             {cashGiftRevenueModel.features.map((feature) => (
@@ -23,15 +23,15 @@ export default function CheckoutPage() {
           </ul>
         </article>
         <article className="rounded-[1.8rem] border border-[#5b6842]/12 bg-[#fffaf1] p-8 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
-          <p className="text-xs font-black uppercase tracking-[0.28em] text-ink-soft">Resumo dos presentes</p>
+          <p className="t-eyebrow text-ink-soft">Resumo dos presentes</p>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <div className="rounded-3xl bg-[#f7f0e5] p-5">
-              <span className="text-xs font-black uppercase tracking-[0.2em] text-ink-soft">Recebido</span>
-              <strong className="mt-3 block font-serif text-4xl font-normal">{formatCurrency(platformMetrics.grossCashGifts)}</strong>
+              <span className="t-eyebrow text-ink-soft">Recebido</span>
+              <strong className="mt-3 block t-h2 font-normal">{formatCurrency(platformMetrics.grossCashGifts)}</strong>
             </div>
             <div className="rounded-3xl bg-[#f7f0e5] p-5">
-              <span className="text-xs font-black uppercase tracking-[0.2em] text-ink-soft">Taxa sobre presentes</span>
-              <strong className="mt-3 block font-serif text-4xl font-normal">0%</strong>
+              <span className="t-eyebrow text-ink-soft">Taxa sobre presentes</span>
+              <strong className="mt-3 block t-h2 font-normal">0%</strong>
             </div>
           </div>
           <p className="mt-6 text-sm leading-6 text-ink-soft">
@@ -40,7 +40,7 @@ export default function CheckoutPage() {
         </article>
       </section>
       <section className="mt-6 rounded-[1.6rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
-        <p className="text-xs font-black uppercase tracking-[0.28em] text-ink-soft">Recebimentos Pix</p>
+        <p className="t-eyebrow text-ink-soft">Recebimentos Pix</p>
         <div className="mt-5 grid gap-3">
           {cashGiftTransactions.map((gift) => (
             <div key={gift.id} className="grid gap-3 rounded-3xl bg-[#f7f0e5] p-4 md:grid-cols-[1fr_auto_auto] md:items-center">

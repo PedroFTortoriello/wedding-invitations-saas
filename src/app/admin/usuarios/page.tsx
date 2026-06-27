@@ -9,10 +9,10 @@ export default function AdminUsersPage() {
           <article key={user.id} className="rounded-[1.4rem] border border-white/10 bg-white/8 p-5">
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
               <div>
-                <h2 className="font-serif text-4xl leading-none">{user.name}</h2>
+                <h2 className="t-h2">{user.name}</h2>
                 <p className="mt-2 text-sm text-on-forest">{user.email}</p>
               </div>
-              <span className="rounded-full bg-[#dfe6cc] px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-forest">
+              <span className="rounded-full bg-[#dfe6cc] px-3 py-1 t-eyebrow text-forest">
                 {user.role}
               </span>
             </div>

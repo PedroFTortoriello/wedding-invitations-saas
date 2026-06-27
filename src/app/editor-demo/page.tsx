@@ -32,7 +32,7 @@ export default function EditorDemoPage() {
     <main className="min-h-screen bg-[#f7f0e5] text-ink">
       <header className="sticky top-0 z-30 border-b border-[#5b6842]/10 bg-[#fffaf1]/90 px-4 py-4 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <Link href="/" className="font-serif text-3xl italic">
+          <Link href="/" className="t-h3 italic">
             Vows
           </Link>
           <div className="flex items-center gap-2 rounded-full bg-[#ebe2d4] p-1 md:hidden">
@@ -61,8 +61,8 @@ export default function EditorDemoPage() {
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 md:grid-cols-[25rem_1fr]">
         <aside className={`${mode === "preview" ? "hidden" : "block"} md:block`}>
           <div className="rounded-[1.5rem] border border-[#5b6842]/12 bg-[#fffaf1] p-5 shadow-[0_22px_70px_rgba(53,64,34,0.10)]">
-            <p className="text-xs font-black uppercase tracking-[0.34em] text-ink-soft">Demonstração do editor</p>
-            <h1 className="mt-3 font-serif text-5xl italic leading-none">Personalize a hero.</h1>
+            <p className="t-eyebrow text-ink-soft">Demonstração do editor</p>
+            <h1 className="mt-3 t-h1 italic">Personalize a hero.</h1>
             <p className="mt-4 text-sm leading-6 text-ink-soft">
               Nesta etapa, os campos são simulados. A próxima evolução conecta isso à configuração inicial,
               banco de dados e publicação.
@@ -137,7 +137,7 @@ export default function EditorDemoPage() {
                 </span>
               </div>
               <div className="absolute inset-x-6 bottom-10 text-center text-white">
-                <p className="mb-5 text-xs font-black uppercase tracking-[0.42em]">{dateLabel}</p>
+                <p className="mb-5 t-eyebrow">{dateLabel}</p>
                 <h2 className="mx-auto max-w-4xl font-serif text-[clamp(3.5rem,9vw,8rem)] italic leading-[0.82]">
                   {coupleNames}
                 </h2>

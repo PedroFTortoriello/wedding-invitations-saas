@@ -21,7 +21,7 @@ export default function EditorPage() {
     >
       <div className="grid gap-6 xl:grid-cols-[26rem_1fr]">
         <aside className="rounded-[1.6rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
-          <p className="text-xs font-black uppercase tracking-[0.28em] text-ink-soft">Identidade</p>
+          <p className="t-eyebrow text-ink-soft">Identidade</p>
           <div className="mt-6 grid gap-4">
             <label className="grid gap-2 text-sm font-bold text-ink-soft">
               Nomes
@@ -46,10 +46,10 @@ export default function EditorPage() {
             <article key={title} className="rounded-[1.3rem] border border-[#5b6842]/12 bg-[#fffaf1] p-5 shadow-[0_14px_42px_rgba(53,64,34,0.06)]">
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <h2 className="font-serif text-4xl leading-none">{title}</h2>
+                  <h2 className="t-h2">{title}</h2>
                   <p className="mt-2 text-sm leading-6 text-ink-soft">{description}</p>
                 </div>
-                <span className="rounded-full bg-[#5b6842]/12 px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-forest">
+                <span className="rounded-full bg-[#5b6842]/12 px-3 py-1 t-eyebrow text-forest">
                   {status}
                 </span>
               </div>

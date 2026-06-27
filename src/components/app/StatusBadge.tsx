@@ -19,7 +19,7 @@ export function StatusBadge({ status }: StatusBadgeProps) {
 
   return (
     <span
-      className={`inline-flex rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.18em] ${
+      className={`inline-flex rounded-full px-3 py-1 t-eyebrow ${
         positive
           ? "bg-[#5b6842]/14 text-forest"
           : warning

@@ -26,8 +26,8 @@ export default function DashboardPage() {
         <article className="rounded-[1.6rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.28em] text-ink-soft">Site publicado</p>
-              <h2 className="mt-3 font-serif text-6xl italic leading-none">{demoWedding.coupleNames}</h2>
+              <p className="t-eyebrow text-ink-soft">Site publicado</p>
+              <h2 className="mt-3 t-h1 italic">{demoWedding.coupleNames}</h2>
               <p className="mt-4 max-w-2xl text-sm leading-6 text-ink-soft">
                 O modelo Clássico Romântico está renderizando dados dinâmicos e pronto para evoluir para banco real.
               </p>
@@ -46,8 +46,8 @@ export default function DashboardPage() {
         </article>
 
         <article className="rounded-[1.6rem] border border-[#5b6842]/12 bg-[#354022] p-6 text-white shadow-[0_18px_52px_rgba(53,64,34,0.15)]">
-          <p className="text-xs font-black uppercase tracking-[0.28em] text-on-forest">Presentes em dinheiro</p>
-          <h2 className="mt-3 font-serif text-5xl leading-none">{cashGiftRevenueModel.highlight}</h2>
+          <p className="t-eyebrow text-on-forest">Presentes em dinheiro</p>
+          <h2 className="mt-3 t-h1">{cashGiftRevenueModel.highlight}</h2>
           <p className="mt-4 text-sm leading-6 text-on-forest">
             Recebidos {formatCurrency(platformMetrics.grossCashGifts)} em presentes Pix — 100% para o casal, direto na chave Pix do casal.
           </p>

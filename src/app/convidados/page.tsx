@@ -12,8 +12,8 @@ export default function GuestsPage() {
       <section className="rounded-[1.6rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.28em] text-ink-soft">Lista RSVP</p>
-            <h2 className="mt-3 font-serif text-5xl leading-none">Controle de presença</h2>
+            <p className="t-eyebrow text-ink-soft">Lista RSVP</p>
+            <h2 className="mt-3 t-h1">Controle de presença</h2>
           </div>
           <button className="rounded-full bg-[#354022] px-5 py-3 text-sm font-black text-white" type="button">
             Adicionar convidado
@@ -21,7 +21,7 @@ export default function GuestsPage() {
         </div>
         <div className="mt-6 overflow-x-auto">
           <table className="w-full min-w-[760px] border-separate border-spacing-y-3 text-left">
-            <thead className="text-xs font-black uppercase tracking-[0.2em] text-ink-soft">
+            <thead className="t-eyebrow text-ink-soft">
               <tr>
                 <th className="px-4">Nome</th>
                 <th className="px-4">Contato</th>

@@ -9,7 +9,7 @@ export default function AdminTemplatesPage() {
           <article key={template.id} className="overflow-hidden rounded-[1.6rem] border border-white/10 bg-white/8">
             <img src={template.previewImage} alt="" className="h-80 w-full object-cover" />
             <div className="p-6">
-              <h2 className="font-serif text-5xl leading-none">{template.name}</h2>
+              <h2 className="t-h1">{template.name}</h2>
               <p className="mt-3 text-sm leading-6 text-on-forest">{template.description}</p>
             </div>
           </article>

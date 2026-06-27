@@ -22,7 +22,7 @@ export default function OnboardingPage() {
     >
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
         <section className="rounded-[1.6rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
-          <p className="text-xs font-black uppercase tracking-[0.28em] text-ink-soft">Etapas</p>
+          <p className="t-eyebrow text-ink-soft">Etapas</p>
           <div className="mt-6 grid gap-3">
             {steps.map((step, index) => (
               <div key={step} className="flex items-center gap-4 rounded-2xl bg-[#f7f0e5] p-4">
@@ -35,7 +35,7 @@ export default function OnboardingPage() {
           </div>
         </section>
         <section className="rounded-[1.6rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
-          <p className="text-xs font-black uppercase tracking-[0.28em] text-ink-soft">Formulario mockado</p>
+          <p className="t-eyebrow text-ink-soft">Formulario mockado</p>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             {[
               ["Nome dos noivos", demoWedding.coupleNames],
@@ -52,8 +52,8 @@ export default function OnboardingPage() {
             ))}
           </div>
           <div className="mt-5 rounded-3xl bg-[#f7f0e5] p-5">
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-ink-soft">Modelo de presentes</p>
-            <h2 className="mt-3 font-serif text-4xl leading-none">{cashGiftRevenueModel.title}</h2>
+            <p className="t-eyebrow text-ink-soft">Modelo de presentes</p>
+            <h2 className="mt-3 t-h2">{cashGiftRevenueModel.title}</h2>
             <p className="mt-2 text-sm font-bold text-forest">{cashGiftRevenueModel.highlight}</p>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               {cashGiftRevenueModel.features.map((feature) => (
