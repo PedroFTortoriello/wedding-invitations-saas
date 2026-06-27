@@ -220,6 +220,69 @@ export const demoWedding: WeddingSite = {
       image: romanticImages.reception,
       description: "Uma cota para os domingos de café, pão quente e risadas sem pressa.",
       active: true
+    },
+    {
+      id: "jantar-estrelado",
+      title: "Jantar Estrelado",
+      price: "R$ 450,00",
+      link: "#presentes",
+      image: romanticImages.ringEditorial,
+      description: "Uma noite especial num restaurante para celebrar uma data importante.",
+      active: true
+    },
+    {
+      id: "fim-de-semana-serra",
+      title: "Fim de Semana na Serra",
+      price: "Valor livre",
+      link: "#presentes",
+      image: romanticImages.luxuryVenue,
+      description: "Frio, lareira e silêncio — uma escapada a dois sem combinar nada.",
+      active: true
+    },
+    {
+      id: "cafeteira-dos-sonhos",
+      title: "Cafeteira dos Sonhos",
+      price: "R$ 240,00",
+      link: "#presentes",
+      image: romanticImages.toast,
+      description: "Para começar todas as manhãs com um café feito em casa, do jeito certo.",
+      active: true
+    },
+    {
+      id: "plantas-para-o-lar",
+      title: "Plantas para o Lar",
+      price: "R$ 180,00",
+      link: "#presentes",
+      image: romanticImages.botanicalDetail,
+      description: "Verde nas janelas para deixar a casa nova com cara de lar.",
+      active: true
+    },
+    {
+      id: "cinema-em-casa",
+      title: "Cinema em Casa",
+      price: "R$ 520,00",
+      link: "#presentes",
+      image: romanticImages.blackWhiteWide,
+      description: "Sessão pipoca no sofá, com som bom e maratonas sem fim.",
+      active: true
+    },
+    {
+      id: "passeio-de-barco",
+      title: "Passeio de Barco",
+      price: "R$ 380,00",
+      link: "#presentes",
+      image: romanticImages.ceremonyAisle,
+      description: "Um dia no mar para celebrar a viagem que é viver a dois.",
+      active: true
+    },
+    {
+      id: "cota-dos-padrinhos",
+      title: "Cota dos Padrinhos",
+      price: "Valor livre",
+      link: "#presentes",
+      image: romanticImages.ringSoftGold,
+      description: "Um gesto de quem caminha junto desde o começo dessa história.",
+      active: true
     }
   ],
   gallery: [
