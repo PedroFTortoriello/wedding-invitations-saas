@@ -1,5 +1,5 @@
 import type { WeddingSite } from "@/types/wedding";
-import { GiftsSection } from "./GiftsSection";
+import { GiftRegistry } from "@/components/gift/GiftRegistry";
 import styles from "./classic-romantic.module.css";
 
 type CashGiftPixSectionProps = {
@@ -16,7 +16,7 @@ export function CashGiftPixSection({ wedding }: CashGiftPixSectionProps) {
           Cotas simbólicas, experiências e gestos delicados para participar do começo dessa nova fase com intenção.
         </span>
       </div>
-      <GiftsSection gifts={wedding.gifts} />
+      <GiftRegistry wedding={wedding} variant="classico" />
     </section>
   );
 }

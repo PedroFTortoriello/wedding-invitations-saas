@@ -1,0 +1,392 @@
+/*
+ * Shared gift-registry skin. All colours/radius/image-grade come from the
+ * --g-* CSS variables set per template in GiftRegistry.tsx, so the layout +
+ * Pix flow are shared while each template keeps its identity.
+ */
+
+.root {
+  width: 100%;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: clamp(14px, 1.6vw, 22px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  background: var(--g-card);
+  border: 1px solid var(--g-border);
+  border-radius: var(--g-radius);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--g-accent) 45%, var(--g-border));
+  box-shadow: 0 18px 42px color-mix(in srgb, var(--g-ink) 18%, transparent);
+}
+
+.media {
+  position: relative;
+  aspect-ratio: var(--g-aspect);
+  overflow: hidden;
+  border-radius: var(--g-img-radius);
+  background: color-mix(in srgb, var(--g-ink) 10%, transparent);
+}
+
+.image {
+  object-fit: cover;
+  filter: var(--g-img-filter);
+}
+
+.placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: color-mix(in srgb, var(--g-ink) 42%, transparent);
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-style: italic;
+  letter-spacing: 0.04em;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 6px 6px;
+}
+
+.name {
+  margin: 0;
+  color: var(--g-ink);
+  font-family: var(--font-serif);
+  font-size: clamp(1.15rem, 1.6vw, 1.45rem);
+  line-height: 1.15;
+}
+
+.desc {
+  flex: 1;
+  margin: 0;
+  color: var(--g-muted);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.price {
+  color: var(--g-price);
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+}
+
+.cta,
+.generate,
+.copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border: none;
+  border-radius: 999px;
+  padding: 0 20px;
+  background: var(--g-accent);
+  color: var(--g-on-accent);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.cta:hover,
+.generate:hover,
+.copy:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px color-mix(in srgb, var(--g-accent) 40%, transparent);
+}
+
+.cta:focus-visible,
+.generate:focus-visible,
+.copy:focus-visible,
+.close:focus-visible {
+  outline: 2px solid var(--g-accent);
+  outline-offset: 2px;
+}
+
+.generate:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ---- Pix dialog ---- */
+.dialog {
+  width: min(460px, 100%);
+  max-height: 92svh;
+  margin: auto;
+  padding: 0;
+  overflow: visible;
+  border: none;
+  background: transparent;
+  color: var(--g-ink);
+}
+
+.dialog::backdrop {
+  background: var(--g-scrim);
+  backdrop-filter: blur(3px);
+}
+
+.dialogPanel {
+  position: relative;
+  max-height: 92svh;
+  overflow-y: auto;
+  padding: clamp(22px, 4vw, 34px);
+  background: var(--g-dialog-bg);
+  border: 1px solid var(--g-border);
+  border-radius: 24px;
+  box-shadow: 0 40px 90px rgba(0, 0, 0, 0.32);
+}
+
+.close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--g-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--g-ink);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+
+.close:hover {
+  background: color-mix(in srgb, var(--g-ink) 10%, transparent);
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--g-muted);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.dialogTitle {
+  margin: 8px 0 0;
+  color: var(--g-ink);
+  font-family: var(--font-serif);
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  line-height: 1.05;
+}
+
+.badge {
+  display: inline-flex;
+  margin: 14px 0 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--g-accent) 16%, transparent);
+  color: var(--g-ink);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.form {
+  display: grid;
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.field > span {
+  color: var(--g-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.field input,
+.field textarea,
+.amountRow {
+  width: 100%;
+  border: 1px solid var(--g-border);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--g-ink) 4%, transparent);
+  color: var(--g-ink);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+}
+
+.field input,
+.field textarea {
+  min-height: 48px;
+  padding: 12px 14px;
+}
+
+.field textarea {
+  min-height: auto;
+  resize: vertical;
+}
+
+.amountRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 14px;
+}
+
+.currency {
+  color: var(--g-muted);
+  font-weight: 800;
+}
+
+.amountRow input {
+  flex: 1;
+  min-height: 48px;
+  border: none;
+  background: transparent;
+  padding: 12px 14px 12px 0;
+}
+
+.field input:focus-visible,
+.field textarea:focus-visible,
+.amountRow:focus-within {
+  outline: 2px solid var(--g-accent);
+  outline-offset: 1px;
+}
+
+.error {
+  margin: 0;
+  color: var(--g-error);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.generate {
+  width: 100%;
+}
+
+.result {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  margin-top: 22px;
+  text-align: center;
+}
+
+.qr {
+  display: grid;
+  place-items: center;
+  padding: 14px;
+  border-radius: 18px;
+  background: #fffaf1;
+}
+
+.qr svg {
+  display: block;
+  width: 100%;
+  max-width: 230px;
+  height: auto;
+}
+
+.amountPaid {
+  margin: 0;
+  color: var(--g-ink);
+  font-weight: 800;
+}
+
+.codeLabel {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+}
+
+.codeLabel > span {
+  color: var(--g-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.code {
+  width: 100%;
+  min-height: 84px;
+  padding: 12px 14px;
+  border: 1px solid var(--g-border);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--g-ink) 4%, transparent);
+  color: var(--g-ink);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  word-break: break-all;
+  resize: none;
+}
+
+.code:focus-visible {
+  outline: 2px solid var(--g-accent);
+  outline-offset: 1px;
+}
+
+.copy {
+  width: 100%;
+}
+
+.note {
+  margin: 0;
+  color: var(--g-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .cta,
+  .generate,
+  .copy,
+  .close {
+    transition: none;
+  }
+  .card:hover,
+  .cta:hover,
+  .generate:hover,
+  .copy:hover {
+    transform: none;
+  }
+}

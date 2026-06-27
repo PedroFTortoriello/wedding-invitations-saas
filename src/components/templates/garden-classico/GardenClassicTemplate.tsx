@@ -1,9 +1,6 @@
-
-"use client";
-
-import { useState } from "react";
 import Image from "next/image";
 import type { WeddingSite } from "@/types/wedding";
+import { GiftRegistry } from "@/components/gift/GiftRegistry";
 import styles from "./garden-classico.module.css";
 
 type GardenClassicTemplateProps = {
@@ -20,8 +17,6 @@ const schedule = [
 export function GardenClassicTemplate({
   wedding
 }: GardenClassicTemplateProps) {
-  const [openGifts, setOpenGifts] = useState(false);
-
   const location = wedding.locations[0];
 
   const gallery = [
@@ -29,10 +24,6 @@ export function GardenClassicTemplate({
     wedding.gallery[3]?.src,
     wedding.gallery[4]?.src
   ].filter(Boolean);
-
-  const activeGifts = wedding.gifts.filter(
-    (gift) => gift.active
-  );
 
   return (
     <main className={styles.template}>
@@ -181,153 +172,13 @@ export function GardenClassicTemplate({
           <h2>Lista de presentes</h2>
 
           <span>
-            Escolha uma sugestão especial
-            para o casal.
+            Escolha uma cota e presenteie via Pix — direto na chave do
+            casal, sem taxas.
           </span>
-
-          <button
-            type="button"
-            className={styles.giftsButton}
-            onClick={() =>
-              setOpenGifts(true)
-            }
-          >
-            Ver lista completa
-          </button>
         </article>
 
-        <div className={styles.giftList}>
-          {activeGifts
-            .slice(0, 4)
-            .map((gift, index) => (
-              <a
-                data-reveal
-                style={{ transitionDelay: `${index * 70}ms` }}
-                key={gift.id}
-                href={gift.link}
-                target={
-                  gift.link.startsWith("#")
-                    ? undefined
-                    : "_blank"
-                }
-                rel={
-                  gift.link.startsWith("#")
-                    ? undefined
-                    : "noopener noreferrer"
-                }
-              >
-                {gift.image ? (
-                  <Image
-                    src={gift.image}
-                    alt=""
-                    width={320}
-                    height={220}
-                    loading="lazy"
-                  />
-                ) : null}
-
-                <div>
-                  <strong>
-                    {gift.title}
-                  </strong>
-
-                  <p>
-                    {gift.description}
-                  </p>
-                </div>
-
-                <span>{gift.price}</span>
-              </a>
-            ))}
-        </div>
+        <GiftRegistry wedding={wedding} variant="jardim" />
       </section>
-
-      {openGifts && (
-        <div
-          className={
-            styles.giftsModalOverlay
-          }
-          onClick={() =>
-            setOpenGifts(false)
-          }
-        >
-          <div
-            className={styles.giftsModal}
-            onClick={(e) =>
-              e.stopPropagation()
-            }
-          >
-            <div
-              className={
-                styles.giftsModalHeader
-              }
-            >
-              <div>
-                <p>Presentes</p>
-
-                <h3>
-                  Lista completa
-                </h3>
-              </div>
-
-              <button
-                type="button"
-                className={
-                  styles.closeModal
-                }
-                onClick={() =>
-                  setOpenGifts(false)
-                }
-              >
-                Fechar
-              </button>
-            </div>
-
-
-<div className={styles.modalGiftList}>
-  {activeGifts.map((gift) => (
-    <a
-      key={gift.id}
-      href={gift.link}
-      target={
-        gift.link.startsWith("#")
-          ? undefined
-          : "_blank"
-      }
-      rel={
-        gift.link.startsWith("#")
-          ? undefined
-          : "noopener noreferrer"
-      }
-    >
-      {gift.image ? (
-        <Image
-          src={gift.image}
-          alt=""
-          width={320}
-          height={320}
-        />
-      ) : null}
-
-      <div>
-        <strong>{gift.title}</strong>
-
-        <p>
-          {gift.description.length > 70
-            ? `${gift.description.slice(0, 70)}...`
-            : gift.description}
-        </p>
-      </div>
-
-      <span>{gift.price}</span>
-    </a>
-  ))}
-</div>
-
-
-          </div>
-        </div>
-      )}
 
       <section
         id="confirmacao"

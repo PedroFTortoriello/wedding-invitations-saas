@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { WeddingSite } from "@/types/wedding";
+import { GiftRegistry } from "@/components/gift/GiftRegistry";
 import styles from "./civil-minimalista.module.css";
 
 type CivilMinimalistTemplateProps = {
@@ -12,7 +13,6 @@ export function CivilMinimalistTemplate({ wedding }: CivilMinimalistTemplateProp
   const storyImage = wedding.gallery[6]?.src ?? wedding.heroImage;
   const portraitImage = wedding.gallery[1]?.src ?? wedding.heroImage;
   const detailImage = wedding.gallery[7]?.src ?? wedding.heroImage;
-  const activeGifts = wedding.gifts.filter((gift) => gift.active);
 
   return (
     <main className={styles.template}>
@@ -107,25 +107,9 @@ export function CivilMinimalistTemplate({ wedding }: CivilMinimalistTemplateProp
         <div className={styles.giftsIntro} data-reveal>
           <p>Presentes</p>
           <h2>Lista de presentes</h2>
-          <span>Escolha uma sugestão especial. Cada item abre em sua própria página para concluir o presente.</span>
+          <span>Escolha uma cota e presenteie via Pix — direto na chave do casal, sem taxas.</span>
         </div>
-        <div className={styles.giftCards}>
-          {activeGifts.slice(0, 4).map((gift, index) => (
-            <a
-              key={gift.id}
-              href={gift.link}
-              target={gift.link.startsWith("#") ? undefined : "_blank"}
-              rel={gift.link.startsWith("#") ? undefined : "noopener noreferrer"}
-              data-reveal
-              style={{ transitionDelay: `${index * 70}ms` }}
-            >
-              {gift.image ? <Image src={gift.image} alt="" width={360} height={260} loading="lazy" /> : null}
-              <strong>{gift.title}</strong>
-              <span>{gift.price}</span>
-              <p>{gift.description}</p>
-            </a>
-          ))}
-        </div>
+        <GiftRegistry wedding={wedding} variant="civil" />
       </section>
 
       <section className={styles.finalCta}>

@@ -144,7 +144,7 @@ export const demoWedding: WeddingSite = {
       id: "lua-de-mel-portugal",
       title: "Lua de Mel em Portugal",
       price: "Valor livre",
-      link: "https://www.google.com/search?q=lua+de+mel+portugal",
+      link: "#presentes",
       image: romanticImages.toast,
       description: "Uma contribuição para os dias de descanso, vinho e paisagens depois da festa.",
       active: true
@@ -153,7 +153,7 @@ export const demoWedding: WeddingSite = {
       id: "primeiro-jantar",
       title: "Primeiro Jantar em Casa",
       price: "R$ 280,00",
-      link: "https://www.google.com/search?q=jantar+especial+casal",
+      link: "#presentes",
       image: romanticImages.reception,
       description: "Para inaugurar a casa nova com uma mesa bonita e uma noite sem pressa.",
       active: true
@@ -162,7 +162,7 @@ export const demoWedding: WeddingSite = {
       id: "memorias-da-viagem",
       title: "Memórias da Viagem",
       price: "R$ 420,00",
-      link: "https://www.google.com/search?q=experiencias+lua+de+mel",
+      link: "#presentes",
       image: romanticImages.blackWhiteWide,
       description: "Um passeio, uma foto impressa e uma lembrança para levar para a vida.",
       active: true
@@ -171,7 +171,7 @@ export const demoWedding: WeddingSite = {
       id: "bar-de-espumantes",
       title: "Brinde Especial",
       price: "R$ 190,00",
-      link: "https://www.google.com/search?q=espumante+presente+casamento",
+      link: "#presentes",
       image: romanticImages.ringSoftGold,
       description: "Uma cota simbólica para brindar os próximos capítulos com quem a gente ama.",
       active: true
@@ -180,7 +180,7 @@ export const demoWedding: WeddingSite = {
       id: "valor-livre",
       title: "Presente Livre",
       price: "Valor livre",
-      link: "https://www.google.com/search?q=presente+de+casamento",
+      link: "#presentes",
       image: romanticImages.botanicalDetail,
       description: "Escolha o valor e deixe um carinho do seu jeito para o casal.",
       active: true

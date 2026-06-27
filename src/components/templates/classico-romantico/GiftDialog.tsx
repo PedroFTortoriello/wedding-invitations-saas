@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { WeddingDetailCard, WeddingSite } from "@/types/wedding";
-import { GiftsSection } from "./GiftsSection";
+import { GiftRegistry } from "@/components/gift/GiftRegistry";
 import { LocationSection } from "./LocationSection";
 import styles from "./classic-romantic.module.css";
 
@@ -47,7 +47,7 @@ export function GiftDialog({ wedding, detail, onClose }: GiftDialogProps) {
         <h2 id="detail-title">{detail?.title ?? "Detalhes"}</h2>
         <p className={styles["detail-body"]}>{detail?.body ?? "Mais informações podem ser adicionadas aqui."}</p>
         {isLocation && wedding.locations[0] ? <LocationSection location={wedding.locations[0]} /> : null}
-        {isGiftList ? <GiftsSection gifts={wedding.gifts} /> : null}
+        {isGiftList ? <GiftRegistry wedding={wedding} variant="classico" /> : null}
       </form>
     </dialog>
   );
