@@ -114,6 +114,30 @@
   }
 }
 
+/*
+ * Hero entrance — staggered fade + rise. Auto-plays on load (no JS).
+ * Stagger via [animation-delay:*] utilities in the markup. `both` fill keeps
+ * each element at the from-state until its delay, then settles visible.
+ */
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.hero-rise {
+  animation: hero-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-rise {
+    animation: none;
+  }
+}
+
 * {
   box-sizing: border-box;
 }

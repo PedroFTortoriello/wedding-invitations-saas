@@ -44,28 +44,29 @@ export default function LandingPage() {
         </nav>
       </header>
 
-      <section className="relative mx-auto grid min-h-screen max-w-full items-center gap-12 px-5 pb-20 pt-32 md:grid-cols-[1fr_0.82fr] md:px-8">
-        <div className="absolute inset-x-0 top-0 -z-0 h-[44rem] bg-[radial-gradient(circle_at_24%_12%,rgba(91,104,66,0.18),transparent_34rem),radial-gradient(circle_at_80%_18%,rgba(220,181,142,0.28),transparent_28rem)]" />
-        <div className="relative z-10">
-          <p className="mb-6 t-eyebrow text-ink-soft">
+      <section className="relative grid grid-cols-1 overflow-hidden md:min-h-[100svh] md:grid-cols-2 md:items-stretch">
+        <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_22%_28%,rgba(91,104,66,0.16),transparent_40rem),radial-gradient(circle_at_82%_12%,rgba(220,181,142,0.24),transparent_32rem)]" />
+
+        <div className="relative z-10 flex flex-col justify-center px-5 pb-12 pt-28 md:pb-16 md:pl-8 md:pr-12 md:pt-24 lg:pl-16">
+          <p className="hero-rise [animation-delay:0ms] t-eyebrow text-ink-soft">
             Sites premium para casamentos
           </p>
-<h1 className="t-display max-w-4xl italic">
-  Um site de casamento que faz seus convidados sentirem o evento antes mesmo do grande dia.
-</h1>
-          <p className="mt-8 max-w-2xl t-lead text-ink">
-          Layouts inspirados em revistas de casamento de luxo, com tipografia refinada, fotografia em destaque e uma estética cinematográfica.
+          <h1 className="hero-rise mt-6 max-w-xl t-display italic [animation-delay:80ms]">
+            Um site de casamento que faz seus convidados sentirem o evento antes mesmo do grande dia.
+          </h1>
+          <p className="hero-rise mt-7 max-w-xl t-lead text-ink [animation-delay:160ms]">
+            Layouts inspirados em revistas de casamento de luxo, com tipografia refinada, fotografia em destaque e uma estética cinematográfica.
           </p>
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+          <div className="hero-rise mt-9 flex flex-col gap-3 [animation-delay:240ms] sm:flex-row">
             <Link
               href="/cadastro"
-              className="inline-flex min-h-14 items-center justify-center rounded-full bg-[#354022] px-8 text-base font-black !text-white"
+              className="inline-flex min-h-14 items-center justify-center rounded-full bg-forest px-8 text-base font-black !text-on-forest transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(44,58,36,0.3)]"
             >
               Criar meu site
             </Link>
             <Link
               href="/casamento/pedro-e-rafaela"
-              className="inline-flex min-h-14 items-center justify-center rounded-full border border-[#5b6842]/20 bg-white/45 px-8 text-base font-black text-forest"
+              className="inline-flex min-h-14 items-center justify-center rounded-full border border-forest/25 bg-white/50 px-8 text-base font-black text-forest transition-colors duration-200 hover:bg-white/80"
             >
               Ver demonstração
             </Link>
@@ -74,21 +75,20 @@ export default function LandingPage() {
 
         <Link
           href="/casamento/pedro-e-rafaela"
-          className="relative z-10 mx-auto block w-full max-w-[28rem] rounded-[2rem] border border-white/70 bg-[#fffaf1] p-3 shadow-[0_32px_90px_rgba(53,64,34,0.22)] transition duration-500 hover:-translate-y-2"
+          className="hero-rise group relative block min-h-[60svh] overflow-hidden [animation-delay:320ms] md:min-h-0"
         >
-          <div className="overflow-hidden rounded-[1.45rem]">
-            <Image
-              src={demoWedding.heroImage}
-              alt="Prévia do modelo Clássico Romântico"
-              width={900}
-              height={1200}
-              priority
-              className="aspect-[0.78] w-full object-cover"
-            />
-          </div>
-          <div className="absolute -bottom-7 left-8 right-8 rounded-3xl border border-[#5b6842]/10 bg-[#fffaf1]/95 p-5 shadow-2xl backdrop-blur">
-            <p className="t-eyebrow text-ink-soft">Modelo</p>
-            <h2 className="mt-2 t-h2 italic">Clássico Romântico</h2>
+          <Image
+            src={demoWedding.heroImage}
+            alt="Prévia do modelo Clássico Romântico"
+            fill
+            priority
+            sizes="(min-width: 768px) 50vw, 100vw"
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+          />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent md:bg-gradient-to-l md:from-black/45 md:via-black/5 md:to-transparent" />
+          <div className="absolute bottom-7 left-7 right-7 md:bottom-9 md:left-9 md:right-9">
+            <p className="t-eyebrow text-on-forest/85">Modelo</p>
+            <h2 className="mt-2 t-h2 italic text-on-forest">Clássico Romântico</h2>
           </div>
         </Link>
       </section>
