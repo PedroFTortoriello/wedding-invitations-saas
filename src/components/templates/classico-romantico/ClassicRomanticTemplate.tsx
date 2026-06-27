@@ -198,7 +198,7 @@ export function ClassicRomanticTemplate({ wedding }: ClassicRomanticTemplateProp
         <FooterSection wedding={wedding} />
       </main>
 
-      <RSVPDialog config={wedding.rsvp} open={rsvpOpen} onClose={() => setRsvpOpen(false)} />
+      <RSVPDialog config={wedding.rsvp} slug={wedding.slug} open={rsvpOpen} onClose={() => setRsvpOpen(false)} />
       <GiftDialog wedding={wedding} detail={activeDetail} onClose={() => setActiveDetail(null)} />
       <LightboxDialog image={lightboxImage} onClose={() => setLightboxImage(null)} />
     </div>
