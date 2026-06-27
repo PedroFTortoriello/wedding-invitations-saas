@@ -10,15 +10,15 @@ export default function AdminPackagesPage() {
     >
       <section className="grid gap-4 md:grid-cols-3">
         <article className="rounded-[1.4rem] border border-white/10 bg-white/8 p-5">
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-[#dfe6cc]">Volume de presentes</p>
+          <p className="text-xs font-black uppercase tracking-[0.24em] text-on-forest">Volume de presentes</p>
           <strong className="mt-3 block font-serif text-5xl font-normal">{formatCurrency(platformMetrics.grossCashGifts)}</strong>
         </article>
         <article className="rounded-[1.4rem] border border-white/10 bg-white/8 p-5">
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-[#dfe6cc]">Receita da plataforma</p>
+          <p className="text-xs font-black uppercase tracking-[0.24em] text-on-forest">Receita da plataforma</p>
           <strong className="mt-3 block font-serif text-5xl font-normal">{formatCurrency(platformMetrics.revenue)}</strong>
         </article>
         <article className="rounded-[1.4rem] border border-white/10 bg-white/8 p-5">
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-[#dfe6cc]">Taxa sobre presentes</p>
+          <p className="text-xs font-black uppercase tracking-[0.24em] text-on-forest">Taxa sobre presentes</p>
           <strong className="mt-3 block font-serif text-5xl font-normal">0%</strong>
         </article>
       </section>
@@ -28,7 +28,7 @@ export default function AdminPackagesPage() {
             <div className="grid gap-4 md:grid-cols-[1fr_auto_auto] md:items-center">
               <div>
                 <h2 className="font-serif text-4xl leading-none">{gift.guestName}</h2>
-                <p className="mt-2 text-sm text-white/78">{gift.message ?? "Presente em dinheiro via Pix"}</p>
+                <p className="mt-2 text-sm text-on-forest">{gift.message ?? "Presente em dinheiro via Pix"}</p>
               </div>
               <span>{formatCurrency(gift.grossAmount)}</span>
               <strong>100% para o casal</strong>

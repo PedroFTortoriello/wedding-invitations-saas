@@ -29,7 +29,7 @@ export default function EditorDemoPage() {
   }, [date]);
 
   return (
-    <main className="min-h-screen bg-[#f7f0e5] text-[#332820]">
+    <main className="min-h-screen bg-[#f7f0e5] text-ink">
       <header className="sticky top-0 z-30 border-b border-[#5b6842]/10 bg-[#fffaf1]/90 px-4 py-4 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <Link href="/" className="font-serif text-3xl italic">
@@ -42,7 +42,7 @@ export default function EditorDemoPage() {
                 type="button"
                 onClick={() => setMode(item)}
                 className={`rounded-full px-4 py-2 text-sm font-bold ${
-                  mode === item ? "bg-[#354022] text-white" : "text-[#5f5148]"
+                  mode === item ? "bg-[#354022] text-white" : "text-ink-soft"
                 }`}
               >
                 {item === "edit" ? "Editar" : "Visualizar"}
@@ -61,15 +61,15 @@ export default function EditorDemoPage() {
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 md:grid-cols-[25rem_1fr]">
         <aside className={`${mode === "preview" ? "hidden" : "block"} md:block`}>
           <div className="rounded-[1.5rem] border border-[#5b6842]/12 bg-[#fffaf1] p-5 shadow-[0_22px_70px_rgba(53,64,34,0.10)]">
-            <p className="text-xs font-black uppercase tracking-[0.34em] text-[#5b6842]">Demonstração do editor</p>
+            <p className="text-xs font-black uppercase tracking-[0.34em] text-ink-soft">Demonstração do editor</p>
             <h1 className="mt-3 font-serif text-5xl italic leading-none">Personalize a hero.</h1>
-            <p className="mt-4 text-sm leading-6 text-[#5f5148]">
+            <p className="mt-4 text-sm leading-6 text-ink-soft">
               Nesta etapa, os campos são simulados. A próxima evolução conecta isso à configuração inicial,
               banco de dados e publicação.
             </p>
 
             <div className="mt-7 grid gap-5">
-              <label className="grid gap-2 text-sm font-bold text-[#5f5148]">
+              <label className="grid gap-2 text-sm font-bold text-ink-soft">
                 Nomes
                 <input
                   value={coupleNames}
@@ -77,7 +77,7 @@ export default function EditorDemoPage() {
                   className="min-h-12 rounded-2xl border border-[#5b6842]/14 bg-white px-4 outline-none focus:border-[#5b6842]"
                 />
               </label>
-              <label className="grid gap-2 text-sm font-bold text-[#5f5148]">
+              <label className="grid gap-2 text-sm font-bold text-ink-soft">
                 Data
                 <input
                   type="date"
@@ -86,7 +86,7 @@ export default function EditorDemoPage() {
                   className="min-h-12 rounded-2xl border border-[#5b6842]/14 bg-white px-4 outline-none focus:border-[#5b6842]"
                 />
               </label>
-              <label className="grid gap-2 text-sm font-bold text-[#5f5148]">
+              <label className="grid gap-2 text-sm font-bold text-ink-soft">
                 Mensagem inicial
                 <textarea
                   value={message}
@@ -95,7 +95,7 @@ export default function EditorDemoPage() {
                   className="rounded-2xl border border-[#5b6842]/14 bg-white p-4 outline-none focus:border-[#5b6842]"
                 />
               </label>
-              <label className="grid gap-2 text-sm font-bold text-[#5f5148]">
+              <label className="grid gap-2 text-sm font-bold text-ink-soft">
                 Cor principal
                 <input
                   type="color"
@@ -105,7 +105,7 @@ export default function EditorDemoPage() {
                 />
               </label>
               <div>
-                <p className="mb-3 text-sm font-bold text-[#5f5148]">Imagem principal</p>
+                <p className="mb-3 text-sm font-bold text-ink-soft">Imagem principal</p>
                 <div className="grid grid-cols-4 gap-2">
                   {heroOptions.map((option) => (
                     <button
@@ -141,7 +141,7 @@ export default function EditorDemoPage() {
                 <h2 className="mx-auto max-w-4xl font-serif text-[clamp(3.5rem,9vw,8rem)] italic leading-[0.82]">
                   {coupleNames}
                 </h2>
-                <p className="mx-auto mt-8 max-w-2xl text-lg leading-8 text-white/82">{message}</p>
+                <p className="mx-auto mt-8 max-w-2xl text-lg leading-8 text-on-forest">{message}</p>
               </div>
             </div>
           </div>

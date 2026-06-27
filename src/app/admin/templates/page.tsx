@@ -10,7 +10,7 @@ export default function AdminTemplatesPage() {
             <img src={template.previewImage} alt="" className="h-80 w-full object-cover" />
             <div className="p-6">
               <h2 className="font-serif text-5xl leading-none">{template.name}</h2>
-              <p className="mt-3 text-sm leading-6 text-white/78">{template.description}</p>
+              <p className="mt-3 text-sm leading-6 text-on-forest">{template.description}</p>
             </div>
           </article>
         ))}

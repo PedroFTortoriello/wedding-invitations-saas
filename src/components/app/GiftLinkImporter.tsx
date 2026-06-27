@@ -109,9 +109,9 @@ export function GiftLinkImporter() {
 
   return (
     <section className="rounded-[1.6rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
-      <p className="text-xs font-black uppercase tracking-[0.28em] text-[#5b6842]">{copy.eyebrow}</p>
+      <p className="text-xs font-black uppercase tracking-[0.28em] text-ink-soft">{copy.eyebrow}</p>
       <h2 className="mt-3 font-serif text-5xl leading-none">{copy.title}</h2>
-      <p className="mt-3 text-sm leading-6 text-[#5f5148]">{copy.description}</p>
+      <p className="mt-3 text-sm leading-6 text-ink-soft">{copy.description}</p>
 
       <form
         className="mt-5 grid gap-3 md:grid-cols-[1fr_auto]"
@@ -121,7 +121,7 @@ export function GiftLinkImporter() {
         }}
       >
         <input
-          className="min-h-12 rounded-2xl border border-[#5b6842]/14 bg-white px-4 text-sm text-[#241f1b] outline-none focus:border-[#5b6842]/45"
+          className="min-h-12 rounded-2xl border border-[#5b6842]/14 bg-white px-4 text-sm text-ink outline-none focus:border-[#5b6842]/45"
           value={link}
           onChange={(event) => setLink(event.target.value)}
           placeholder={copy.placeholder}
@@ -151,41 +151,41 @@ export function GiftLinkImporter() {
           <img src={gift.image} alt="" className="aspect-square w-full rounded-2xl object-cover" />
           <div className="grid gap-3">
             <div className="flex flex-wrap items-center gap-3">
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-[#5b6842]">{copy.preview}</p>
-              <span className="rounded-full bg-[#5b6842]/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-[#354022]">
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-ink-soft">{copy.preview}</p>
+              <span className="rounded-full bg-[#5b6842]/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-forest">
                 {copy.extracted}
               </span>
             </div>
-            <label className="grid gap-1 text-xs font-black uppercase tracking-[0.16em] text-[#5f5148]">
+            <label className="grid gap-1 text-xs font-black uppercase tracking-[0.16em] text-ink-soft">
               {copy.name}
               <input
-                className="min-h-11 rounded-2xl border border-[#5b6842]/14 bg-[#fffaf1] px-3 text-base font-bold normal-case tracking-normal text-[#241f1b]"
+                className="min-h-11 rounded-2xl border border-[#5b6842]/14 bg-[#fffaf1] px-3 text-base font-bold normal-case tracking-normal text-ink"
                 value={gift.title}
                 onChange={(event) => setGift({ ...gift, title: event.target.value })}
               />
             </label>
-            <label className="grid gap-1 text-xs font-black uppercase tracking-[0.16em] text-[#5f5148]">
+            <label className="grid gap-1 text-xs font-black uppercase tracking-[0.16em] text-ink-soft">
               {copy.displayedValue}
               <input
-                className="min-h-11 rounded-2xl border border-[#5b6842]/14 bg-[#fffaf1] px-3 text-base font-bold normal-case tracking-normal text-[#354022]"
+                className="min-h-11 rounded-2xl border border-[#5b6842]/14 bg-[#fffaf1] px-3 text-base font-bold normal-case tracking-normal text-forest"
                 value={gift.price ?? ""}
                 onChange={(event) => setGift({ ...gift, price: event.target.value })}
                 placeholder="Ex.: R$ 299,90"
               />
             </label>
-            <label className="grid gap-1 text-xs font-black uppercase tracking-[0.16em] text-[#5f5148]">
+            <label className="grid gap-1 text-xs font-black uppercase tracking-[0.16em] text-ink-soft">
               {copy.image}
               <input
-                className="min-h-11 rounded-2xl border border-[#5b6842]/14 bg-[#fffaf1] px-3 text-sm normal-case tracking-normal text-[#241f1b]"
+                className="min-h-11 rounded-2xl border border-[#5b6842]/14 bg-[#fffaf1] px-3 text-sm normal-case tracking-normal text-ink"
                 value={gift.image}
                 onChange={(event) => setGift({ ...gift, image: event.target.value })}
               />
             </label>
-            {gift.description ? <p className="text-sm leading-6 text-[#5f5148]">{gift.description}</p> : null}
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#5b6842]">
+            {gift.description ? <p className="text-sm leading-6 text-ink-soft">{gift.description}</p> : null}
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-ink-soft">
               {copy.source} {gift.source}
             </p>
-            <a className="block break-all text-sm text-[#5f5148] underline" href={gift.link} target="_blank" rel="noreferrer">
+            <a className="block break-all text-sm text-ink-soft underline" href={gift.link} target="_blank" rel="noreferrer">
               {gift.link}
             </a>
           </div>

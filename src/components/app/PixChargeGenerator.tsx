@@ -100,13 +100,13 @@ export function PixChargeGenerator({ wedding, gifts, compact = false }: PixCharg
   return (
     <section className="mt-6 grid gap-6 rounded-[1.8rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)] xl:grid-cols-[0.9fr_1.1fr]">
       <div>
-        <p className="text-xs font-black uppercase tracking-[0.28em] text-[#5b6842]">Gerar cobranca Pix</p>
+        <p className="text-xs font-black uppercase tracking-[0.28em] text-ink-soft">Gerar cobranca Pix</p>
         <h2 className="mt-3 font-serif text-5xl italic leading-none">{compact ? "Gerar Pix" : "Presenteie em dinheiro"}</h2>
-        <p className="mt-4 text-sm leading-6 text-[#5f5148]">
+        <p className="mt-4 text-sm leading-6 text-ink-soft">
           Escolha uma cota simbolica, gere o Pix copia-e-cola e mostre o QR Code para pagamento.
         </p>
         <div className="mt-6 grid gap-4">
-          <label className="grid gap-2 text-sm font-bold text-[#5f5148]">
+          <label className="grid gap-2 text-sm font-bold text-ink-soft">
             Cota
             <select
               value={selectedGiftId}
@@ -120,7 +120,7 @@ export function PixChargeGenerator({ wedding, gifts, compact = false }: PixCharg
               ))}
             </select>
           </label>
-          <label className="grid gap-2 text-sm font-bold text-[#5f5148]">
+          <label className="grid gap-2 text-sm font-bold text-ink-soft">
             Seu nome
             <input
               value={guestName}
@@ -129,7 +129,7 @@ export function PixChargeGenerator({ wedding, gifts, compact = false }: PixCharg
               placeholder="Nome de quem está presenteando"
             />
           </label>
-          <label className="grid gap-2 text-sm font-bold text-[#5f5148]">
+          <label className="grid gap-2 text-sm font-bold text-ink-soft">
             Valor
             <input
               type="number"
@@ -140,7 +140,7 @@ export function PixChargeGenerator({ wedding, gifts, compact = false }: PixCharg
               className="min-h-12 rounded-2xl border border-[#5b6842]/14 bg-white px-4"
             />
           </label>
-          <label className="grid gap-2 text-sm font-bold text-[#5f5148]">
+          <label className="grid gap-2 text-sm font-bold text-ink-soft">
             Mensagem opcional
             <textarea
               value={message}
@@ -167,7 +167,7 @@ export function PixChargeGenerator({ wedding, gifts, compact = false }: PixCharg
           <div className="grid gap-4">
             <div
               className={`rounded-3xl p-4 text-sm font-black ${
-                charge.status === "paid" ? "bg-[#5b6842]/14 text-[#354022]" : "bg-[#d6a85f]/18 text-[#7a5220]"
+                charge.status === "paid" ? "bg-[#5b6842]/14 text-forest" : "bg-[#d6a85f]/18 text-[#7a5220]"
               }`}
             >
               {charge.status === "paid"
@@ -178,18 +178,18 @@ export function PixChargeGenerator({ wedding, gifts, compact = false }: PixCharg
             <div className="grid gap-3 rounded-3xl bg-[#fffaf1] p-4">
               <div className="grid gap-2 sm:grid-cols-2">
                 <div>
-                  <span className="text-xs font-black uppercase tracking-[0.2em] text-[#5b6842]">Valor</span>
+                  <span className="text-xs font-black uppercase tracking-[0.2em] text-ink-soft">Valor</span>
                   <strong className="block text-lg">R$ {charge.grossAmount.toFixed(2).replace(".", ",")}</strong>
                 </div>
                 <div>
-                  <span className="text-xs font-black uppercase tracking-[0.2em] text-[#5b6842]">Para o casal</span>
+                  <span className="text-xs font-black uppercase tracking-[0.2em] text-ink-soft">Para o casal</span>
                   <strong className="block text-lg">100% via Pix</strong>
                 </div>
               </div>
               <textarea
                 readOnly
                 value={charge.payload}
-                className="min-h-28 rounded-2xl border border-[#5b6842]/14 bg-white p-3 text-xs text-[#5f5148]"
+                className="min-h-28 rounded-2xl border border-[#5b6842]/14 bg-white p-3 text-xs text-ink-soft"
               />
               <button
                 type="button"
@@ -203,7 +203,7 @@ export function PixChargeGenerator({ wedding, gifts, compact = false }: PixCharg
                   type="button"
                   onClick={simulatePayment}
                   disabled={simulating}
-                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#5b6842]/20 bg-[#5b6842]/10 px-5 text-sm font-black text-[#354022] disabled:opacity-60"
+                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#5b6842]/20 bg-[#5b6842]/10 px-5 text-sm font-black text-forest disabled:opacity-60"
                 >
                   {simulating ? "Simulando pagamento..." : "Simular Pix pago"}
                 </button>
@@ -214,7 +214,7 @@ export function PixChargeGenerator({ wedding, gifts, compact = false }: PixCharg
           <div className={`${compact ? "min-h-[22rem]" : "min-h-[28rem]"} grid place-items-center rounded-[1.2rem] border border-dashed border-[#5b6842]/20 text-center`}>
             <div className="max-w-sm p-6">
               <p className="font-serif text-5xl italic leading-none">QR Code Pix</p>
-              <p className="mt-4 text-sm leading-6 text-[#5f5148]">
+              <p className="mt-4 text-sm leading-6 text-ink-soft">
                 A cobranca aparece aqui com QR Code, txid e valor — 100% vai direto para o Pix do casal.
               </p>
             </div>

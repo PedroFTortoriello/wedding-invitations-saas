@@ -21,17 +21,17 @@ export default function EditorPage() {
     >
       <div className="grid gap-6 xl:grid-cols-[26rem_1fr]">
         <aside className="rounded-[1.6rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
-          <p className="text-xs font-black uppercase tracking-[0.28em] text-[#5b6842]">Identidade</p>
+          <p className="text-xs font-black uppercase tracking-[0.28em] text-ink-soft">Identidade</p>
           <div className="mt-6 grid gap-4">
-            <label className="grid gap-2 text-sm font-bold text-[#5f5148]">
+            <label className="grid gap-2 text-sm font-bold text-ink-soft">
               Nomes
               <input className="min-h-12 rounded-2xl border border-[#5b6842]/14 bg-white px-4" defaultValue={demoWedding.coupleNames} />
             </label>
-            <label className="grid gap-2 text-sm font-bold text-[#5f5148]">
+            <label className="grid gap-2 text-sm font-bold text-ink-soft">
               Mensagem principal
               <textarea className="rounded-2xl border border-[#5b6842]/14 bg-white p-4" rows={5} defaultValue={demoWedding.welcomeText} />
             </label>
-            <label className="grid gap-2 text-sm font-bold text-[#5f5148]">
+            <label className="grid gap-2 text-sm font-bold text-ink-soft">
               Cor principal
               <input type="color" className="h-12 rounded-2xl border border-[#5b6842]/14 bg-white p-1" defaultValue={demoWedding.theme.primaryDark} />
             </label>
@@ -47,9 +47,9 @@ export default function EditorPage() {
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
                   <h2 className="font-serif text-4xl leading-none">{title}</h2>
-                  <p className="mt-2 text-sm leading-6 text-[#5f5148]">{description}</p>
+                  <p className="mt-2 text-sm leading-6 text-ink-soft">{description}</p>
                 </div>
-                <span className="rounded-full bg-[#5b6842]/12 px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-[#354022]">
+                <span className="rounded-full bg-[#5b6842]/12 px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-forest">
                   {status}
                 </span>
               </div>

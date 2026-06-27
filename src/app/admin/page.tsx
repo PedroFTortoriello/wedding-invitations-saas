@@ -9,7 +9,7 @@ export default function AdminDashboardPage() {
       subtitle="Visão geral para acompanhar usuários, sites publicados, presentes Pix e receita por publicação."
       active="dashboard"
     >
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4 [&_article]:bg-[#fffaf1] [&_article]:text-[#332820]">
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4 [&_article]:bg-[#fffaf1] [&_article]:text-ink">
         <MetricCard label="Usuarios" value={String(platformMetrics.totalUsers)} helper="Contas cadastradas na plataforma." />
         <MetricCard label="Casamentos" value={String(platformMetrics.totalWeddings)} helper="Sites criados no sistema." />
         <MetricCard label="Publicados" value={String(platformMetrics.publishedWeddings)} helper="Sites visíveis para convidados." />

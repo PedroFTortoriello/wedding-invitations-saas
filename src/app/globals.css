@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+/* Vows design tokens — generate Tailwind color utilities (text-ink, bg-forest, …). */
+@theme {
+  --color-ink: #1a1e15;
+  --color-ink-soft: #4a4f40;
+  --color-bg: #f3efe4;
+  --color-bg-2: #ece6d6;
+  --color-forest: #2c3a24;
+  --color-gold: #9c7b3f;
+  --color-on-forest: #f3efe4;
+}
+
 @font-face {
   font-family: "Instrument Serif";
   src: url("/assets/fonts/instrument-serif.woff2") format("woff2");
@@ -27,8 +38,18 @@
 :root {
   --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
   --font-sans: "Instrument Sans", "Segoe UI", Arial, sans-serif;
-  --background: #fbf7ef;
-  --foreground: #2f251f;
+
+  /* Same tokens as plain CSS vars, for use in CSS modules / inline styles. */
+  --ink: var(--color-ink);
+  --ink-soft: var(--color-ink-soft);
+  --bg: var(--color-bg);
+  --bg-2: var(--color-bg-2);
+  --forest: var(--color-forest);
+  --gold: var(--color-gold);
+  --on-forest: var(--color-on-forest);
+
+  --background: var(--bg);
+  --foreground: var(--ink);
 }
 
 * {

@@ -24,13 +24,13 @@ const benefits = [
 
 export default function LandingPage() {
   return (
-    <main className="overflow-hidden bg-[#fbf7ef] text-[#332820]">
+    <main className="overflow-hidden bg-[#fbf7ef] text-ink">
       <header className="fixed left-0 right-0 top-0 z-50 px-4 py-4">
         <nav className="mx-auto flex max-w-full items-center justify-between rounded-full border border-[#5b6842]/15 bg-[#fffaf1]/85 px-5 py-3 shadow-[0_18px_50px_rgba(53,64,34,0.12)] backdrop-blur">
           <Link href="/" className="font-serif text-2xl italic">
             Vows
           </Link>
-          <div className="hidden items-center gap-8 text-sm font-bold text-[#493c34] md:flex">
+          <div className="hidden items-center gap-8 text-sm font-bold text-ink md:flex">
             <a href="#templates">Modelos</a>
             <a href="#recursos">Recursos</a>
             <a href="#receita">Presentes em dinheiro</a>
@@ -47,13 +47,13 @@ export default function LandingPage() {
       <section className="relative mx-auto grid min-h-screen max-w-full items-center gap-12 px-5 pb-20 pt-32 md:grid-cols-[1fr_0.82fr] md:px-8">
         <div className="absolute inset-x-0 top-0 -z-0 h-[44rem] bg-[radial-gradient(circle_at_24%_12%,rgba(91,104,66,0.18),transparent_34rem),radial-gradient(circle_at_80%_18%,rgba(220,181,142,0.28),transparent_28rem)]" />
         <div className="relative z-10">
-          <p className="mb-6 text-xs font-black uppercase tracking-[0.42em] text-[#5b6842]">
+          <p className="mb-6 text-xs font-black uppercase tracking-[0.42em] text-ink-soft">
             Sites premium para casamentos
           </p>
 <h1 className="max-w-4xl font-serif text-[clamp(1.7rem,5.4vw,5.8rem)] italic leading-[0.88] tracking-[-0.03em]">
   Um site de casamento que faz seus convidados sentirem o evento antes mesmo do grande dia.
 </h1>
-          <p className="mt-8 max-w-2xl text-xl leading-8 text-[#51443b]">
+          <p className="mt-8 max-w-2xl text-xl leading-8 text-ink">
           Layouts inspirados em revistas de casamento de luxo, com tipografia refinada, fotografia em destaque e uma estética cinematográfica.
           </p>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
@@ -65,7 +65,7 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/casamento/pedro-e-rafaela"
-              className="inline-flex min-h-14 items-center justify-center rounded-full border border-[#5b6842]/20 bg-white/45 px-8 text-base font-black text-[#354022]"
+              className="inline-flex min-h-14 items-center justify-center rounded-full border border-[#5b6842]/20 bg-white/45 px-8 text-base font-black text-forest"
             >
               Ver demonstração
             </Link>
@@ -87,7 +87,7 @@ export default function LandingPage() {
             />
           </div>
           <div className="absolute -bottom-7 left-8 right-8 rounded-3xl border border-[#5b6842]/10 bg-[#fffaf1]/95 p-5 shadow-2xl backdrop-blur">
-            <p className="text-xs font-black uppercase tracking-[0.3em] text-[#5b6842]">Modelo</p>
+            <p className="text-xs font-black uppercase tracking-[0.3em] text-ink-soft">Modelo</p>
             <h2 className="mt-2 font-serif text-4xl italic leading-none">Clássico Romântico</h2>
           </div>
         </Link>
@@ -100,18 +100,18 @@ export default function LandingPage() {
             className="rounded-[1.6rem] border border-[#5b6842]/12 bg-[#fffaf1]/80 p-7 shadow-[0_18px_48px_rgba(53,64,34,0.08)]"
           >
             <h3 className="font-serif text-4xl leading-none">{benefit.title}</h3>
-            <p className="mt-4 leading-7 text-[#51443b]">{benefit.text}</p>
+            <p className="mt-4 leading-7 text-ink">{benefit.text}</p>
           </article>
         ))}
       </section>
 
       <section id="templates" className="mx-auto grid max-w-7xl gap-10 px-5 py-20 md:grid-cols-[0.9fr_1.1fr] md:px-8">
         <div>
-          <p className="mb-4 text-xs font-black uppercase tracking-[0.38em] text-[#5b6842]">
+          <p className="mb-4 text-xs font-black uppercase tracking-[0.38em] text-ink-soft">
             Primeiro modelo oficial
           </p>
           <h2 className="font-serif text-6xl italic leading-none md:text-8xl">Clássico Romântico</h2>
-          <p className="mt-6 max-w-xl text-lg leading-8 text-[#51443b]">
+          <p className="mt-6 max-w-xl text-lg leading-8 text-ink">
             O site original vira a prova visual da plataforma: um modelo editorial, romântico,
             responsivo e preparado para receber dados dinâmicos de cada casal.
           </p>
@@ -153,22 +153,22 @@ export default function LandingPage() {
               className="h-full w-full object-cover grayscale transition duration-700 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-black/42" />
-            <div className="absolute inset-x-8 top-8 grid grid-cols-2 font-serif text-5xl uppercase leading-none tracking-[-0.08em] text-[#eeede7] md:text-7xl">
+            <div className="absolute inset-x-8 top-8 grid grid-cols-2 font-serif text-5xl uppercase leading-none tracking-[-0.08em] text-on-forest md:text-7xl">
               <span className="text-right">Pedro</span>
               <span className="pl-8">Rafaela</span>
             </div>
           </div>
         </Link>
         <div className="self-center">
-          <p className="mb-4 text-xs font-black uppercase tracking-[0.38em] text-[#5b6842]">Novo modelo de site</p>
+          <p className="mb-4 text-xs font-black uppercase tracking-[0.38em] text-ink-soft">Novo modelo de site</p>
           <h2 className="font-serif text-6xl italic leading-none md:text-8xl">Civil Minimalista</h2>
-          <p className="mt-6 max-w-xl text-lg leading-8 text-[#51443b]">
+          <p className="mt-6 max-w-xl text-lg leading-8 text-ink">
             Um modelo inspirado no site do Canva enviado: preto, branco e bege, nomes gigantes em tipografia editorial,
             fotos reais em preto e branco e seções horizontais premium.
           </p>
           <Link
             href="/modelo/civil-minimalista/pedro-e-rafaela"
-            className="mt-8 inline-flex min-h-12 items-center rounded-full bg-[#020202] px-7 font-bold !text-[#eeede7]"
+            className="mt-8 inline-flex min-h-12 items-center rounded-full bg-[#020202] px-7 font-bold !text-on-forest"
           >
             Abrir demonstração do modelo
           </Link>
@@ -177,15 +177,15 @@ export default function LandingPage() {
 
       <section className="mx-auto grid max-w-7xl gap-10 px-5 py-20 md:grid-cols-[0.95fr_1.05fr] md:px-8">
         <div className="self-center">
-          <p className="mb-4 text-xs font-black uppercase tracking-[0.38em] text-[#6d604e]">Novo modelo jardim</p>
+          <p className="mb-4 text-xs font-black uppercase tracking-[0.38em] text-ink-soft">Novo modelo jardim</p>
           <h2 className="font-serif text-6xl italic leading-none md:text-8xl">Jardim Clássico</h2>
-          <p className="mt-6 max-w-xl text-lg leading-8 text-[#51443b]">
+          <p className="mt-6 max-w-xl text-lg leading-8 text-ink">
             Modelo inspirado no casamento no jardim do Canva: marrom, bege, botânico, capa floral, tipografia caligráfica,
             confirmação de presença em destaque e programa do evento com atmosfera de jardim.
           </p>
           <Link
             href="/modelo/garden-classico/pedro-e-rafaela"
-            className="mt-8 inline-flex min-h-12 items-center rounded-full bg-[#304254] px-7 font-bold !text-[#faf1e1]"
+            className="mt-8 inline-flex min-h-12 items-center rounded-full bg-[#304254] px-7 font-bold !text-on-forest"
           >
             Abrir demonstração Jardim
           </Link>
@@ -203,7 +203,7 @@ export default function LandingPage() {
               className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-[#2d2b25]/34" />
-            <div className="absolute inset-x-7 top-1/2 -translate-y-1/2 text-center text-[#faf1e1]">
+            <div className="absolute inset-x-7 top-1/2 -translate-y-1/2 text-center text-on-forest">
               <h3 className="font-serif text-6xl italic leading-none">Pedro & Rafaela</h3>
               <p className="mt-4 font-serif text-2xl uppercase tracking-[0.12em]">Vão se casar</p>
             </div>
@@ -214,11 +214,11 @@ export default function LandingPage() {
       <section id="receita" className="mx-auto max-w-7xl px-5 py-20 md:px-8">
         <div className="grid gap-8 rounded-[2rem] bg-[#354022] p-8 text-white md:grid-cols-[0.9fr_1.1fr] md:p-12">
           <div>
-            <p className="mb-4 text-xs font-black uppercase tracking-[0.38em] text-[#dfe6cc]">
+            <p className="mb-4 text-xs font-black uppercase tracking-[0.38em] text-on-forest">
               {cashGiftRevenueModel.highlight}
             </p>
             <h2 className="font-serif text-6xl italic leading-none md:text-8xl">{cashGiftRevenueModel.title}</h2>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-white/84">{cashGiftRevenueModel.subtitle}</p>
+            <p className="mt-6 max-w-xl text-lg leading-8 text-on-forest">{cashGiftRevenueModel.subtitle}</p>
           </div>
           <div className="grid content-center gap-4">
             {cashGiftRevenueModel.features.map((feature) => (
@@ -228,7 +228,7 @@ export default function LandingPage() {
             ))}
    <Link
   href="/checkout"
-  className="mt-2 inline-flex min-h-13 w-fit items-center rounded-full bg-[#fffaf1] px-8 !text-[#354022]"
+  className="mt-2 inline-flex min-h-13 w-fit items-center rounded-full bg-[#fffaf1] px-8 !text-forest"
 >
 Criar nosso site agora
 </Link>

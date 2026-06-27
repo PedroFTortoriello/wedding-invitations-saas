@@ -13,11 +13,11 @@ export default function MessagesPage() {
           <article key={message.id} className="rounded-[1.4rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
               <h2 className="font-serif text-4xl leading-none">{message.guestName}</h2>
-              <time className="text-xs font-black uppercase tracking-[0.2em] text-[#5b6842]">
+              <time className="text-xs font-black uppercase tracking-[0.2em] text-ink-soft">
                 {new Intl.DateTimeFormat("pt-BR").format(new Date(message.createdAt))}
               </time>
             </div>
-            <p className="mt-4 text-lg leading-8 text-[#5f5148]">{message.message}</p>
+            <p className="mt-4 text-lg leading-8 text-ink-soft">{message.message}</p>
           </article>
         ))}
       </div>

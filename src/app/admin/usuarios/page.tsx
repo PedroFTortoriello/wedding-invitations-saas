@@ -10,9 +10,9 @@ export default function AdminUsersPage() {
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
               <div>
                 <h2 className="font-serif text-4xl leading-none">{user.name}</h2>
-                <p className="mt-2 text-sm text-white/78">{user.email}</p>
+                <p className="mt-2 text-sm text-on-forest">{user.email}</p>
               </div>
-              <span className="rounded-full bg-[#dfe6cc] px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-[#354022]">
+              <span className="rounded-full bg-[#dfe6cc] px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-forest">
                 {user.role}
               </span>
             </div>
