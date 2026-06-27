@@ -51,7 +51,7 @@ export default function EditorDemoPage() {
           </div>
           <Link
             href="/casamento/pedro-e-rafaela"
-            className="hidden min-h-11 items-center rounded-full bg-[#354022] px-5 text-sm font-bold text-white md:inline-flex"
+            className="btn btn-primary hidden min-h-11 text-sm md:inline-flex"
           >
             Abrir demonstração completa
           </Link>
@@ -60,7 +60,7 @@ export default function EditorDemoPage() {
 
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 md:grid-cols-[25rem_1fr]">
         <aside className={`${mode === "preview" ? "hidden" : "block"} md:block`}>
-          <div className="rounded-[1.5rem] border border-[#5b6842]/12 bg-[#fffaf1] p-5 shadow-[0_22px_70px_rgba(53,64,34,0.10)]">
+          <div className="card p-5">
             <p className="t-eyebrow text-ink-soft">Demonstração do editor</p>
             <h1 className="mt-3 t-h1 italic">Personalize a hero.</h1>
             <p className="mt-4 text-sm leading-6 text-ink-soft">

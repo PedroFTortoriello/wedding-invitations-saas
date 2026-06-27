@@ -108,7 +108,7 @@ export function GiftLinkImporter() {
   }
 
   return (
-    <section className="rounded-[1.6rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
+    <section className="card p-6">
       <p className="t-eyebrow text-ink-soft">{copy.eyebrow}</p>
       <h2 className="mt-3 t-h1">{copy.title}</h2>
       <p className="mt-3 text-sm leading-6 text-ink-soft">{copy.description}</p>
@@ -128,7 +128,7 @@ export function GiftLinkImporter() {
         />
 
         <button
-          className="min-h-12 cursor-pointer rounded-full bg-[#354022] px-6 text-sm font-black text-white transition hover:bg-[#44512d] disabled:cursor-not-allowed disabled:opacity-60"
+          className="btn btn-primary text-sm disabled:cursor-not-allowed disabled:opacity-60"
           type="submit"
           disabled={!hasLink || isExtracting}
         >

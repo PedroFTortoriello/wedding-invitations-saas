@@ -20,7 +20,7 @@ export default function EditorPage() {
       active="editor"
     >
       <div className="grid gap-6 xl:grid-cols-[26rem_1fr]">
-        <aside className="rounded-[1.6rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
+        <aside className="card p-6">
           <p className="t-eyebrow text-ink-soft">Identidade</p>
           <div className="mt-6 grid gap-4">
             <label className="grid gap-2 text-sm font-bold text-ink-soft">
@@ -36,14 +36,14 @@ export default function EditorPage() {
               <input type="color" className="h-12 rounded-2xl border border-[#5b6842]/14 bg-white p-1" defaultValue={demoWedding.theme.primaryDark} />
             </label>
           </div>
-          <Link href="/casamento/pedro-e-rafaela" className="mt-7 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#354022] text-sm font-black text-white">
+          <Link href="/casamento/pedro-e-rafaela" className="btn btn-primary mt-7 w-full text-sm">
             Prévia pública
           </Link>
         </aside>
         <section className="grid gap-4">
           <GiftLinkImporter />
           {editableSections.map(([title, status, description]) => (
-            <article key={title} className="rounded-[1.3rem] border border-[#5b6842]/12 bg-[#fffaf1] p-5 shadow-[0_14px_42px_rgba(53,64,34,0.06)]">
+            <article key={title} className="card p-5">
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
                   <h2 className="t-h2">{title}</h2>

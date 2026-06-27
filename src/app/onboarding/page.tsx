@@ -21,7 +21,7 @@ export default function OnboardingPage() {
       active="onboarding"
     >
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <section className="rounded-[1.6rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
+        <section className="card p-6">
           <p className="t-eyebrow text-ink-soft">Etapas</p>
           <div className="mt-6 grid gap-3">
             {steps.map((step, index) => (
@@ -34,7 +34,7 @@ export default function OnboardingPage() {
             ))}
           </div>
         </section>
-        <section className="rounded-[1.6rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
+        <section className="card p-6">
           <p className="t-eyebrow text-ink-soft">Formulario mockado</p>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             {[
@@ -63,7 +63,7 @@ export default function OnboardingPage() {
               ))}
             </div>
           </div>
-          <Link href="/editor" className="mt-7 inline-flex min-h-12 rounded-full bg-[#354022] px-7 text-sm font-black text-white">
+          <Link href="/editor" className="btn btn-primary mt-7 text-sm">
             Continuar para o editor
           </Link>
         </section>

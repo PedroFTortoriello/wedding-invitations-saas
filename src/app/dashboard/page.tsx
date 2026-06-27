@@ -23,7 +23,7 @@ export default function DashboardPage() {
       </div>
 
       <section className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <article className="rounded-[1.6rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
+        <article className="card card-accent p-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
               <p className="t-eyebrow text-ink-soft">Site publicado</p>
@@ -36,23 +36,23 @@ export default function DashboardPage() {
           </div>
           <div className="mt-7 grid gap-3 rounded-3xl bg-[#f7f0e5] p-4 md:grid-cols-[1fr_auto_auto] md:items-center">
             <code className="break-all text-sm text-ink-soft">/casamento/{demoWedding.slug}</code>
-            <Link href={`/casamento/${demoWedding.slug}`} className="rounded-full bg-[#354022] px-5 py-3 text-center text-sm font-black text-white">
+            <Link href={`/casamento/${demoWedding.slug}`} className="btn btn-primary text-sm">
               Visualizar
             </Link>
-            <Link href="/editor" className="rounded-full border border-[#5b6842]/15 px-5 py-3 text-center text-sm font-black text-forest">
+            <Link href="/editor" className="btn btn-secondary text-sm">
               Editar site
             </Link>
           </div>
         </article>
 
-        <article className="rounded-[1.6rem] border border-[#5b6842]/12 bg-[#354022] p-6 text-white shadow-[0_18px_52px_rgba(53,64,34,0.15)]">
+        <article className="card-forest p-6 text-on-forest">
           <p className="t-eyebrow text-on-forest">Presentes em dinheiro</p>
           <h2 className="mt-3 t-h1">{cashGiftRevenueModel.highlight}</h2>
           <p className="mt-4 text-sm leading-6 text-on-forest">
             Recebidos {formatCurrency(platformMetrics.grossCashGifts)} em presentes Pix — 100% para o casal, direto na chave Pix do casal.
           </p>
           <StatusBadge status="paid" />
-          <Link href="/checkout" className="mt-7 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#fffaf1] text-sm font-black text-forest">
+          <Link href="/checkout" className="btn btn-inverse mt-7 w-full text-sm">
             Ver recebimentos
           </Link>
         </article>

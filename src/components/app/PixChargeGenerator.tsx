@@ -98,7 +98,7 @@ export function PixChargeGenerator({ wedding, gifts, compact = false }: PixCharg
   }
 
   return (
-    <section className="mt-6 grid gap-6 rounded-[1.8rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)] xl:grid-cols-[0.9fr_1.1fr]">
+    <section className="mt-6 grid gap-6 card p-6 xl:grid-cols-[0.9fr_1.1fr]">
       <div>
         <p className="t-eyebrow text-ink-soft">Gerar cobranca Pix</p>
         <h2 className="mt-3 t-h1 italic">{compact ? "Gerar Pix" : "Presenteie em dinheiro"}</h2>
@@ -155,7 +155,7 @@ export function PixChargeGenerator({ wedding, gifts, compact = false }: PixCharg
             type="button"
             onClick={createCharge}
             disabled={isPending}
-            className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#354022] px-6 text-sm font-black text-white disabled:opacity-60"
+            className="btn btn-primary text-sm disabled:opacity-60"
           >
             {isPending ? "Gerando Pix..." : "Gerar cobranca Pix"}
           </button>
@@ -194,7 +194,7 @@ export function PixChargeGenerator({ wedding, gifts, compact = false }: PixCharg
               <button
                 type="button"
                 onClick={copyPayload}
-                className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#354022] px-5 text-sm font-black text-white"
+                className="btn btn-primary min-h-11 text-sm"
               >
                 {copied ? "Pix copiado" : "Copiar Pix copia-e-cola"}
               </button>
@@ -203,7 +203,7 @@ export function PixChargeGenerator({ wedding, gifts, compact = false }: PixCharg
                   type="button"
                   onClick={simulatePayment}
                   disabled={simulating}
-                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#5b6842]/20 bg-[#5b6842]/10 px-5 text-sm font-black text-forest disabled:opacity-60"
+                  className="btn btn-secondary min-h-11 text-sm disabled:opacity-60"
                 >
                   {simulating ? "Simulando pagamento..." : "Simular Pix pago"}
                 </button>

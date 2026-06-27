@@ -37,7 +37,7 @@ export default function LandingPage() {
           </div>
           <Link
             href="/cadastro"
-            className="inline-flex min-h-10 items-center rounded-full bg-[#354022] px-5 text-sm font-bold !text-white"
+            className="btn btn-primary min-h-10 px-5 text-sm"
           >
             Criar meu site
           </Link>
@@ -60,13 +60,13 @@ export default function LandingPage() {
           <div className="hero-rise mt-9 flex flex-col gap-3 [animation-delay:240ms] sm:flex-row">
             <Link
               href="/cadastro"
-              className="inline-flex min-h-14 items-center justify-center rounded-full bg-forest px-8 text-base font-black !text-on-forest transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(44,58,36,0.3)]"
+              className="btn btn-primary min-h-14 px-8 text-base"
             >
               Criar meu site
             </Link>
             <Link
               href="/casamento/pedro-e-rafaela"
-              className="inline-flex min-h-14 items-center justify-center rounded-full border border-forest/25 bg-white/50 px-8 text-base font-black text-forest transition-colors duration-200 hover:bg-white/80"
+              className="btn btn-secondary min-h-14 px-8 text-base"
             >
               Ver demonstração
             </Link>
@@ -125,7 +125,7 @@ export default function LandingPage() {
             </p>
             <Link
               href="/casamento/pedro-e-rafaela"
-              className="mt-8 inline-flex min-h-12 items-center rounded-full bg-forest px-7 font-bold !text-on-forest transition-transform duration-200 hover:-translate-y-0.5"
+              className="btn btn-primary mt-8"
             >
               Abrir demonstração romântica
             </Link>
@@ -178,7 +178,7 @@ export default function LandingPage() {
             </p>
             <Link
               href="/modelo/civil-minimalista/pedro-e-rafaela"
-              className="mt-8 inline-flex min-h-12 items-center rounded-full bg-[#020202] px-7 font-bold !text-on-forest transition-transform duration-200 hover:-translate-y-0.5"
+              className="btn mt-8 bg-[#020202] text-on-forest hover:-translate-y-0.5"
             >
               Abrir demonstração do modelo
             </Link>
@@ -197,7 +197,7 @@ export default function LandingPage() {
             </p>
             <Link
               href="/modelo/garden-classico/pedro-e-rafaela"
-              className="mt-8 inline-flex min-h-12 items-center rounded-full bg-[#304254] px-7 font-bold !text-on-forest transition-transform duration-200 hover:-translate-y-0.5"
+              className="btn mt-8 bg-[#304254] text-on-forest hover:-translate-y-0.5"
             >
               Abrir demonstração Jardim
             </Link>
@@ -243,7 +243,7 @@ export default function LandingPage() {
             ))}
             <Link
               href="/checkout"
-              className="mt-2 inline-flex min-h-12 w-fit items-center rounded-full bg-bg px-8 font-bold !text-forest transition-transform duration-200 hover:-translate-y-0.5"
+              className="btn btn-inverse mt-2 w-fit px-8"
             >
               Criar nosso site agora
             </Link>

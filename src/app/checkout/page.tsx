@@ -9,7 +9,7 @@ export default function CheckoutPage() {
       active="cash-gifts"
     >
       <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <article className="rounded-[1.8rem] bg-[#354022] p-8 text-white shadow-[0_22px_70px_rgba(53,64,34,0.18)]">
+        <article className="card-forest p-8 text-on-forest">
           <p className="t-eyebrow text-on-forest">{cashGiftRevenueModel.highlight}</p>
           <h2 className="mt-5 t-display italic">{cashGiftRevenueModel.title}</h2>
           <p className="mt-5 max-w-xl text-lg leading-8 text-on-forest">{cashGiftRevenueModel.subtitle}</p>
@@ -22,7 +22,7 @@ export default function CheckoutPage() {
             ))}
           </ul>
         </article>
-        <article className="rounded-[1.8rem] border border-[#5b6842]/12 bg-[#fffaf1] p-8 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
+        <article className="card p-8">
           <p className="t-eyebrow text-ink-soft">Resumo dos presentes</p>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <div className="rounded-3xl bg-[#f7f0e5] p-5">
@@ -39,7 +39,7 @@ export default function CheckoutPage() {
           </p>
         </article>
       </section>
-      <section className="mt-6 rounded-[1.6rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
+      <section className="mt-6 card p-6">
         <p className="t-eyebrow text-ink-soft">Recebimentos Pix</p>
         <div className="mt-5 grid gap-3">
           {cashGiftTransactions.map((gift) => (

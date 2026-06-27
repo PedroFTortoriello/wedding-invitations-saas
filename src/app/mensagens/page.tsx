@@ -10,7 +10,7 @@ export default function MessagesPage() {
     >
       <div className="grid gap-4">
         {demoMessages.map((message) => (
-          <article key={message.id} className="rounded-[1.4rem] border border-[#5b6842]/12 bg-[#fffaf1] p-6 shadow-[0_18px_52px_rgba(53,64,34,0.08)]">
+          <article key={message.id} className="card p-6">
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
               <h2 className="t-h2">{message.guestName}</h2>
               <time className="t-eyebrow text-ink-soft">

@@ -11,7 +11,7 @@ export default function NotFound() {
         </p>
         <Link
           href="/"
-          className="mt-8 inline-flex min-h-12 items-center justify-center rounded-full bg-[#354022] px-7 text-sm font-bold text-white"
+          className="btn btn-primary mt-8 text-sm"
         >
           Voltar para a plataforma
         </Link>

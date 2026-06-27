@@ -41,7 +41,7 @@ export function AppShell({ children, title, subtitle, active }: AppShellProps) {
         </nav>
         <Link
           href="/casamento/pedro-e-rafaela"
-          className="mt-8 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-[#5b6842]/15 bg-white/60 text-sm font-black text-forest"
+          className="btn btn-secondary mt-8 w-full min-h-11 text-sm"
         >
           Ver site publicado
         </Link>

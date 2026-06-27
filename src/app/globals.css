@@ -47,6 +47,7 @@
   --forest: var(--color-forest);
   --gold: var(--color-gold);
   --on-forest: var(--color-on-forest);
+  --panel: #fffaf1; /* warm card surface on light sections */
 
   --background: var(--bg);
   --foreground: var(--ink);
@@ -136,6 +137,142 @@
   }
   .section-tight {
     padding-block: clamp(3rem, 6vw, 4.5rem);
+  }
+
+  /*
+   * Buttons — ONE system. Add a variant + any size/width utilities (min-h-*,
+   * px-*, w-full) in the markup; the look/transition/focus live here.
+   *   .btn + .btn-primary    forest fill (primary action on light)
+   *   .btn + .btn-secondary  hairline outline (secondary on light)
+   *   .btn + .btn-inverse    cream fill (primary action on --forest)
+   */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    padding-inline: 1.75rem;
+    min-height: 3rem;
+    font-family: var(--font-sans);
+    font-weight: 800;
+    line-height: 1;
+    text-align: center;
+    transition:
+      transform 0.18s ease,
+      background-color 0.18s ease,
+      box-shadow 0.18s ease,
+      border-color 0.18s ease,
+      color 0.18s ease;
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+  .btn[aria-disabled="true"],
+  .btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .btn-primary {
+    background: var(--forest);
+    color: var(--on-forest);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 34px rgba(44, 58, 36, 0.28);
+  }
+  .btn-secondary {
+    border: 1px solid color-mix(in oklab, var(--forest) 26%, transparent);
+    background: color-mix(in oklab, #ffffff 55%, transparent);
+    color: var(--forest);
+  }
+  .btn-secondary:hover {
+    background: color-mix(in oklab, #ffffff 85%, transparent);
+    border-color: color-mix(in oklab, var(--forest) 45%, transparent);
+  }
+  .btn-inverse {
+    background: var(--bg);
+    color: var(--forest);
+  }
+  .btn-inverse:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24);
+  }
+  .btn-inverse:focus-visible {
+    outline-color: var(--on-forest);
+  }
+  .btn:disabled:hover,
+  .btn[aria-disabled="true"]:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  /*
+   * Cards — hairline forest border + layered shadow, coherent radius, generous
+   * padding. Add .card-interactive for hover elevation on clickable cards, and
+   * .card-accent for the short gold brand hairline at the top.
+   */
+  .card {
+    position: relative;
+    border-radius: 1.5rem;
+    background: var(--panel);
+    border: 1px solid color-mix(in oklab, var(--forest) 12%, transparent);
+    padding: 1.75rem;
+    box-shadow:
+      0 1px 2px rgba(53, 64, 34, 0.06),
+      0 8px 18px -10px rgba(53, 64, 34, 0.18),
+      0 26px 50px -32px rgba(53, 64, 34, 0.22);
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      border-color 0.18s ease;
+  }
+  .card-interactive:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 2px 4px rgba(53, 64, 34, 0.07),
+      0 14px 28px -12px rgba(53, 64, 34, 0.22),
+      0 36px 64px -40px rgba(53, 64, 34, 0.28);
+    border-color: color-mix(in oklab, var(--forest) 20%, transparent);
+  }
+  .card-accent::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 1.75rem;
+    height: 2px;
+    width: 2.5rem;
+    border-radius: 9999px;
+    background: var(--gold);
+  }
+  /* Forest-surfaced card for dark sections (text must be --on-forest). */
+  .card-forest {
+    position: relative;
+    border-radius: 1.5rem;
+    background: var(--forest);
+    border: 1px solid color-mix(in oklab, var(--on-forest) 15%, transparent);
+    padding: 1.75rem;
+    box-shadow: 0 24px 60px -34px rgba(0, 0, 0, 0.5);
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      border-color 0.18s ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .card,
+  .card-interactive,
+  .card-forest {
+    transition: none;
+  }
+  .btn:hover,
+  .btn-primary:hover,
+  .btn-inverse:hover,
+  .card-interactive:hover {
+    transform: none;
   }
 }
 
