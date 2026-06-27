@@ -23,13 +23,6 @@ const models = [
     href: "/modelo/garden-classico/pedro-e-rafaela",
     image: "/assets/canva-garden/hero-garden.jpg",
     alt: "Capa floral marrom e bege do modelo Jardim Clássico"
-  },
-  {
-    name: "Olive Burgundy",
-    note: "Save the date com envelope verde-oliva e selo de cera.",
-    href: "/modelo/olive-burgundy/pedro-e-rafaela",
-    image: romanticImages.luxuryVenue,
-    alt: "Cenário de luxo para o save the date Olive Burgundy"
   }
 ];
 
@@ -146,7 +139,7 @@ export default function LandingPage() {
         <div className="wrap">
           <header className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between" data-reveal>
             <div>
-              <p className="t-eyebrow text-gold">Quatro modelos</p>
+              <p className="t-eyebrow text-gold">Modelos editoriais</p>
               <h2 className="mt-4 max-w-xl text-balance t-display italic">Cada detalhe pensado como num convite impresso.</h2>
             </div>
             <p className="measure t-lead text-ink md:text-right">
@@ -155,7 +148,7 @@ export default function LandingPage() {
             </p>
           </header>
 
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-12 grid gap-4 sm:grid-cols-2">
             {otherModels.map((model, index) => (
               <Link
                 key={model.name}
