@@ -19,13 +19,3 @@ export type PixChargeResponse = {
   expiresAt: string;
   paidAt?: string;
 };
-
-export type PixSimulationRequest = {
-  charge: PixChargeResponse;
-};
-
-export type PixSimulationResponse = PixChargeResponse & {
-  status: "paid";
-  paidAt: string;
-  simulator: true;
-};

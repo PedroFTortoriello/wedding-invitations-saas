@@ -1,6 +1,6 @@
 # Wedding Invitations SaaS
 
-A premium, editorial wedding-website platform for Brazilian couples. Built as **Vows**, it lets couples publish elegant, shareable wedding sites with RSVP, photo galleries, live countdowns, and a cash-gift registry powered by **Pix** — Brazil's instant-payment system. The current codebase is an early-stage prototype: the public sites, couple dashboard, and admin area are fully designed and navigable, the Pix BR Code generator is genuinely functional, and the data layer is in-memory demo content rather than a production database.
+A premium, editorial wedding-website platform for Brazilian couples. Built as **Noivar**, it lets couples publish elegant, shareable wedding sites with RSVP, photo galleries, live countdowns, and a cash-gift registry powered by **Pix** — Brazil's instant-payment system. The current codebase is an early-stage prototype: the public sites, couple dashboard, and admin area are fully designed and navigable, the Pix BR Code generator is genuinely functional, and the data layer is in-memory demo content rather than a production database.
 
 ## Overview
 
@@ -13,7 +13,7 @@ A premium, editorial wedding-website platform for Brazilian couples. Built as **
   - Gift registry that can import product details by scraping a product URL.
   - An exclusive, shareable per-couple link concept (`/casamento/<slug>`).
 
-> **Branding note:** The in-code platform name is **Vows** (`platformName` in `src/lib/platform-data.ts`), but the root document title shown in the browser tab is **"SaaS Wedding"** (`src/app/layout.tsx`), and the package name is `saas-wedding`. These are all real and currently inconsistent.
+> **Branding note:** The platform brand is **Noivar** — both the in-code `platformName` (`src/lib/platform-data.ts`) and the browser tab title (`src/app/layout.tsx`). The npm package name is still `saas-wedding` (internal only).
 
 ## Features
 
@@ -21,7 +21,7 @@ A premium, editorial wedding-website platform for Brazilian couples. Built as **
 
 ### Public Wedding Sites & Templates
 
-- **Marketing landing page (Vows):** Fixed nav with anchor links (Modelos, Recursos, Presentes em dinheiro) and CTAs to signup/checkout. Hero markets premium editorial wedding sites; benefits grid; template showcases with preview links; and a cash-gift pitch (0% fee — gifts go straight to the couple's Pix).
+- **Marketing landing page (Noivar):** Fixed nav with anchor links (Modelos, Recursos, Presentes em dinheiro) and CTAs to signup/checkout. Hero markets premium editorial wedding sites; benefits grid; template showcases with preview links; and a cash-gift pitch (0% fee — gifts go straight to the couple's Pix).
 - **Public wedding site by slug** (`/casamento/[slug]`): Server-rendered site resolved by slug, with SEO metadata and OpenGraph built from the wedding content. Renders the flagship **Clássico Romântico** template.
 - **Four editorial templates:**
   - **Clássico Romântico** (flagship) — decomposed into section components: scroll-animated hero with floating gallery, story timeline, editorial gallery with lightbox, live countdown, details cards with modals, cash-gift / Pix gift list, final text, and footer. Sticky nav with monogram and RSVP button; requestAnimationFrame + IntersectionObserver scroll effects; theme CSS variables injected from the wedding's theme.
@@ -262,7 +262,7 @@ Plausible next steps that build directly on the current codebase:
 - **Guest management CRUD** and **message moderation/export** in the dashboard.
 - **Template selection & theming per couple**, plus showcasing Olive Burgundy on the landing page.
 - **Billing & plans** in the admin area (the current `/admin/pacotes` is a Pix revenue report, not plan management).
-- **Unify branding** between the in-code "Vows" platform name and the "SaaS Wedding" root document title.
+- **Rename the internal package** (`saas-wedding`) to match the **Noivar** brand.
 
 ## License
 

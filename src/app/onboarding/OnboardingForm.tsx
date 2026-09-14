@@ -4,10 +4,12 @@ import { useActionState } from "react";
 import { createWeddingAction, type CreateWeddingState } from "./actions";
 
 const TEMPLATE_OPTIONS: { id: string; label: string }[] = [
+  { id: "cinema-noir", label: "Cinema Noir" },
+  { id: "editorial-luxury", label: "Editorial Luxury" },
+  { id: "jardim-romantico", label: "Jardim Romântico" },
   { id: "classico-romantico", label: "Clássico Romântico" },
   { id: "civil-minimalista", label: "Civil Minimalista" },
-  { id: "garden-classico", label: "Jardim Clássico" },
-  { id: "olive-burgundy", label: "Olive Burgundy — Save the Date" }
+  { id: "garden-classico", label: "Jardim Clássico" }
 ];
 
 const initialState: CreateWeddingState = {};
@@ -29,7 +31,7 @@ export function OnboardingForm({ defaultCoupleNames }: { defaultCoupleNames: str
             type="text"
             required
             defaultValue={defaultCoupleNames}
-            placeholder="Pedro & Rafaela"
+            placeholder="Helena & Lucas"
             className={fieldClass}
           />
         </label>
@@ -38,7 +40,7 @@ export function OnboardingForm({ defaultCoupleNames }: { defaultCoupleNames: str
           URL do site (deixe em branco para gerar automaticamente)
           <div className="flex items-center gap-2">
             <span className="shrink-0 text-sm text-ink-soft">/casamento/</span>
-            <input name="slug" type="text" placeholder="pedro-e-rafaela" className={`${fieldClass} w-full`} />
+            <input name="slug" type="text" placeholder="helena-e-lucas" className={`${fieldClass} w-full`} />
           </div>
         </label>
 

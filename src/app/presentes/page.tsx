@@ -23,7 +23,8 @@ export default async function GiftsPage() {
     .eq("wedding_id", row.id)
     .order("created_at", { ascending: false });
 
-  const received = gifts ?? [];
+  // Tentativa de cartão abandonada (sem pagamento no MP) não é recebimento.
+  const received = (gifts ?? []).filter((gift) => gift.payment_method !== "card" || Boolean(gift.provider_payment_id));
   const grossReceived = received
     .filter((gift) => gift.status === "paid")
     .reduce((total, gift) => total + Number(gift.gross_amount), 0);
@@ -34,7 +35,7 @@ export default async function GiftsPage() {
   return (
     <AppShell
       title="Presentes em dinheiro"
-      subtitle="Crie as cotas do seu site. Os presentes via Pix vão 100% para o casal, sem taxa da plataforma."
+      subtitle="Crie as cotas do seu site. No Pix, 100% vai para o casal, sem taxa da plataforma — e dá para aceitar cartão também."
       active="gifts"
     >
       <section className="mb-6 grid gap-4 md:grid-cols-3">
@@ -52,6 +53,13 @@ export default async function GiftsPage() {
           {site.pixKey ? null : (
             <p className="mt-2 text-sm leading-6 text-ink-soft">Configure sua chave Pix no editor para receber.</p>
           )}
+          <p className="mt-2 text-sm leading-6 text-ink-soft">
+            Para aceitar cartão, conecte o Mercado Pago em{" "}
+            <a href="/dashboard#cartao" className="font-bold underline underline-offset-4">
+              Visão geral
+            </a>
+            .
+          </p>
         </article>
       </section>
 
@@ -124,10 +132,18 @@ export default async function GiftsPage() {
               >
                 <div>
                   <strong>{gift.guest_name}</strong>
-                  <p className="text-sm text-ink-soft">{gift.message ?? "Presente em dinheiro via Pix"}</p>
+                  <p className="text-sm text-ink-soft">
+                    {gift.message ?? (gift.payment_method === "card" ? "Presente no cartão" : "Presente em dinheiro via Pix")}
+                  </p>
                 </div>
                 <span className="text-sm font-black">{formatCurrency(Number(gift.gross_amount))}</span>
-                <span className="text-sm font-black text-forest">100% para o casal</span>
+                <span className="text-sm font-black text-forest">
+                  {gift.payment_method === "card"
+                    ? gift.net_amount != null
+                      ? `Cartão · líquido ${formatCurrency(Number(gift.net_amount))}`
+                      : "Cartão"
+                    : "100% para o casal"}
+                </span>
               </div>
             ))}
           </div>

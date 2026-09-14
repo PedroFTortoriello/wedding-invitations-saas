@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { WeddingSite } from "@/types/wedding";
+import { GuestForms } from "@/components/templates/shared/GuestForms";
 import styles from "./olive-burgundy.module.css";
 
 export type OliveBurgundyContent = {
@@ -73,7 +74,7 @@ function useCountdown(target: number) {
     };
   }, []);
 
-  if (now === null) return null;
+  if (now === null || !Number.isFinite(target)) return null;
   const diff = Math.max(0, target - now);
   return {
     days: Math.floor(diff / MS.day),
@@ -237,14 +238,12 @@ export function OliveBurgundyTemplate({ wedding, content }: OliveBurgundyTemplat
               <UnitGroup key={label as string} label={label as string} value={value as number | undefined} sep={i < 3} />
             ))}
           </div>
-
-          <button type="button" className={styles.addressBtn}>
-            {c.addressLabel}
-          </button>
         </div>
       </section>
 
       {/* ============ Cena 4 — Rodapé mármore ============ */}
+      <GuestForms wedding={wedding} variant="olive" mode="both" sectionId="rsvp" />
+
       <section className={styles.closing}>
         <p className={styles.closingText}>{c.closingText}</p>
       </section>

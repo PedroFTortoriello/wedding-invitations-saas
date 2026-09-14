@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { platformName } from "@/lib/platform-data";
+import { platformName, supportWhatsApp } from "@/lib/platform-data";
 import { SignOutButton } from "@/components/app/SignOutButton";
 
 type AppShellProps = {
@@ -22,7 +22,7 @@ const navItems = [
 export function AppShell({ children, title, subtitle, active }: AppShellProps) {
   return (
     <div className="min-h-screen bg-[#f7f0e5] text-ink">
-      <aside className="fixed bottom-0 left-0 top-0 z-40 hidden w-72 border-r border-[#5b6842]/10 bg-[#fffaf1]/92 p-5 shadow-[18px_0_60px_rgba(53,64,34,0.08)] backdrop-blur lg:block">
+      <aside className="fixed bottom-0 left-0 top-0 z-40 hidden w-72 flex-col border-r border-[#5b6842]/10 bg-[#fffaf1]/92 p-5 shadow-[18px_0_60px_rgba(53,64,34,0.08)] backdrop-blur lg:flex">
         <Link href="/" className="t-h2 italic">
           {platformName}
         </Link>
@@ -33,14 +33,22 @@ export function AppShell({ children, title, subtitle, active }: AppShellProps) {
               key={item.key}
               href={item.href}
               className={`rounded-2xl px-4 py-3 text-sm font-bold transition ${
-                active === item.key ? "bg-[#354022] text-white" : "text-ink-soft hover:bg-[#5b6842]/10"
+                active === item.key ? "bg-[#354022] !text-white" : "!text-ink-soft hover:bg-[#5b6842]/10"
               }`}
             >
               {item.label}
             </Link>
           ))}
         </nav>
-        <div className="mt-8">
+        <div className="mt-auto grid gap-3">
+          <a
+            href={`https://wa.me/${supportWhatsApp}?text=${encodeURIComponent("Olá! Preciso de ajuda com o Noivar.")}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold !text-ink-soft transition hover:bg-[#5b6842]/10"
+          >
+            <span aria-hidden>💬</span> Suporte no WhatsApp
+          </a>
           <SignOutButton />
         </div>
       </aside>
@@ -58,7 +66,7 @@ export function AppShell({ children, title, subtitle, active }: AppShellProps) {
                   key={item.key}
                   href={item.href}
                   className={`shrink-0 rounded-full px-4 py-2 text-sm font-bold ${
-                    active === item.key ? "bg-[#354022] text-white" : "bg-[#fffaf1] text-ink-soft"
+                    active === item.key ? "bg-[#354022] !text-white" : "bg-[#fffaf1] !text-ink-soft"
                   }`}
                 >
                   {item.label}

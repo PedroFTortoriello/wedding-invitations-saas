@@ -1,17 +1,30 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app/AppShell";
 import { MetricCard } from "@/components/app/MetricCard";
 import { StatusBadge } from "@/components/app/StatusBadge";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnedWeddingRow } from "@/lib/wedding-server";
+import { getMercadoPagoConnectionSummary } from "@/lib/mercadopago-server";
 import { rowToWeddingSite } from "@/lib/wedding";
 import { formatCurrency } from "@/lib/platform-data";
 import { PublishPanel } from "./PublishPanel";
+import { CoordinatorLink } from "./CoordinatorLink";
+import { CardGiftsPanel } from "./CardGiftsPanel";
+import { generateCoordinatorLinkAction, revokeCoordinatorLinkAction } from "./coordinator-actions";
 
 export const dynamic = "force-dynamic";
 
 const formatDay = (iso: string) => new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+
+/** Avisos da volta do OAuth do Mercado Pago. Só códigos conhecidos — nunca ecoa a query. */
+const MP_FLASH: Record<string, { ok: boolean; text: string } | undefined> = {
+  conectado: { ok: true, text: "Mercado Pago conectado. Seus convidados já podem presentear no cartão." },
+  desconectado: { ok: true, text: "Mercado Pago desconectado. O Pix continua ativo, com 0% de taxa." },
+  negado: { ok: false, text: "Conexão cancelada no Mercado Pago. Nada mudou no seu site." },
+  erro: { ok: false, text: "Não foi possível conectar o Mercado Pago. Tente de novo." }
+};
 
 function daysUntil(iso: string): number {
   const target = new Date(iso).getTime();
@@ -22,9 +35,9 @@ function daysUntil(iso: string): number {
 export default async function DashboardPage({
   searchParams
 }: {
-  searchParams: Promise<{ publicacao?: string }>;
+  searchParams: Promise<{ publicacao?: string; mp?: string }>;
 }) {
-  const { publicacao } = await searchParams;
+  const { publicacao, mp } = await searchParams;
   const row = await getOwnedWeddingRow();
   if (!row) {
     redirect("/onboarding");
@@ -33,15 +46,29 @@ export default async function DashboardPage({
   const site = rowToWeddingSite(row);
   const supabase = await createClient();
 
-  const [{ data: guests }, { data: messages }, { data: gifts }] = await Promise.all([
+  // Origem absoluta para montar o link da cerimonialista (APP_URL em prod, host da requisição em dev).
+  const hdrs = await headers();
+  const appOrigin =
+    process.env.APP_URL || `${hdrs.get("x-forwarded-proto") ?? "http"}://${hdrs.get("host") ?? "localhost:3000"}`;
+
+  // Conexão do cartão. Sem credenciais da plataforma no ambiente, o bloco nem aparece.
+  const mercadoPagoConfigured = Boolean(process.env.MERCADOPAGO_CLIENT_ID && process.env.MERCADOPAGO_CLIENT_SECRET);
+
+  // Tudo em paralelo: cada consulta é uma ida ao Supabase — em série, somariam.
+  const [{ data: guests }, { data: messages }, { data: gifts }, mpConnection] = await Promise.all([
     supabase.from("guests").select("*").eq("wedding_id", row.id).order("created_at", { ascending: false }),
     supabase.from("messages").select("*").eq("wedding_id", row.id).order("created_at", { ascending: false }),
-    supabase.from("cash_gifts").select("*").eq("wedding_id", row.id).order("created_at", { ascending: false })
+    supabase.from("cash_gifts").select("*").eq("wedding_id", row.id).order("created_at", { ascending: false }),
+    mercadoPagoConfigured ? getMercadoPagoConnectionSummary(row.id) : Promise.resolve(null)
   ]);
+  const cardConnected = mpConnection?.status === "active";
+  const cardFeeOnCouple = cardConnected && mpConnection?.feePayer === "couple";
+  const mpFlash = mp ? MP_FLASH[mp] : undefined;
 
   const guestList = guests ?? [];
   const messageList = messages ?? [];
-  const giftList = gifts ?? [];
+  // Tentativa de cartão abandonada (sem pagamento no MP) não é recebimento: fica fora da lista.
+  const giftList = (gifts ?? []).filter((gift) => gift.payment_method !== "card" || Boolean(gift.provider_payment_id));
 
   const confirmed = guestList.filter((guest) => guest.status === "confirmed").length;
   const pending = guestList.filter((guest) => guest.status === "pending").length;
@@ -64,6 +91,14 @@ export default async function DashboardPage({
             : "Todos os convidados responderam"
     },
     { done: Boolean(site.pixKey), label: site.pixKey ? "Chave Pix configurada" : "Configure sua chave Pix no editor" },
+    ...(mercadoPagoConfigured
+      ? [
+          {
+            done: cardConnected,
+            label: cardConnected ? "Cartão ativo (Mercado Pago)" : "Ative o cartão conectando o Mercado Pago (opcional)"
+          }
+        ]
+      : []),
     { done: false, label: "Compartilhe o link no WhatsApp e nas redes" }
   ];
 
@@ -74,8 +109,19 @@ export default async function DashboardPage({
       active="dashboard"
     >
       {publicacao === "paga" && !isPublished ? (
-        <p className="mb-6 rounded-2xl bg-forest/10 px-4 py-3 text-sm font-bold text-forest">
+        <p role="status" className="mb-6 rounded-2xl bg-forest/10 px-4 py-3 text-sm font-bold text-forest">
           Pagamento recebido. Clique em “Publicar agora” para colocar seu site no ar.
+        </p>
+      ) : null}
+
+      {mpFlash ? (
+        <p
+          role={mpFlash.ok ? "status" : "alert"}
+          className={`mb-6 rounded-2xl px-4 py-3 text-sm font-bold ${
+            mpFlash.ok ? "bg-forest/10 text-forest" : "bg-[#8d3d33]/10 text-[#8d3d33]"
+          }`}
+        >
+          {mpFlash.text}
         </p>
       ) : null}
 
@@ -100,7 +146,7 @@ export default async function DashboardPage({
           </div>
           <div className="mt-7 grid gap-3 rounded-3xl bg-[#f7f0e5] p-4 md:grid-cols-[1fr_auto_auto] md:items-center">
             <code className="break-all text-sm text-ink-soft">/casamento/{site.slug}</code>
-            <Link href={`/casamento/${site.slug}`} className="btn btn-primary text-sm">
+            <Link href={`/casamento/${site.slug}`} className="btn btn-primary !text-on-forest text-sm">
               Visualizar
             </Link>
             <Link href="/editor" className="btn btn-secondary text-sm">
@@ -112,15 +158,18 @@ export default async function DashboardPage({
 
         <article className="card-forest p-6 text-on-forest">
           <p className="t-eyebrow text-on-forest">Presentes em dinheiro</p>
-          <h2 className="mt-3 t-h1">0% de taxa · 100% para o casal</h2>
+          <h2 className="mt-3 t-h1">{cardFeeOnCouple ? "0% de taxa da Noivar" : "0% de taxa · 100% para o casal"}</h2>
           <p className="mt-4 text-sm leading-6 text-on-forest">
-            Recebidos {formatCurrency(grossCashGifts)} em presentes Pix — direto na sua chave, sem intermediação.
+            Recebidos {formatCurrency(grossCashGifts)} em presentes — Pix direto na sua chave
+            {cardConnected ? " e cartão direto na sua conta do Mercado Pago" : ""}, sem intermediação.
           </p>
-          <Link href="/presentes" className="btn btn-inverse mt-7 w-full text-sm">
+          <Link href="/presentes" className="btn btn-inverse !text-black mt-7 w-full text-sm">
             Ver presentes
           </Link>
         </article>
       </section>
+
+      <CardGiftsPanel configured={mercadoPagoConfigured} connection={mpConnection} />
 
       <section className="mt-6 grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
         <article className="card p-6">
@@ -170,7 +219,7 @@ export default async function DashboardPage({
 
         <article className="card p-6 md:col-span-2 xl:col-span-1">
           <div className="flex items-center justify-between">
-            <p className="t-eyebrow text-ink-soft">Recebimentos via Pix</p>
+            <p className="t-eyebrow text-ink-soft">Recebimentos</p>
             <span className="t-eyebrow text-ink-soft">{formatCurrency(grossCashGifts)}</span>
           </div>
           {giftList.length === 0 ? (
@@ -184,7 +233,9 @@ export default async function DashboardPage({
                 >
                   <div className="min-w-0">
                     <p className="truncate font-bold text-ink">{gift.guest_name}</p>
-                    <p className="text-xs text-ink-soft">{formatDay(gift.paid_at ?? gift.created_at)}</p>
+                    <p className="text-xs text-ink-soft">
+                      {formatDay(gift.paid_at ?? gift.created_at)} · {gift.payment_method === "card" ? "Cartão" : "Pix"}
+                    </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
                     <span className="font-black text-ink">{formatCurrency(Number(gift.gross_amount))}</span>
@@ -193,6 +244,43 @@ export default async function DashboardPage({
                 </li>
               ))}
             </ul>
+          )}
+        </article>
+      </section>
+
+      <section className="mt-6">
+        <article className="card p-6">
+          <div className="max-w-2xl">
+            <p className="t-eyebrow text-ink-soft">Cerimonialista</p>
+            <h2 className="mt-3 t-h1">Acesso da cerimonialista</h2>
+            <p className="mt-2 text-sm leading-6 text-ink-soft">
+              Um link só-leitura para sua cerimonialista acompanhar convidados, confirmações, programação do
+              dia, locais e recados — sem login e sem acesso ao seu Pix. Você pode desativar quando quiser.
+            </p>
+          </div>
+
+          {row.coordinator_token ? (
+            <div className="mt-6 grid gap-4">
+              <CoordinatorLink url={`${appOrigin}/coordenacao/${row.coordinator_token}`} />
+              <div className="flex flex-wrap items-center gap-4">
+                <form action={generateCoordinatorLinkAction}>
+                  <button type="submit" className="btn btn-secondary text-sm">
+                    Gerar novo link
+                  </button>
+                </form>
+                <form action={revokeCoordinatorLinkAction}>
+                  <button type="submit" className="text-sm font-bold text-[#8d3d33] underline underline-offset-4">
+                    Desativar acesso
+                  </button>
+                </form>
+              </div>
+            </div>
+          ) : (
+            <form action={generateCoordinatorLinkAction} className="mt-6">
+              <button type="submit" className="btn btn-primary text-sm">
+                Gerar link da cerimonialista
+              </button>
+            </form>
           )}
         </article>
       </section>

@@ -45,12 +45,15 @@ export async function POST(request: Request) {
       },
       {
         pixKey: wedding.pixKey,
+        pixKeyType: wedding.pixKeyType,
         merchantName: wedding.pixHolderName || wedding.coupleNames,
         merchantCity: wedding.locations[0]?.city ?? ""
       }
     );
 
-    await admin.from("cash_gifts").insert({
+    // O dinheiro vai direto pra chave do casal (EMV); esta linha é só para o casal
+    // reconciliar. Se falhar, não bloqueia o QR do convidado — mas registramos.
+    const { error: giftError } = await admin.from("cash_gifts").insert({
       wedding_id: weddingSiteId,
       guest_name: guestName || "Convidado",
       message: message || null,
@@ -59,6 +62,9 @@ export async function POST(request: Request) {
       status: "pending",
       payment_method: "pix"
     });
+    if (giftError) {
+      console.error("cash_gifts insert falhou (presente não entrará na reconciliação)", giftError);
+    }
 
     const qrCodeSvg = await QRCode.toString(charge.payload, {
       type: "svg",

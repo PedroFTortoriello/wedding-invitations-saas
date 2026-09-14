@@ -4,10 +4,11 @@
   --text: #332820;
   --muted: #66584f;
   --border: rgba(42, 32, 24, 0.12);
-  --olive: #5b6842;
-  --olive-dark: #354022;
-  --olive-soft: #dfe6cc;
-  --olive-wash: rgba(91, 104, 66, 0.12);
+  /* Acento terracota — lane "romântico quente". Var mantém o nome legado --olive. */
+  --olive: #a05639;
+  --olive-dark: #733722;
+  --olive-soft: #edd7c8;
+  --olive-wash: rgba(160, 86, 57, 0.12);
   --serif: "Instrument Serif", Georgia, "Times New Roman", serif;
   --sans: "Instrument Sans", "Segoe UI", Arial, sans-serif;
   min-height: 100vh;
@@ -245,11 +246,14 @@
   left: 50%;
   bottom: 13.5%;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 12px;
   transform: translateX(-50%);
 }
 
-.hero-actions a {
+.hero-actions a,
+.hero-actions button {
   display: inline-flex;
   min-height: 44px;
   align-items: center;
@@ -263,6 +267,17 @@
   font-weight: 800;
   white-space: nowrap;
   backdrop-filter: blur(10px);
+}
+
+/* RSVP é a ação principal do hero: pílula sólida (mesma cor do RSVP do menu). */
+.hero-actions .hero-rsvp {
+  border-color: transparent;
+  background: var(--olive-dark);
+  color: #fff;
+  cursor: pointer;
+}
+.hero-actions .hero-rsvp:hover {
+  filter: brightness(1.08);
 }
 
 .hero-card h1 {
@@ -861,18 +876,19 @@
 
 .detail-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-  max-width: 1240px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 22px;
+  max-width: 1120px;
   margin: 0 auto;
 }
 
 .detail-card {
   position: relative;
-  min-height: 320px;
+  display: block;
+  min-height: 460px;
   overflow: hidden;
-  border: 0;
-  border-radius: 8px;
+  border: 1px solid rgba(62, 66, 48, 0.16);
+  border-radius: 6px;
   background: #1f1712;
   color: #fff;
   cursor: pointer;
@@ -880,7 +896,7 @@
   text-align: left;
   transform: translateY(28px);
   opacity: 0;
-  transition: opacity 600ms ease, transform 600ms ease;
+  transition: opacity 640ms ease, transform 640ms ease, box-shadow 320ms ease, border-color 320ms ease;
 }
 
 .detail-card.revealed {
@@ -895,7 +911,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 500ms ease;
+  transition: transform 640ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .detail-card::after {
@@ -903,113 +919,86 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(180deg, rgba(25, 32, 17, 0.06), rgba(25, 32, 17, 0.74));
+  background: linear-gradient(
+    180deg,
+    rgba(20, 26, 14, 0.04) 0%,
+    rgba(20, 26, 14, 0.22) 44%,
+    rgba(20, 26, 14, 0.84) 100%
+  );
 }
 
-.detail-card span {
-  position: absolute;
-  left: 32px;
-  right: 92px;
-  bottom: 75px;
-  font-size: 38px;
-  font-weight: 800;
-  line-height: 1;
+.detail-card:hover,
+.detail-card:focus-visible {
+  border-color: rgba(156, 123, 63, 0.6);
+  box-shadow: 0 24px 52px -28px rgba(20, 26, 14, 0.72);
+  outline: none;
 }
 
-.detail-card small {
-  position: absolute;
-  left: 32px;
-  right: 92px;
-  bottom: 34px;
-  color: rgba(255, 255, 255, 0.86);
-  font-size: 20px;
-  line-height: 1.2;
+.detail-card:hover img,
+.detail-card:focus-visible img {
+  transform: scale(1.06);
 }
 
-.detail-card i {
+.detail-card-body {
   position: absolute;
-  right: 32px;
-  bottom: 31px;
+  inset: auto 30px 30px;
   display: grid;
-  width: 50px;
-  height: 50px;
-  place-items: center;
-  border-radius: 50%;
-  background: rgba(223, 230, 204, 0.42);
-  color: #fff;
+  gap: 10px;
+}
+
+.detail-card-body::before {
+  content: "";
+  width: 34px;
+  height: 1px;
+  background: #d8c89f;
+  opacity: 0.9;
+}
+
+.detail-card-eyebrow {
+  font-family: var(--sans);
+  font-size: 12px;
   font-style: normal;
-  font-size: 34px;
-  line-height: 1;
-}
-
-.detail-card:hover img {
-  transform: scale(1.05);
-}
-
-.detail-card-local img {
-  object-position: center 54%;
-  filter: saturate(0.96) contrast(0.98);
-  transform: scale(1.04);
-}
-
-.detail-card-local:hover img {
-  transform: scale(1.09);
-}
-
-.detail-card-local::after {
-  background:
-    linear-gradient(180deg, rgba(25, 32, 17, 0.02), rgba(25, 32, 17, 0.28) 40%, rgba(25, 32, 17, 0.84)),
-    radial-gradient(circle at 18% 92%, rgba(91, 104, 66, 0.52), transparent 42%);
-}
-
-.local-card-copy {
-  position: absolute;
-  left: 32px;
-  right: 88px;
-  bottom: 31px;
-  display: grid;
-  gap: 9px;
-}
-
-.detail-card-local .local-card-copy span {
-  position: static;
-  color: rgba(255, 255, 255, 0.78);
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
-.local-card-copy strong {
-  color: #fff;
-  font-family: var(--serif);
-  font-size: clamp(34px, 2.9vw, 54px);
-  font-weight: 400;
-  line-height: 0.94;
-  text-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
-}
-
-.detail-card-local .local-card-copy small {
-  position: static;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 20px;
   font-weight: 700;
-  line-height: 1.2;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #e7d9b6;
 }
 
-.detail-card-menu {
-  background: var(--olive-dark);
+.detail-card-headline {
+  font-family: var(--serif);
+  font-size: clamp(28px, 2.7vw, 44px);
+  font-weight: 400;
+  line-height: 1.02;
+  text-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
 }
 
-.detail-card-menu img {
-  object-position: center;
-  filter: saturate(0.94) contrast(0.98);
+.detail-card-sub {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 16px;
+  line-height: 1.35;
 }
 
-.detail-card-menu::after {
-  background:
-    linear-gradient(180deg, rgba(25, 32, 17, 0.02), rgba(25, 32, 17, 0.18) 42%, rgba(25, 32, 17, 0.82)),
-    radial-gradient(circle at 12% 94%, rgba(91, 104, 66, 0.5), transparent 44%);
+.detail-card-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.detail-card-more i {
+  font-style: normal;
+  transition: transform 240ms ease;
+}
+
+.detail-card:hover .detail-card-more i,
+.detail-card:focus-visible .detail-card-more i {
+  transform: translateX(4px);
 }
 
 .vision {
@@ -1108,7 +1097,15 @@
 
 .modal,
 .lightbox {
+  /* O Preflight do Tailwind zera a margin de *, matando o centering nativo do
+     <dialog> (margin:auto do UA). Centraliza na mão via transform. */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
   width: min(92vw, 540px);
+  max-height: 90svh;
   padding: 0;
   border: 0;
   border-radius: 10px;
@@ -1509,7 +1506,8 @@
     justify-content: center;
   }
 
-  .hero-actions a {
+  .hero-actions a,
+  .hero-actions button {
     min-height: 40px;
     padding: 0 14px;
     font-size: 12px;
@@ -1634,22 +1632,16 @@
   }
 
   .detail-card {
-    min-height: 240px;
-    border-radius: 8px;
+    min-height: 340px;
+    border-radius: 6px;
   }
 
-  .local-card-copy {
-    left: 24px;
-    right: 74px;
-    bottom: 25px;
+  .detail-card-body {
+    inset: auto 22px 24px;
   }
 
-  .local-card-copy strong {
-    font-size: clamp(34px, 10vw, 44px);
-  }
-
-  .detail-card-local .local-card-copy small {
-    font-size: 17px;
+  .detail-card-headline {
+    font-size: clamp(30px, 9vw, 44px);
   }
 
   .modal-wide,

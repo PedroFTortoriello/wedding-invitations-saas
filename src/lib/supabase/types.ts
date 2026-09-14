@@ -5,8 +5,11 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 
 export type UserRole = "client" | "admin";
 export type WeddingStatus = "draft" | "published" | "suspended" | "expired";
-export type CashGiftStatus = "pending" | "paid" | "refunded";
+export type CashGiftStatus = "pending" | "paid" | "refunded" | "failed";
 export type GuestStatus = "pending" | "confirmed" | "declined";
+export type MpConnectionStatus = "active" | "revoked" | "error";
+/** Quem paga a taxa do cartão: o convidado (casal recebe 100%) ou o casal. */
+export type CardFeePayer = "guest" | "couple";
 
 export type Database = {
   public: {
@@ -27,11 +30,11 @@ export type Database = {
           pix_key: string | null;
           pix_key_type: string | null;
           pix_holder_name: string | null;
-          pix_holder_document: string | null;
           content: Json;
           created_at: string;
           updated_at: string;
           publish_paid_at: string | null;
+          coordinator_token: string | null;
         };
         Insert: {
           id?: string;
@@ -42,11 +45,11 @@ export type Database = {
           pix_key?: string | null;
           pix_key_type?: string | null;
           pix_holder_name?: string | null;
-          pix_holder_document?: string | null;
           content: Json;
           created_at?: string;
           updated_at?: string;
           publish_paid_at?: string | null;
+          coordinator_token?: string | null;
         };
         Update: {
           id?: string;
@@ -57,11 +60,11 @@ export type Database = {
           pix_key?: string | null;
           pix_key_type?: string | null;
           pix_holder_name?: string | null;
-          pix_holder_document?: string | null;
           content?: Json;
           created_at?: string;
           updated_at?: string;
           publish_paid_at?: string | null;
+          coordinator_token?: string | null;
         };
         Relationships: [];
       };
@@ -122,6 +125,13 @@ export type Database = {
           payment_method: string;
           paid_at: string | null;
           created_at: string;
+          provider: string | null;
+          provider_payment_id: string | null;
+          provider_status: string | null;
+          charged_amount: number | null;
+          net_amount: number | null;
+          installments: number | null;
+          gift_id: string | null;
         };
         Insert: {
           id?: string;
@@ -134,6 +144,13 @@ export type Database = {
           payment_method?: string;
           paid_at?: string | null;
           created_at?: string;
+          provider?: string | null;
+          provider_payment_id?: string | null;
+          provider_status?: string | null;
+          charged_amount?: number | null;
+          net_amount?: number | null;
+          installments?: number | null;
+          gift_id?: string | null;
         };
         Update: {
           id?: string;
@@ -146,6 +163,67 @@ export type Database = {
           payment_method?: string;
           paid_at?: string | null;
           created_at?: string;
+          provider?: string | null;
+          provider_payment_id?: string | null;
+          provider_status?: string | null;
+          charged_amount?: number | null;
+          net_amount?: number | null;
+          installments?: number | null;
+          gift_id?: string | null;
+        };
+        Relationships: [];
+      };
+      mp_connections: {
+        Row: {
+          wedding_id: string;
+          mp_user_id: string;
+          access_token_enc: string;
+          refresh_token_enc: string;
+          public_key: string | null;
+          scope: string | null;
+          live_mode: boolean;
+          expires_at: string;
+          mp_nickname: string | null;
+          mp_email: string | null;
+          status: MpConnectionStatus;
+          fee_payer: CardFeePayer;
+          last_error: string | null;
+          connected_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          wedding_id: string;
+          mp_user_id: string;
+          access_token_enc: string;
+          refresh_token_enc: string;
+          public_key?: string | null;
+          scope?: string | null;
+          live_mode?: boolean;
+          expires_at: string;
+          mp_nickname?: string | null;
+          mp_email?: string | null;
+          status?: MpConnectionStatus;
+          fee_payer?: CardFeePayer;
+          last_error?: string | null;
+          connected_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          wedding_id?: string;
+          mp_user_id?: string;
+          access_token_enc?: string;
+          refresh_token_enc?: string;
+          public_key?: string | null;
+          scope?: string | null;
+          live_mode?: boolean;
+          expires_at?: string;
+          mp_nickname?: string | null;
+          mp_email?: string | null;
+          status?: MpConnectionStatus;
+          fee_payer?: CardFeePayer;
+          last_error?: string | null;
+          connected_at?: string;
+          updated_at?: string;
         };
         Relationships: [];
       };

@@ -9,6 +9,24 @@ export const PUBLISH_FEE_CENTS = Math.round(PUBLISH_FEE_BRL * 100);
 /** AbacatePay events that mean "the customer paid" (v1 + v2 hosted/transparent). */
 const PAID_EVENTS = new Set(["billing.paid", "checkout.completed", "transparent.completed"]);
 
+/**
+ * Nested `status` values that mean the payment did NOT complete. The completion
+ * events above already imply payment, so we treat a completion event as paid
+ * UNLESS its status is explicitly one of these — accepting COMPLETED/APPROVED/
+ * absent (v2 varies) instead of demanding a literal "PAID" (which silently
+ * dropped real payments).
+ */
+const UNPAID_STATUSES = new Set([
+  "FAILED",
+  "EXPIRED",
+  "CANCELLED",
+  "CANCELED",
+  "REFUNDED",
+  "PENDING",
+  "REJECTED",
+  "DECLINED"
+]);
+
 export type CreatePublishChargeInput = {
   weddingId: string;
   appUrl: string;
@@ -47,6 +65,13 @@ const PUBLISH_PRODUCT_EXTERNAL_ID = "publish-fee";
 // Cache do id do produto da taxa por instância — evita recriar a cada checkout.
 let cachedPublishProductId: string | null = null;
 
+/** Mensagem de erro que a AbacatePay devolve em `error` (string ou objeto). */
+function abacatePayError(json: unknown): string {
+  const err = asRecord(json)?.error;
+  if (!err) return "";
+  return typeof err === "string" ? err : JSON.stringify(err);
+}
+
 /**
  * Resolve o id do produto da taxa de publicação. Ordem:
  *  1) ABACATEPAY_PUBLISH_PRODUCT_ID (recomendado — zero chamadas extras);
@@ -76,8 +101,11 @@ async function resolvePublishProductId(apiKey: string): Promise<string> {
   const json = (await response.json().catch(() => null)) as V2ProductResponse | null;
   const id = json?.data?.id;
   if (!response.ok || json?.success === false || !id) {
+    const detail = abacatePayError(json);
     console.error("AbacatePay products/create falhou", response.status, JSON.stringify(json));
-    throw new Error(`Não foi possível preparar o produto da taxa de publicação (HTTP ${response.status}).`);
+    throw new Error(
+      `Não foi possível preparar o produto da taxa de publicação (HTTP ${response.status})${detail ? `: ${detail}` : ""}.`
+    );
   }
 
   cachedPublishProductId = id;
@@ -88,7 +116,7 @@ async function resolvePublishProductId(apiKey: string): Promise<string> {
 }
 
 /**
- * Cria o checkout hospedado (PIX + cartão) da taxa única de publicação na API v2
+ * Cria o checkout hospedado (somente PIX) da taxa única de publicação na API v2
  * (POST /v2/checkouts/create). Os itens da v2 referenciam um PRODUTO; o id vem de
  * ABACATEPAY_PUBLISH_PRODUCT_ID (recomendado) ou é criado automaticamente.
  */
@@ -108,7 +136,7 @@ export async function createPublishCharge(input: CreatePublishChargeInput): Prom
     },
     body: JSON.stringify({
       items: [{ id: productId, quantity: 1 }],
-      methods: ["PIX", "CARD"],
+      methods: ["PIX"],
       returnUrl: `${input.appUrl}/dashboard`,
       completionUrl: `${input.appUrl}/dashboard?publicacao=paga`,
       externalId: input.weddingId,
@@ -120,15 +148,28 @@ export async function createPublishCharge(input: CreatePublishChargeInput): Prom
   const data = json?.data;
 
   if (!response.ok || json?.success === false || !data?.url || !data?.id) {
+    const detail = abacatePayError(json);
     console.error("AbacatePay checkouts/create falhou", response.status, JSON.stringify(json));
-    throw new Error(`AbacatePay não retornou uma cobrança válida (HTTP ${response.status}).`);
+    throw new Error(
+      `AbacatePay não retornou uma cobrança válida (HTTP ${response.status})${detail ? `: ${detail}` : ""}.`
+    );
+  }
+
+  // Recusa um checkout com valor diferente da taxa canônica (produto mal-precificado
+  // no painel do provedor publicaria o site pelo valor errado).
+  const amountCents = typeof data.amount === "number" ? data.amount : PUBLISH_FEE_CENTS;
+  if (amountCents !== PUBLISH_FEE_CENTS) {
+    console.error(
+      `AbacatePay: valor do checkout (${amountCents}) difere da taxa esperada (${PUBLISH_FEE_CENTS}). Corrija o preço do produto.`
+    );
+    throw new Error("A taxa de publicação está com valor incorreto no provedor. Contate o suporte.");
   }
 
   return {
     id: data.id,
     url: data.url,
     status: data.status ?? "PENDING",
-    amountCents: typeof data.amount === "number" ? data.amount : PUBLISH_FEE_CENTS,
+    amountCents,
     devMode: data.devMode ?? json?.devMode
   };
 }
@@ -172,13 +213,18 @@ export function parseAbacatePayWebhook(payload: unknown): AbacatePayWebhookResul
     asRecord(data.payment) ??
     data;
 
+  const chargeMeta = asRecord(charge.metadata) ?? asRecord(data.metadata) ?? {};
   const status = typeof charge.status === "string" ? charge.status.toUpperCase() : "";
-  const weddingId = typeof charge.externalId === "string" ? charge.externalId : undefined;
+  // externalId é o principal; a v2 pode carregar o id só em metadata.weddingId.
+  const weddingId =
+    (typeof charge.externalId === "string" && charge.externalId) ||
+    (typeof chargeMeta.weddingId === "string" ? chargeMeta.weddingId : undefined) ||
+    undefined;
   const chargeId = typeof charge.id === "string" ? charge.id : undefined;
   const amountCents = typeof charge.amount === "number" ? charge.amount : undefined;
 
   return {
-    paid: PAID_EVENTS.has(event) && (status === "" || status === "PAID"),
+    paid: PAID_EVENTS.has(event) && !UNPAID_STATUSES.has(status),
     weddingId,
     chargeId,
     amountCents,

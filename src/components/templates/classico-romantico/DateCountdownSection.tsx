@@ -46,22 +46,25 @@ export function DateCountdownSection({
       new Date(wedding.weddingDate).getTime(),
     [wedding.weddingDate]
   );
+  const hasDate = Number.isFinite(target);
 
   // null until mounted on the client — avoids an SSR/hydration mismatch on the
-  // time-dependent countdown (the section renders nothing on the server).
+  // time-dependent countdown (only the numbers are client-only).
   const [countdown, setCountdown] =
     useState<CountdownState | null>(null);
 
   useEffect(() => {
+    if (!hasDate) return;
     const update = () => setCountdown(getCountdown(target));
     update();
 
     const interval = window.setInterval(update, 1000);
 
     return () => window.clearInterval(interval);
-  }, [target]);
+  }, [target, hasDate]);
 
-  if (!countdown) {
+  // Sem data e sem rótulo não há o que mostrar.
+  if (!hasDate && !wedding.weddingDateLabel) {
     return null;
   }
 
@@ -102,36 +105,32 @@ export function DateCountdownSection({
 
       <h2>{wedding.weddingDateLabel}</h2>
 
-      <div
-        className={styles.countdown}
-        aria-label="Contagem regressiva para o casamento"
-      >
-        <div>
-          <strong>{countdown.days}</strong>
-          <span>dias</span>
-        </div>
+      {hasDate && countdown ? (
+        <div
+          className={styles.countdown}
+          aria-label="Contagem regressiva para o casamento"
+        >
+          <div>
+            <strong>{countdown.days}</strong>
+            <span>dias</span>
+          </div>
 
-        <div>
-          <strong>
-            {pad(countdown.hours)}
-          </strong>
-          <span>horas</span>
-        </div>
+          <div>
+            <strong>{pad(countdown.hours)}</strong>
+            <span>horas</span>
+          </div>
 
-        <div>
-          <strong>
-            {pad(countdown.minutes)}
-          </strong>
-          <span>minutos</span>
-        </div>
+          <div>
+            <strong>{pad(countdown.minutes)}</strong>
+            <span>minutos</span>
+          </div>
 
-        <div>
-          <strong>
-            {pad(countdown.seconds)}
-          </strong>
-          <span>segundos</span>
+          <div>
+            <strong>{pad(countdown.seconds)}</strong>
+            <span>segundos</span>
+          </div>
         </div>
-      </div>
+      ) : null}
     </section>
   );
 }

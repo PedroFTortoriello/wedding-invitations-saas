@@ -381,3 +381,84 @@ export async function extractGiftFromUrl(rawUrl: string): Promise<GiftExtraction
     clearTimeout(timeout);
   }
 }
+
+const IMAGE_TIMEOUT_MS = 8_000;
+const IMAGE_MAX_BYTES = 8 * 1024 * 1024;
+const IMAGE_EXT: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/avif": "avif",
+  "image/gif": "gif"
+};
+
+async function readLimitedBytes(response: Response, max: number): Promise<Uint8Array | null> {
+  const declared = Number(response.headers.get("content-length"));
+  if (Number.isFinite(declared) && declared > max) return null;
+
+  if (!response.body) {
+    const buffer = new Uint8Array(await response.arrayBuffer());
+    return buffer.byteLength > max ? null : buffer;
+  }
+
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (!value) continue;
+    total += value.byteLength;
+    if (total > max) {
+      await reader.cancel().catch(() => undefined);
+      return null;
+    }
+    chunks.push(value);
+  }
+
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    out.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return out;
+}
+
+/**
+ * Baixa a imagem do produto (og:image) com a MESMA proteção SSRF do scraper, só
+ * content-type de imagem e teto de tamanho (streamado). Retorna null e nunca
+ * lança — o caller degrada sem imagem. Os bytes vão pro nosso storage, então não
+ * dependemos de hotlink nem furamos o remotePatterns do next/image.
+ */
+export async function fetchExternalImage(
+  rawUrl: string
+): Promise<{ bytes: Uint8Array; contentType: string; ext: string } | null> {
+  let imageUrl: URL;
+  try {
+    imageUrl = assertPublicProductUrl(rawUrl);
+  } catch {
+    return null;
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), IMAGE_TIMEOUT_MS);
+  try {
+    const response = await fetch(imageUrl, { redirect: "follow", signal: controller.signal });
+    if (!response.ok) return null;
+
+    const contentType = (response.headers.get("content-type") ?? "").split(";")[0]?.trim().toLowerCase() ?? "";
+    const ext = IMAGE_EXT[contentType];
+    if (!ext) return null;
+
+    const bytes = await readLimitedBytes(response, IMAGE_MAX_BYTES);
+    if (!bytes || bytes.byteLength === 0) return null;
+
+    return { bytes, contentType, ext };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}

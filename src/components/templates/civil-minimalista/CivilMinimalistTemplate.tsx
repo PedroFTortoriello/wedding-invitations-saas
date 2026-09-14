@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { WeddingSite } from "@/types/wedding";
 import { GiftRegistry } from "@/components/gift/GiftRegistry";
+import { GuestForms } from "@/components/templates/shared/GuestForms";
 import styles from "./civil-minimalista.module.css";
 
 type CivilMinimalistTemplateProps = {
@@ -18,7 +19,7 @@ export function CivilMinimalistTemplate({ wedding }: CivilMinimalistTemplateProp
     <main className={styles.template}>
       <section className={styles.hero} aria-label={`Site de casamento de ${wedding.coupleNames}`}>
         <Image
-          src="/assets/canva-intimate/hero-canva.jpg"
+          src={wedding.heroImage}
           alt=""
           width={2400}
           height={1598}
@@ -111,6 +112,8 @@ export function CivilMinimalistTemplate({ wedding }: CivilMinimalistTemplateProp
         </div>
         <GiftRegistry wedding={wedding} variant="civil" />
       </section>
+
+      <GuestForms wedding={wedding} variant="civil" mode="both" sectionId="rsvp" />
 
       <section className={styles.finalCta}>
         <p>{wedding.monogram}</p>

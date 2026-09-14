@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Vows design tokens — generate Tailwind color utilities (text-ink, bg-forest, …). */
+/* Noivar design tokens — generate Tailwind color utilities (text-ink, bg-forest, …). */
 @theme {
   --color-ink: #1a1e15;
   --color-ink-soft: #4a4f40;

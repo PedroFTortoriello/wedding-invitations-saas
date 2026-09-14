@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: OliveBurgundyPageProps): Prom
 }
 
 export function generateStaticParams() {
-  return [{ slug: "pedro-e-rafaela" }];
+  return [{ slug: "helena-e-lucas" }];
 }
 
 export default async function OliveBurgundyPage({ params }: OliveBurgundyPageProps) {

@@ -16,6 +16,7 @@ async function loadOwnedRow() {
     .from("weddings")
     .select("*")
     .eq("owner_id", user.id)
+    .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
   return { supabase, row: (data as WeddingRow) ?? null };
@@ -44,13 +45,19 @@ export async function addGiftAction(_prev: GiftActionState, formData: FormData):
 
   if (title.length < 2) return { error: "Dê um nome à cota de presente." };
 
+  // Só aceita imagem do storage do próprio dono (mesma regra do editor).
+  const prefix = process.env.NEXT_PUBLIC_SUPABASE_URL
+    ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/wedding-photos/${row.owner_id}/`
+    : null;
+  const safeImage = image && prefix && image.startsWith(prefix) ? image : undefined;
+
   const gift: WeddingGift = {
     id: randomUUID(),
     title,
     description,
     price,
     link: "#presentes",
-    image: image || undefined,
+    image: safeImage,
     active: true
   };
 

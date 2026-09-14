@@ -1,4 +1,4 @@
-import { demoWedding } from "@/lib/demo-wedding";
+import { demoWedding, romanticImages } from "@/lib/demo-wedding";
 import type {
   CashGiftRevenueModel,
   CashGiftTransaction,
@@ -12,14 +12,17 @@ import type {
 
 export { demoWedding };
 
-export const platformName = "Vows";
+export const platformName = "Noivar";
+
+/** WhatsApp de suporte, formato E.164 sem "+" (para links wa.me). */
+export const supportWhatsApp = "5511942716215";
 
 /** Taxa única de publicação paga pelo casal. Única fonte de receita da plataforma. */
 export const PUBLISH_FEE_BRL = 149.9;
 
 export const demoUser: PlatformUser = {
-  id: "user_pedro_rafaela",
-  name: "Pedro e Rafaela",
+  id: "user_helena_lucas",
+  name: "Helena e Lucas",
   email: "casal@demo.com",
   role: "client",
   createdAt: "2026-05-01T12:00:00-03:00"
@@ -28,7 +31,7 @@ export const demoUser: PlatformUser = {
 export const adminUser: PlatformUser = {
   id: "user_admin",
   name: "Admin Plataforma",
-  email: "admin@vows.local",
+  email: "admin@noivar.local",
   role: "admin",
   createdAt: "2026-05-01T12:00:00-03:00"
 };
@@ -49,6 +52,38 @@ export const cashGiftRevenueModel: CashGiftRevenueModel = {
 
 export const platformTemplates: PlatformTemplate[] = [
   {
+    id: "cinema-noir",
+    name: "Cinema Noir",
+    description:
+      "Convite cinematográfico em espresso e champanhe: hero fílmico com poeira dourada, tipografia Cormorant em escala editorial e reveals em blur — luxo de boutique Cartier/Rolex à noite.",
+    previewImage: romanticImages.luxuryVenue,
+    status: "active"
+  },
+  {
+    id: "pe-na-areia",
+    name: "Pé na Areia",
+    description:
+      "Casamento pé na areia ao pôr do sol — azuis oceânicos, areia e coral no golden hour, com ondas e um sol que balança ao scroll. Para destinos litorâneos.",
+    previewImage: romanticImages.ceremonyAisle,
+    status: "active"
+  },
+  {
+    id: "editorial-luxury",
+    name: "Editorial Luxury",
+    description:
+      "Capa de revista em preto e branco, serifa Didone e dourado nos detalhes — Vogue e Dior em forma de convite, com glass sutil e micro-animações.",
+    previewImage: romanticImages.blackWhiteWide,
+    status: "active"
+  },
+  {
+    id: "jardim-romantico",
+    name: "Jardim Romântico",
+    description:
+      "Verde jardim, creme e rosa-blush com molduras em arco e folhagens que balançam ao scroll — clima de vinícola na Toscana e na Provence.",
+    previewImage: romanticImages.ceremonyAisle,
+    status: "active"
+  },
+  {
     id: "classico-romantico",
     name: "Clássico Romântico",
     description: "Editorial, romântico, cinematográfico e mobile-first.",
@@ -65,16 +100,8 @@ export const platformTemplates: PlatformTemplate[] = [
   {
     id: "garden-classico",
     name: "Jardim Clássico",
-    description: "Marrom, bege e botânico, com capa floral, tipografia caligráfica e programa do evento.",
+    description: "Azul-empoeirado e greige em tom sóbrio e atemporal, fotos em grade fria e programa do evento — um jardim clássico e sereno.",
     previewImage: "/assets/canva-garden/hero-garden.jpg",
-    status: "active"
-  },
-  {
-    id: "olive-burgundy",
-    name: "Olive Burgundy — Save the Date",
-    description:
-      "Save the date digital com abertura de envelope verde-oliva, selo de cera, cartão floral em bordô e contagem regressiva ao vivo.",
-    previewImage: demoWedding.heroImage,
     status: "active"
   }
 ];

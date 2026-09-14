@@ -13,6 +13,7 @@ import { HeroSection } from "./HeroSection";
 import { LightboxDialog } from "./LightboxDialog";
 import { RSVPDialog } from "./RSVPDialog";
 import { StorySection } from "./StorySection";
+import { GuestForms } from "@/components/templates/shared/GuestForms";
 import styles from "./classic-romantic.module.css";
 
 type ClassicRomanticTemplateProps = {
@@ -80,26 +81,6 @@ export function ClassicRomanticTemplate({ wedding }: ClassicRomanticTemplateProp
       });
     };
 
-    const invitationWords = Array.from(root.querySelectorAll<HTMLElement>("[data-invitation-word]"));
-    const invitation = root.querySelector<HTMLElement>("[data-invitation]");
-    const invitationObserver =
-      invitation && invitationWords.length
-        ? new IntersectionObserver(
-            ([entry]) => {
-              if (!entry.isIntersecting) return;
-              invitationWords.forEach((word, index) => {
-                window.setTimeout(() => word.classList.add(styles.active), index * 92);
-              });
-              invitationObserver?.disconnect();
-            },
-            { threshold: 0.42 }
-          )
-        : null;
-
-    if (invitation && invitationObserver) {
-      invitationObserver.observe(invitation);
-    }
-
     const detailObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -123,7 +104,6 @@ export function ClassicRomanticTemplate({ wedding }: ClassicRomanticTemplateProp
     return () => {
       window.removeEventListener("scroll", requestUpdate);
       window.removeEventListener("resize", requestUpdate);
-      invitationObserver?.disconnect();
       detailObserver.disconnect();
     };
   }, [wedding.slug]);
@@ -151,7 +131,7 @@ export function ClassicRomanticTemplate({ wedding }: ClassicRomanticTemplateProp
           </a>
           <div className={styles["nav-links"]} aria-label="Seções do casamento">
             <a href="#details">Local</a>
-            <a href="#details">Presentes</a>
+            <a href="#presentes">Presentes</a>
             <a href="#story">História</a>
           </div>
           <div className={styles["nav-actions"]}>
@@ -176,7 +156,7 @@ export function ClassicRomanticTemplate({ wedding }: ClassicRomanticTemplateProp
             <a href="#details" onClick={() => setMenuOpen(false)}>
               Local
             </a>
-            <a href="#details" onClick={() => setMenuOpen(false)}>
+            <a href="#presentes" onClick={() => setMenuOpen(false)}>
               Presentes
             </a>
             <a href="#story" onClick={() => setMenuOpen(false)}>
@@ -187,13 +167,16 @@ export function ClassicRomanticTemplate({ wedding }: ClassicRomanticTemplateProp
       </nav>
 
       <main>
-        <HeroSection wedding={wedding} />
-        {/* <InvitationSection wedding={wedding} /> */}
+        <HeroSection
+          wedding={wedding}
+          onOpenRsvp={wedding.rsvp.enabled ? () => setRsvpOpen(true) : undefined}
+        />
         <StorySection wedding={wedding} />
         <GallerySection wedding={wedding} onSelectImage={setLightboxImage} />
         <DateCountdownSection wedding={wedding} />
         <DetailsSection wedding={wedding} onSelectDetail={setActiveDetail} />
         <CashGiftPixSection wedding={wedding} />
+        <GuestForms wedding={wedding} variant="classico" mode="messages" sectionId="recados" />
         <FinalSection wedding={wedding} />
         <FooterSection wedding={wedding} />
       </main>

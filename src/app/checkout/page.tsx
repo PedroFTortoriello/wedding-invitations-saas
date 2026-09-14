@@ -26,7 +26,8 @@ export default async function CheckoutPage() {
     .order("created_at", { ascending: false });
 
   const list = gifts ?? [];
-  const pending = list.filter((gift) => gift.status === "pending");
+  // Só Pix espera confirmação manual; cartão é confirmado pelo webhook do Mercado Pago.
+  const pending = list.filter((gift) => gift.status === "pending" && gift.payment_method === "pix");
   const paid = list.filter((gift) => gift.status === "paid");
   const totalPaid = paid.reduce((total, gift) => total + Number(gift.gross_amount), 0);
   const totalPending = pending.reduce((total, gift) => total + Number(gift.gross_amount), 0);
@@ -34,7 +35,7 @@ export default async function CheckoutPage() {
   return (
     <AppShell
       title="Presentes em dinheiro"
-      subtitle="Os presentes via Pix caem 100% na sua chave, sem intermediação. Confirme aqui o que já recebeu."
+      subtitle="Os presentes via Pix caem 100% na sua chave, sem intermediação — confirme aqui o que já recebeu. Os de cartão se confirmam sozinhos."
       active="cash-gifts"
     >
       <section className="grid gap-4 md:grid-cols-3">
@@ -96,8 +97,14 @@ export default async function CheckoutPage() {
               >
                 <div className="min-w-0">
                   <strong>{gift.guest_name}</strong>
-                  <p className="text-sm text-ink-soft">{gift.message ?? "Presente em dinheiro via Pix"}</p>
-                  <p className="text-xs text-ink-soft">{formatDay(gift.paid_at ?? gift.created_at)}</p>
+                  <p className="text-sm text-ink-soft">
+                    {gift.message ??
+                      (gift.payment_method === "card" ? "Presente no cartão (Mercado Pago)" : "Presente em dinheiro via Pix")}
+                  </p>
+                  <p className="text-xs text-ink-soft">
+                    {formatDay(gift.paid_at ?? gift.created_at)}
+                    {gift.payment_method === "card" ? " · Cartão" : " · Pix"}
+                  </p>
                 </div>
                 <span className="text-sm font-black">{formatCurrency(Number(gift.gross_amount))}</span>
                 <StatusBadge status="paid" />

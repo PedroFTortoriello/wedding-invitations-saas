@@ -16,6 +16,19 @@ export type NormalizedMessage = {
 
 type Result<T> = { ok: true; value: T } | { ok: false; error: string };
 
+/**
+ * Normaliza nome para casar o RSVP com a lista do casal: sem acento, minúsculo,
+ * espaços colapsados. Pura e testável.
+ */
+export function normalizeName(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /** Acompanhantes: inteiro entre 0 e 20; qualquer lixo vira 0. */
 export function clampCompanions(value: unknown): number {
   const n = Number(value);

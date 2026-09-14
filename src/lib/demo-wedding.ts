@@ -19,16 +19,16 @@ export const romanticImages = {
 };
 
 export const demoWedding: WeddingSite = {
-  id: "wedding_pedro_rafaela",
-  slug: "pedro-e-rafaela",
+  id: "wedding_helena_lucas",
+  slug: "helena-e-lucas",
   status: "published",
   templateId: "classico-romantico",
   templateName: "Clássico Romântico",
-  coupleNames: "Pedro Tortoriello & Rafaela da Cunha",
-  monogram: "P&R",
-  pixKey: "pedro.rafaela@email.com",
+  coupleNames: "Helena Ribeiro & Lucas Moreira",
+  monogram: "H&L",
+  pixKey: "helena.lucas@email.com",
   pixKeyType: "email",
-  pixHolderName: "Pedro Tortoriello",
+  pixHolderName: "Helena Ribeiro",
   weddingDate: "2026-12-05T16:30:00-03:00",
   weddingDateLabel: "5 de dezembro de 2026",
   weddingTime: "16:30",
@@ -93,6 +93,12 @@ export const demoWedding: WeddingSite = {
   detailsTitle: "um fim de tarde para guardar",
   detailsSubtitle:
     "Cerimônia, jantar e celebração acontecem no mesmo endereço, com uma curadoria pensada para uma experiência fluida do primeiro brinde à última música.",
+  schedule: [
+    { id: "recepcao", time: "16:30", title: "Recepção", note: "Welcome drinks e retratos ao entardecer." },
+    { id: "cerimonia", time: "17:30", title: "Cerimônia", note: "O sim, diante de quem importa." },
+    { id: "jantar", time: "19:00", title: "Jantar", note: "Menu assinado em três tempos." },
+    { id: "festa", time: "21:00", title: "Festa", note: "Brindes, dança e a noite toda." }
+  ],
   locations: [
     {
       id: "principal",
@@ -311,13 +317,13 @@ export const demoWedding: WeddingSite = {
     surface: "#fffaf4",
     text: "#2e2722",
     muted: "#73685f",
-    primary: "#7b8063",
-    primaryDark: "#3e4230",
-    primarySoft: "#e6e2d5"
+    primary: "#a05639",
+    primaryDark: "#733722",
+    primarySoft: "#edd7c8"
   },
   seo: {
-    title: "Pedro Tortoriello & Rafaela da Cunha",
-    description: "Site de casamento de Pedro Tortoriello e Rafaela da Cunha."
+    title: "Helena Ribeiro & Lucas Moreira",
+    description: "Site de casamento de Helena Ribeiro e Lucas Moreira."
   }
 };
 

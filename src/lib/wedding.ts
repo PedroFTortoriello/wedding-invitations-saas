@@ -43,7 +43,11 @@ export const TEMPLATE_NAMES: Record<WeddingSite["templateId"], string> = {
   "classico-romantico": "Clássico Romântico",
   "civil-minimalista": "Civil Minimalista",
   "garden-classico": "Jardim Clássico",
-  "olive-burgundy": "Olive Burgundy — Save the Date"
+  "olive-burgundy": "Olive Burgundy — Save the Date",
+  "editorial-luxury": "Editorial Luxury",
+  "jardim-romantico": "Jardim Romântico",
+  "pe-na-areia": "Pé na Areia",
+  "cinema-noir": "Cinema Noir"
 };
 
 export const TEMPLATE_IDS = Object.keys(TEMPLATE_NAMES) as WeddingSite["templateId"][];
@@ -84,6 +88,11 @@ const STARTER_CONTENT: WeddingContent = {
   ],
   detailsTitle: "Detalhes do grande dia",
   detailsSubtitle: "Local, horário e tudo o que seus convidados precisam saber.",
+  schedule: [
+    { id: "recepcao", time: "16:30", title: "Recepção", note: "Boas-vindas aos convidados." },
+    { id: "cerimonia", time: "17:30", title: "Cerimônia", note: "A troca de votos." },
+    { id: "festa", time: "19:00", title: "Festa", note: "Jantar, brindes e dança." }
+  ],
   locations: [{ id: "principal", title: "Local", venue: "", city: "", note: "", mapUrl: "", image: romanticImages.reception }],
   detailCards: [],
   gifts: [],

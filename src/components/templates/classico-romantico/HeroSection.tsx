@@ -3,9 +3,11 @@ import styles from "./classic-romantic.module.css";
 
 type HeroSectionProps = {
   wedding: WeddingSite;
+  /** Abre o diálogo de RSVP. Passado só quando o RSVP está habilitado. */
+  onOpenRsvp?: () => void;
 };
 
-export function HeroSection({ wedding }: HeroSectionProps) {
+export function HeroSection({ wedding, onOpenRsvp }: HeroSectionProps) {
   const location = wedding.locations[0];
 
   return (
@@ -20,6 +22,11 @@ export function HeroSection({ wedding }: HeroSectionProps) {
           </div>
           <h1>{wedding.coupleNames}</h1>
           <div className={styles["hero-actions"]}>
+            {onOpenRsvp ? (
+              <button type="button" className={styles["hero-rsvp"]} onClick={onOpenRsvp}>
+                Confirmar presença
+              </button>
+            ) : null}
             <a href="#details">Ver detalhes</a>
             <a href="#presentes">Lista de presentes</a>
           </div>

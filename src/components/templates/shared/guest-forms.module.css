@@ -1,0 +1,160 @@
+.root {
+  background: var(--gf-bg);
+  padding: clamp(48px, 8vw, 96px) 20px;
+  color: var(--gf-ink);
+}
+
+.wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  display: grid;
+  gap: 20px;
+}
+
+.wrap.two {
+  max-width: 1040px;
+}
+
+@media (min-width: 840px) {
+  .wrap.two {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.card {
+  background: var(--gf-card);
+  border: 1px solid var(--gf-border);
+  border-radius: var(--gf-radius);
+  padding: clamp(24px, 4vw, 40px);
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gf-eyebrow);
+}
+
+.title {
+  margin: 0 0 22px;
+  font-family: inherit;
+  font-size: clamp(26px, 3vw, 38px);
+  font-weight: 500;
+  line-height: 1.05;
+  color: var(--gf-ink);
+}
+
+.form {
+  display: grid;
+  gap: 14px;
+}
+
+.row {
+  display: grid;
+  gap: 14px;
+}
+
+@media (min-width: 520px) {
+  .row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gf-muted);
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 14px;
+  border: 1px solid var(--gf-border);
+  border-radius: calc(var(--gf-radius) * 0.55);
+  background: var(--gf-field);
+  color: var(--gf-ink);
+  font: inherit;
+  font-weight: 400;
+}
+
+.field textarea {
+  min-height: 108px;
+  resize: vertical;
+}
+
+.field input::placeholder,
+.field select::placeholder,
+.field textarea::placeholder {
+  color: var(--gf-muted);
+  opacity: 1;
+}
+
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+  outline: 2px solid var(--gf-accent);
+  outline-offset: 1px;
+  border-color: var(--gf-accent);
+}
+
+.submit {
+  margin-top: 4px;
+  min-height: 48px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--gf-accent);
+  color: var(--gf-on-accent);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.submit:hover {
+  opacity: 0.92;
+}
+
+.submit:active {
+  transform: translateY(1px);
+}
+
+.submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.submit:focus-visible {
+  outline: 2px solid var(--gf-accent);
+  outline-offset: 3px;
+}
+
+.error {
+  margin: 0;
+  color: var(--gf-error, #8d3d33);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.done {
+  margin: 0;
+  padding: 6px 0;
+  color: var(--gf-ink);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .submit {
+    transition: none;
+  }
+}

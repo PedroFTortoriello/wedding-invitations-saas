@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: CivilMinimalistPageProps): Pr
 }
 
 export function generateStaticParams() {
-  return [{ slug: "pedro-e-rafaela" }];
+  return [{ slug: "helena-e-lucas" }];
 }
 
 export default async function CivilMinimalistPage({ params }: CivilMinimalistPageProps) {

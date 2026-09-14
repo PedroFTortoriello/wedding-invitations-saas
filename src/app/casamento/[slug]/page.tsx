@@ -4,9 +4,16 @@ import { ClassicRomanticTemplate } from "@/components/templates/classico-romanti
 import { CivilMinimalistTemplate } from "@/components/templates/civil-minimalista/CivilMinimalistTemplate";
 import { GardenClassicTemplate } from "@/components/templates/garden-classico/GardenClassicTemplate";
 import { OliveBurgundyTemplate } from "@/components/templates/olive-burgundy/OliveBurgundyTemplate";
+import { EditorialLuxuryTemplate } from "@/components/templates/editorial-luxury/EditorialLuxuryTemplate";
+import { JardimRomanticoTemplate } from "@/components/templates/jardim-romantico/JardimRomanticoTemplate";
+import { PeNaAreiaTemplate } from "@/components/templates/pe-na-areia/PeNaAreiaTemplate";
+import { CinemaNoirTemplate } from "@/components/templates/cinema-noir/CinemaNoirTemplate";
+import { CardGiftProvider } from "@/components/gift/CardGiftContext";
+import { getCardGiftConfig } from "@/lib/mercadopago-server";
 import { rowToWeddingSite } from "@/lib/wedding";
-import { getWeddingBySlug } from "@/lib/wedding-server";
+import { getWeddingBySlug, getWeddingStatusBySlug } from "@/lib/wedding-server";
 import type { WeddingSite } from "@/types/wedding";
+import { SiteNotPublished } from "./SiteNotPublished";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +26,10 @@ export async function generateMetadata({ params }: PublicWeddingPageProps): Prom
   const row = await getWeddingBySlug(slug);
 
   if (!row) {
+    const info = await getWeddingStatusBySlug(slug).catch(() => null);
+    if (info && info.status !== "published") {
+      return { title: "Site em breve", robots: { index: false, follow: false } };
+    }
     return { title: "Casamento não encontrado" };
   }
 
@@ -42,6 +53,14 @@ function WeddingTemplate({ site }: { site: WeddingSite }) {
       return <GardenClassicTemplate wedding={site} />;
     case "olive-burgundy":
       return <OliveBurgundyTemplate wedding={site} />;
+    case "editorial-luxury":
+      return <EditorialLuxuryTemplate wedding={site} />;
+    case "jardim-romantico":
+      return <JardimRomanticoTemplate wedding={site} />;
+    case "pe-na-areia":
+      return <PeNaAreiaTemplate wedding={site} />;
+    case "cinema-noir":
+      return <CinemaNoirTemplate wedding={site} />;
     case "classico-romantico":
     default:
       return <ClassicRomanticTemplate wedding={site} />;
@@ -53,8 +72,22 @@ export default async function PublicWeddingPage({ params }: PublicWeddingPagePro
   const row = await getWeddingBySlug(slug);
 
   if (!row) {
+    // RLS esconde rascunhos do visitante: distingue "não publicado" de inexistente.
+    const info = await getWeddingStatusBySlug(slug).catch(() => null);
+    if (info && info.status !== "published") {
+      return <SiteNotPublished coupleNames={info.coupleNames} />;
+    }
     notFound();
   }
 
-  return <WeddingTemplate site={rowToWeddingSite(row)} />;
+  const site = rowToWeddingSite(row);
+  // Cartão só no site publicado, com cota ativa e com a conta do casal conectada.
+  const hasGifts = site.gifts.some((gift) => gift.active);
+  const cardConfig = row.status === "published" && hasGifts ? await getCardGiftConfig(row.id) : null;
+
+  return (
+    <CardGiftProvider value={cardConfig}>
+      <WeddingTemplate site={site} />
+    </CardGiftProvider>
+  );
 }

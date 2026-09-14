@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
-import { extractGiftFromUrl } from "@/lib/gift-scraper";
+import { randomUUID } from "node:crypto";
+import { extractGiftFromUrl, fetchExternalImage } from "@/lib/gift-scraper";
 import { createClient } from "@/lib/supabase/server";
 import type { GiftExtractionRequest } from "@/types/gift-extraction";
 
 export const runtime = "nodejs";
+
+const BUCKET = "wedding-photos";
 
 export async function POST(request: Request) {
   try {
@@ -26,7 +29,23 @@ export async function POST(request: Request) {
 
     const gift = await extractGiftFromUrl(url);
 
-    return NextResponse.json(gift);
+    // Rebaixa a imagem externa para o NOSSO storage (pasta do dono): assim ela
+    // passa no guard de imagem do addGiftAction e renderiza no next/image.
+    let image: string | null = null;
+    if (gift.image) {
+      const downloaded = await fetchExternalImage(gift.image);
+      if (downloaded) {
+        const path = `${user.id}/gift-${randomUUID()}.${downloaded.ext}`;
+        const { error } = await supabase.storage
+          .from(BUCKET)
+          .upload(path, downloaded.bytes, { contentType: downloaded.contentType, upsert: false });
+        if (!error) {
+          image = supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+        }
+      }
+    }
+
+    return NextResponse.json({ ...gift, image });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Não foi possível extrair os dados desse produto.";
 

@@ -78,6 +78,54 @@ describe("parseAbacatePayWebhook", () => {
     expect(r.paid).toBe(false);
   });
 
+  it("marks a v2 completion as paid when status is COMPLETED/APPROVED (not literal PAID)", () => {
+    expect(
+      parseAbacatePayWebhook({
+        event: "checkout.completed",
+        data: { checkout: { id: "c1", externalId: "w1", amount: 14990, status: "COMPLETED" } }
+      }).paid
+    ).toBe(true);
+    expect(
+      parseAbacatePayWebhook({
+        event: "checkout.completed",
+        data: { checkout: { id: "c2", externalId: "w2", status: "APPROVED" } }
+      }).paid
+    ).toBe(true);
+  });
+
+  it("marks a completion event as paid when the nested status is absent", () => {
+    expect(
+      parseAbacatePayWebhook({
+        event: "checkout.completed",
+        data: { checkout: { id: "c3", externalId: "w3", amount: 14990 } }
+      }).paid
+    ).toBe(true);
+  });
+
+  it("does NOT mark paid on explicitly failed/expired status", () => {
+    expect(
+      parseAbacatePayWebhook({
+        event: "checkout.completed",
+        data: { checkout: { id: "c4", externalId: "w4", status: "FAILED" } }
+      }).paid
+    ).toBe(false);
+    expect(
+      parseAbacatePayWebhook({
+        event: "checkout.completed",
+        data: { checkout: { id: "c5", externalId: "w5", status: "EXPIRED" } }
+      }).paid
+    ).toBe(false);
+  });
+
+  it("falls back to metadata.weddingId when externalId is absent (v2)", () => {
+    const r = parseAbacatePayWebhook({
+      event: "checkout.completed",
+      data: { checkout: { id: "c6", amount: 14990, status: "COMPLETED", metadata: { weddingId: "w6" } } }
+    });
+    expect(r.paid).toBe(true);
+    expect(r.weddingId).toBe("w6");
+  });
+
   it("is safe on malformed payloads", () => {
     expect(parseAbacatePayWebhook(null).paid).toBe(false);
     expect(parseAbacatePayWebhook("nope").paid).toBe(false);

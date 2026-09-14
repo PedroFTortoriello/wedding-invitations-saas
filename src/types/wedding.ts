@@ -1,6 +1,6 @@
 export type WeddingSiteStatus = "draft" | "published" | "suspended" | "expired";
 export type UserRole = "admin" | "client";
-export type CashGiftStatus = "pending" | "paid" | "refunded";
+export type CashGiftStatus = "pending" | "paid" | "refunded" | "failed";
 export type GuestStatus = "pending" | "confirmed" | "declined";
 export type PixKeyType = "cpf" | "cnpj" | "email" | "phone" | "random";
 
@@ -59,6 +59,13 @@ export type WeddingStoryMoment = {
   description: string;
 };
 
+export type WeddingScheduleItem = {
+  id: string;
+  time: string;
+  title: string;
+  note?: string;
+};
+
 export type WeddingTheme = {
   background: string;
   surface: string;
@@ -74,7 +81,15 @@ export type WeddingSite = {
   ownerId?: string;
   slug: string;
   status: WeddingSiteStatus;
-  templateId: "classico-romantico" | "civil-minimalista" | "garden-classico" | "olive-burgundy";
+  templateId:
+    | "classico-romantico"
+    | "civil-minimalista"
+    | "garden-classico"
+    | "olive-burgundy"
+    | "editorial-luxury"
+    | "jardim-romantico"
+    | "pe-na-areia"
+    | "cinema-noir";
   templateName: string;
   coupleNames: string;
   monogram: string;
@@ -96,6 +111,7 @@ export type WeddingSite = {
   storyMoments: WeddingStoryMoment[];
   detailsTitle: string;
   detailsSubtitle: string;
+  schedule: WeddingScheduleItem[];
   locations: WeddingLocation[];
   detailCards: WeddingDetailCard[];
   gifts: WeddingGift[];
@@ -136,7 +152,7 @@ export type CashGiftTransaction = {
   grossAmount: number;
   currency: "BRL";
   status: CashGiftStatus;
-  paymentMethod: "pix";
+  paymentMethod: "pix" | "card";
   paidAt?: string;
   createdAt: string;
 };

@@ -11,12 +11,15 @@ const labels: Record<string, string> = {
   expired: "Expirado",
   paid: "Pago",
   pending: "Pendente",
+  refunded: "Estornado",
+  failed: "Não concluído",
+  connected: "Conectado",
   confirmed: "Confirmado",
   declined: "Nao vai"
 };
 
 export function StatusBadge({ status, onDark = false }: StatusBadgeProps) {
-  const positive = ["published", "paid", "confirmed"].includes(status);
+  const positive = ["published", "paid", "confirmed", "connected"].includes(status);
   const warning = ["draft", "pending"].includes(status);
 
   const tone = onDark

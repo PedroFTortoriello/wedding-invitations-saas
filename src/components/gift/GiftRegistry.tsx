@@ -5,9 +5,11 @@ import Image from "next/image";
 import type { WeddingGift, WeddingSite } from "@/types/wedding";
 import type { PixChargeResponse } from "@/types/pix";
 import { formatBRL, parseGiftPrice } from "@/lib/gift-price";
+import { computeCardCharge, validateCardAmount } from "@/lib/card-pricing";
+import { useCardGiftConfig } from "./CardGiftContext";
 import styles from "./gift-registry.module.css";
 
-export type GiftVariant = "classico" | "civil" | "jardim";
+export type GiftVariant = "classico" | "civil" | "jardim" | "editorial" | "romantic-garden" | "praia" | "cinema";
 
 /**
  * Per-template skin. Shared layout + Pix logic; each template provides its own
@@ -18,17 +20,17 @@ const SKINS: Record<GiftVariant, CSSProperties> = {
   classico: {
     "--g-card": "#fffaf1",
     "--g-dialog-bg": "#fffaf1",
-    "--g-border": "rgba(91, 104, 66, 0.2)",
-    "--g-ink": "#23301a",
-    "--g-muted": "#4a4f40",
-    "--g-accent": "#2c3a24",
-    "--g-on-accent": "#f3efe4",
-    "--g-price": "#23301a",
+    "--g-border": "rgba(160, 86, 57, 0.2)",
+    "--g-ink": "#33231b",
+    "--g-muted": "#6f5d54",
+    "--g-accent": "#8f4a30",
+    "--g-on-accent": "#f7efe6",
+    "--g-price": "#8f4a30",
     "--g-radius": "18px",
     "--g-img-radius": "12px",
     "--g-aspect": "4 / 3",
-    "--g-img-filter": "saturate(0.96) contrast(1.02)",
-    "--g-scrim": "rgba(28, 32, 20, 0.5)",
+    "--g-img-filter": "saturate(0.98) contrast(1.02)",
+    "--g-scrim": "rgba(46, 28, 20, 0.5)",
     "--g-error": "#8d3d33"
   } as CSSProperties,
   civil: {
@@ -62,11 +64,88 @@ const SKINS: Record<GiftVariant, CSSProperties> = {
     "--g-img-filter": "sepia(0.18) saturate(0.82) contrast(0.96)",
     "--g-scrim": "rgba(45, 43, 37, 0.6)",
     "--g-error": "#8d3d33"
+  } as CSSProperties,
+  editorial: {
+    "--g-card": "#f6f4ef",
+    "--g-dialog-bg": "#f6f4ef",
+    "--g-border": "rgba(22, 21, 26, 0.14)",
+    "--g-ink": "#16151a",
+    "--g-muted": "#585249",
+    "--g-accent": "#16151a",
+    "--g-on-accent": "#f6f4ef",
+    "--g-price": "#16151a",
+    "--g-radius": "2px",
+    "--g-img-radius": "0px",
+    "--g-aspect": "3 / 4",
+    "--g-img-filter": "grayscale(1) contrast(1.04)",
+    "--g-scrim": "rgba(16, 15, 18, 0.6)",
+    "--g-error": "#9a3b30"
+  } as CSSProperties,
+  "romantic-garden": {
+    "--g-card": "#fbf6ec",
+    "--g-dialog-bg": "#f7f1e6",
+    "--g-border": "rgba(58, 74, 46, 0.18)",
+    "--g-ink": "#2a2e22",
+    "--g-muted": "#555a47",
+    "--g-accent": "#3e5230",
+    "--g-on-accent": "#f6f1e4",
+    "--g-price": "#3e5230",
+    "--g-radius": "18px",
+    "--g-img-radius": "999px 999px 16px 16px",
+    "--g-aspect": "0.85 / 1",
+    "--g-img-filter": "saturate(1.03) contrast(1)",
+    "--g-scrim": "rgba(42, 46, 34, 0.55)",
+    "--g-error": "#8d3d33"
+  } as CSSProperties,
+  praia: {
+    "--g-card": "#fbf8f2",
+    "--g-dialog-bg": "#fbf8f2",
+    "--g-border": "rgba(22, 36, 42, 0.16)",
+    "--g-ink": "#16242a",
+    "--g-muted": "#445157",
+    "--g-accent": "#1c3a47",
+    "--g-on-accent": "#f4ede0",
+    "--g-price": "#2e5a6b",
+    "--g-radius": "18px",
+    "--g-img-radius": "14px",
+    "--g-aspect": "4 / 3",
+    "--g-img-filter": "saturate(1.06) contrast(1.02) brightness(1.02)",
+    "--g-scrim": "rgba(20, 42, 52, 0.5)",
+    "--g-error": "#b0492f"
+  } as CSSProperties,
+  // Cinema Noir — warm espresso surfaces, champagne accents, ivory ink on dark.
+  cinema: {
+    "--g-card": "#1c150e",
+    "--g-dialog-bg": "#17120d",
+    "--g-border": "rgba(201, 168, 106, 0.24)",
+    "--g-ink": "#f4ece0",
+    "--g-muted": "#b7a892",
+    "--g-accent": "#c9a86a",
+    "--g-on-accent": "#14100b",
+    "--g-price": "#ddc389",
+    "--g-radius": "6px",
+    "--g-img-radius": "2px",
+    "--g-aspect": "3 / 4",
+    "--g-img-filter": "saturate(0.9) contrast(1.05) brightness(0.88)",
+    "--g-scrim": "rgba(8, 6, 4, 0.72)",
+    "--g-error": "#e6a99f"
   } as CSSProperties
 };
 
 /** Gifts shown before the in-place "Ver todos" expansion. */
 const VISIBLE_GIFTS = 6;
+
+type ReturnNotice = { tone: "ok" | "warn"; text: string };
+
+/** Avisos da volta do checkout do cartão (?presente=... no back_url do Mercado Pago). */
+const RETURN_NOTICES: Record<string, ReturnNotice | undefined> = {
+  aprovado: { tone: "ok", text: "Presente confirmado. Obrigado por celebrar com o casal." },
+  pendente: {
+    tone: "warn",
+    text: "Pagamento em análise pelo Mercado Pago. Assim que for aprovado, ele aparece para o casal."
+  },
+  recusado: { tone: "warn", text: "O pagamento não foi concluído. Você pode tentar de novo quando quiser." }
+};
 
 type GiftRegistryProps = {
   wedding: WeddingSite;
@@ -81,6 +160,23 @@ export function GiftRegistry({ wedding, variant, sectionId = "presentes" }: Gift
   const [expanded, setExpanded] = useState(false);
   const gridId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
+  const [notice, setNotice] = useState<ReturnNotice | null>(null);
+
+  // Volta do checkout do cartão: mostra o aviso, limpa a query e traz a seção para a
+  // tela. O estado do presente vem SEMPRE do webhook, nunca da query string.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const found = RETURN_NOTICES[params.get("presente") ?? ""];
+    if (!found) return;
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setNotice(found);
+    /* eslint-enable react-hooks/set-state-in-effect */
+    params.delete("presente");
+    const query = params.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    rootRef.current?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+  }, []);
 
   const hasMore = gifts.length > VISIBLE_GIFTS;
   const visible = expanded || !hasMore ? gifts : gifts.slice(0, VISIBLE_GIFTS);
@@ -97,6 +193,11 @@ export function GiftRegistry({ wedding, variant, sectionId = "presentes" }: Gift
 
   return (
     <div className={styles.root} style={SKINS[variant]} ref={rootRef}>
+      {notice ? (
+        <p role="status" className={notice.tone === "ok" ? styles.notice : `${styles.notice} ${styles.noticeWarn}`}>
+          {notice.text}
+        </p>
+      ) : null}
       <ul className={styles.grid} id={gridId}>
         {visible.map((gift, index) => {
           const price = parseGiftPrice(gift.price);
@@ -158,21 +259,25 @@ export function GiftRegistry({ wedding, variant, sectionId = "presentes" }: Gift
       ) : null}
 
       {selected ? (
-        <GiftPixDialog wedding={wedding} gift={selected} onClose={() => setSelected(null)} />
+        <GiftPaymentDialog wedding={wedding} gift={selected} onClose={() => setSelected(null)} />
       ) : null}
     </div>
   );
 }
 
-type GiftPixDialogProps = {
+type GiftPaymentDialogProps = {
   wedding: WeddingSite;
   gift: WeddingGift;
   onClose: () => void;
 };
 
-function GiftPixDialog({ wedding, gift, onClose }: GiftPixDialogProps) {
+function GiftPaymentDialog({ wedding, gift, onClose }: GiftPaymentDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  // null quando o casal não conectou o Mercado Pago (e nas prévias /modelo e do editor).
+  const card = useCardGiftConfig();
+  const pixEnabled = Boolean(wedding.pixKey);
   const parsed = parseGiftPrice(gift.price);
+  const [method, setMethod] = useState<"pix" | "card">(pixEnabled || !card ? "pix" : "card");
   const [amount, setAmount] = useState<number>(parsed.isFree ? 150 : parsed.amount);
   const [guestName, setGuestName] = useState("");
   const [message, setMessage] = useState("");
@@ -218,6 +323,36 @@ function GiftPixDialog({ wedding, gift, onClose }: GiftPixDialogProps) {
     }
   }
 
+  // Cria a preferência na conta do casal e manda o convidado para o Checkout Pro.
+  async function payWithCard() {
+    setError("");
+    setLoading(true);
+    try {
+      const response = await fetch("/api/gifts/card/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          weddingSiteId: wedding.id,
+          guestName: guestName.trim() || "Convidado",
+          amount,
+          message: message.trim() || undefined,
+          giftId: gift.id
+        })
+      });
+      const data = (await response.json()) as { url?: string; error?: string };
+      if (!response.ok || !data.url) {
+        setError(data.error ?? "Não foi possível abrir o pagamento no cartão agora.");
+        setLoading(false);
+        return;
+      }
+      // Sai da página: o loading fica ligado de propósito até a navegação.
+      window.location.assign(data.url);
+    } catch {
+      setError("Não foi possível abrir o pagamento no cartão agora.");
+      setLoading(false);
+    }
+  }
+
   async function copyCode() {
     if (!charge) return;
     try {
@@ -228,6 +363,9 @@ function GiftPixDialog({ wedding, gift, onClose }: GiftPixDialogProps) {
     }
   }
 
+  const cardCharge = card && Number.isFinite(amount) ? computeCardCharge(amount, card.feePayer, card.feeRate) : null;
+  const cardError = method === "card" ? validateCardAmount(amount) : null;
+
   return (
     <dialog ref={dialogRef} className={styles.dialog} aria-label={`Presentear: ${gift.title}`} onClose={onClose}>
       <div className={styles.dialogPanel}>
@@ -236,7 +374,45 @@ function GiftPixDialog({ wedding, gift, onClose }: GiftPixDialogProps) {
         </button>
         <p className={styles.eyebrow}>Presente em dinheiro</p>
         <h3 className={styles.dialogTitle}>{gift.title}</h3>
-        <p className={styles.badge}>0% de taxa · 100% para o casal</p>
+        <p className={styles.badge}>
+          {method === "pix"
+            ? "0% de taxa · 100% para o casal"
+            : card && card.feePayer === "guest"
+              ? `Até ${card.maxInstallments}x no cartão · 100% para o casal`
+              : `Até ${card?.maxInstallments ?? 12}x no cartão`}
+        </p>
+
+        {!charge && card && pixEnabled ? (
+          <fieldset className={styles.method}>
+            <legend className={styles.methodLegend}>Como você quer presentear</legend>
+            <label className={styles.methodOption}>
+              <input
+                type="radio"
+                name="gift-method"
+                value="pix"
+                checked={method === "pix"}
+                onChange={() => {
+                  setMethod("pix");
+                  setError("");
+                }}
+              />
+              <span>Pix</span>
+            </label>
+            <label className={styles.methodOption}>
+              <input
+                type="radio"
+                name="gift-method"
+                value="card"
+                checked={method === "card"}
+                onChange={() => {
+                  setMethod("card");
+                  setError("");
+                }}
+              />
+              <span>Cartão</span>
+            </label>
+          </fieldset>
+        ) : null}
 
         {!charge ? (
           <div className={styles.form}>
@@ -271,15 +447,57 @@ function GiftPixDialog({ wedding, gift, onClose }: GiftPixDialogProps) {
                 placeholder="Um recado carinhoso para o casal"
               />
             </label>
-            {error ? <p className={styles.error}>{error}</p> : null}
-            <button
-              type="button"
-              className={styles.generate}
-              onClick={generate}
-              disabled={loading || !Number.isFinite(amount) || amount < 1}
-            >
-              {loading ? "Gerando Pix…" : "Gerar Pix"}
-            </button>
+            {method === "card" && cardCharge && !cardError ? (
+              <dl className={styles.breakdown}>
+                {cardCharge.feeAmount > 0 ? (
+                  <>
+                    <div>
+                      <dt>Presente</dt>
+                      <dd>{formatBRL(cardCharge.giftAmount)}</dd>
+                    </div>
+                    <div>
+                      <dt>Taxa do cartão</dt>
+                      <dd>{formatBRL(cardCharge.feeAmount)}</dd>
+                    </div>
+                  </>
+                ) : null}
+                <div className={styles.breakdownTotal}>
+                  <dt>Total no cartão</dt>
+                  <dd>{formatBRL(cardCharge.chargeAmount)}</dd>
+                </div>
+              </dl>
+            ) : null}
+            {error || cardError ? (
+              <p role="alert" className={styles.error}>
+                {error || cardError}
+              </p>
+            ) : null}
+            {method === "card" && card ? (
+              <>
+                <button
+                  type="button"
+                  className={styles.generate}
+                  onClick={payWithCard}
+                  disabled={loading || Boolean(cardError)}
+                >
+                  {loading ? "Abrindo pagamento…" : "Pagar com cartão"}
+                </button>
+                <p className={styles.note}>
+                  O pagamento é feito no Mercado Pago, em até {card.maxInstallments}x — as parcelas podem ter juros
+                  cobrados por ele. O valor do presente cai direto na conta do casal.
+                  {card.testMode ? " Conta em modo de teste: nenhuma cobrança real." : ""}
+                </p>
+              </>
+            ) : (
+              <button
+                type="button"
+                className={styles.generate}
+                onClick={generate}
+                disabled={loading || !Number.isFinite(amount) || amount < 1}
+              >
+                {loading ? "Gerando Pix…" : "Gerar Pix"}
+              </button>
+            )}
           </div>
         ) : (
           <div className={styles.result}>

@@ -50,14 +50,31 @@ export async function POST(request: Request) {
     const appUrl = process.env.APP_URL || new URL(request.url).origin;
     const charge = await createPublishCharge({ weddingId, appUrl });
 
-    await admin.from("publish_payments").insert({
-      wedding_id: weddingId,
-      provider: "abacatepay",
-      provider_charge_id: charge.id,
-      amount_cents: charge.amountCents,
-      status: "pending",
-      checkout_url: charge.url
-    });
+    // A AbacatePay deduplica por externalId (= weddingId): reabrir o checkout do
+    // mesmo casamento devolve o MESMO bill_id. Um insert puro estoura a unique
+    // de provider_charge_id (500) mesmo sendo o mesmo pagamento pendente — então
+    // fazemos upsert idempotente e só reabrimos a URL da cobrança existente.
+    const { error: insertError } = await admin.from("publish_payments").upsert(
+      {
+        wedding_id: weddingId,
+        provider: "abacatepay",
+        provider_charge_id: charge.id,
+        amount_cents: charge.amountCents,
+        status: "pending",
+        checkout_url: charge.url
+      },
+      { onConflict: "provider_charge_id" }
+    );
+
+    // O webhook reconcilia SÓ por provider_charge_id — sem esta linha o pagamento
+    // fica órfão. Falha aqui não pode devolver a URL como se tudo estivesse ok.
+    if (insertError) {
+      console.error("publish_payments insert falhou", insertError);
+      return NextResponse.json(
+        { error: "Não foi possível registrar o pagamento. Tente novamente." },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ url: charge.url, chargeId: charge.id });
   } catch (err) {

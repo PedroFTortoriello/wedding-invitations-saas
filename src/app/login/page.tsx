@@ -39,7 +39,7 @@ export default function LoginPage() {
     <main className="grid min-h-screen place-items-center bg-[#f7f0e5] px-4 text-ink">
       <section className="w-full max-w-md card card-accent p-7">
         <Link href="/" className="t-h2 italic">
-          Vows
+          Noivar
         </Link>
         <h1 className="mt-8 t-h1 italic">Entrar</h1>
         <p className="mt-3 text-sm leading-6 text-ink-soft">

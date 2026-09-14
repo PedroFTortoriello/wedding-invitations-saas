@@ -1,12 +1,57 @@
 import type { PixChargeRequest, PixChargeResponse } from "@/types/pix";
+import type { PixKeyType } from "@/types/wedding";
 
 const PIX_GUI = "br.gov.bcb.pix";
 
 export type PixRecipient = {
   pixKey: string;
+  pixKeyType: PixKeyType;
   merchantName: string;
   merchantCity: string;
 };
+
+/**
+ * Normaliza a chave Pix para o formato EXATO do BR Code, conforme o tipo. Defeito
+ * nº1 dos presentes: telefone salvo sem +55 (ex.: "11999998888") e CPF/CNPJ com
+ * pontuação — ambos geram um código que TODO app de banco recusa (QR e copia-e-cola
+ * usam o mesmo payload, então falham juntos). Normalizar aqui conserta todos os
+ * casais no deploy, sem o casal mexer em nada.
+ */
+export function normalizePixKey(key: string, type: PixKeyType): string {
+  const raw = (key ?? "").trim();
+  switch (type) {
+    case "email":
+      return raw.toLowerCase();
+    case "cpf":
+    case "cnpj":
+      return raw.replace(/\D/g, "");
+    case "phone": {
+      const digits = raw.replace(/\D/g, "").replace(/^0+/, "");
+      // 12–13 dígitos começando em 55 = já tem código do país; senão é local (DDD+número).
+      if (digits.startsWith("55") && (digits.length === 12 || digits.length === 13)) {
+        return `+${digits}`;
+      }
+      return `+55${digits}`;
+    }
+    case "random":
+      return raw.toLowerCase();
+    default:
+      return raw;
+  }
+}
+
+const PIX_KEY_VALID: Record<PixKeyType, (key: string) => boolean> = {
+  email: (k) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(k),
+  cpf: (k) => /^\d{11}$/.test(k),
+  cnpj: (k) => /^\d{14}$/.test(k),
+  phone: (k) => /^\+55\d{10,11}$/.test(k),
+  random: (k) => /^[0-9a-fA-F-]{32,36}$/.test(k)
+};
+
+/** A chave (já normalizada) é válida para o tipo? Mensagem clara p/ o casal se não. */
+export function isValidPixKey(key: string, type: PixKeyType): boolean {
+  return PIX_KEY_VALID[type]?.(key) ?? key.length > 0;
+}
 
 function normalizeText(value: string, maxLength: number) {
   return value
@@ -95,10 +140,17 @@ export async function createPixCharge(
     throw new Error("Informe o nome de quem está presenteando.");
   }
 
-  const pixKey = recipient.pixKey?.trim();
+  const rawKey = recipient.pixKey?.trim();
 
-  if (!pixKey) {
+  if (!rawKey) {
     throw new Error("O casal ainda não configurou uma chave Pix para receber os presentes.");
+  }
+
+  const pixKey = normalizePixKey(rawKey, recipient.pixKeyType);
+  if (!isValidPixKey(pixKey, recipient.pixKeyType)) {
+    throw new Error(
+      "A chave Pix do casal está em um formato inválido. Peça para o casal revisar a chave no painel."
+    );
   }
 
   const merchantName = recipient.merchantName?.trim() || "PRESENTE";

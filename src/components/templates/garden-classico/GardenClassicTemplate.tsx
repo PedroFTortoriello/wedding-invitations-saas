@@ -1,13 +1,14 @@
 import Image from "next/image";
 import type { WeddingSite } from "@/types/wedding";
 import { GiftRegistry } from "@/components/gift/GiftRegistry";
+import { GuestForms } from "@/components/templates/shared/GuestForms";
 import styles from "./garden-classico.module.css";
 
 type GardenClassicTemplateProps = {
   wedding: WeddingSite;
 };
 
-const schedule = [
+const DEFAULT_SCHEDULE: ReadonlyArray<[string, string]> = [
   ["17:00", "Fotos de boas-vindas e coquetéis"],
   ["18:00", "Cerimônia no jardim"],
   ["19:00", "Jantar sob luzes suaves"],
@@ -25,6 +26,10 @@ export function GardenClassicTemplate({
     wedding.gallery[4]?.src
   ].filter(Boolean);
 
+  const schedule = wedding.schedule.length
+    ? wedding.schedule
+    : DEFAULT_SCHEDULE.map(([time, title]) => ({ id: time, time, title }));
+
   return (
     <main className={styles.template}>
       <section
@@ -32,7 +37,7 @@ export function GardenClassicTemplate({
         aria-label={`Casamento no jardim de ${wedding.coupleNames}`}
       >
         <Image
-          src="/assets/canva-garden/hero-garden.jpg"
+          src={wedding.heroImage}
           alt=""
           width={1600}
           height={2400}
@@ -116,11 +121,11 @@ export function GardenClassicTemplate({
         </div>
 
         <ul>
-          {schedule.map(([time, label], index) => (
-            <li key={time} data-reveal style={{ transitionDelay: `${index * 70}ms` }}>
-              <strong>{time}</strong>
+          {schedule.map((item, index) => (
+            <li key={item.id} data-reveal style={{ transitionDelay: `${index * 70}ms` }}>
+              <strong>{item.time}</strong>
 
-              <span>{label}</span>
+              <span>{item.title}</span>
             </li>
           ))}
         </ul>
@@ -180,10 +185,9 @@ export function GardenClassicTemplate({
         <GiftRegistry wedding={wedding} variant="jardim" />
       </section>
 
-      <section
-        id="confirmacao"
-        className={styles.rsvp}
-      >
+      <GuestForms wedding={wedding} variant="garden" mode="both" sectionId="confirmacao" />
+
+      <section className={styles.rsvp}>
         <p data-reveal>{wedding.monogram}</p>
 
         <h2 data-reveal style={{ transitionDelay: "90ms" }}>

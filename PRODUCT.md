@@ -13,7 +13,7 @@ WhatsApp e no convite. Comparam com geradores genéricos e com "fazer no Canva".
 
 ## Product Purpose
 
-Vows é um SaaS premium de sites de casamento. O casal escolhe um entre quatro modelos
+Noivar é um SaaS premium de sites de casamento. O casal escolhe um entre quatro modelos
 editoriais, edita os dados, paga uma **taxa única de R$149,90** para publicar e ganha
 um site com RSVP, recados, contagem regressiva e **presentes via Pix que vão 100% para
 o casal (0% de taxa)**. A landing existe para converter noivos em cadastro, provando
