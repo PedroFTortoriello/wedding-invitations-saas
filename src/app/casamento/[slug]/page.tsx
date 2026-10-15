@@ -13,6 +13,7 @@ import { getCardGiftConfig } from "@/lib/mercadopago-server";
 import { rowToWeddingSite } from "@/lib/wedding";
 import { getWeddingBySlug, getWeddingStatusBySlug } from "@/lib/wedding-server";
 import type { WeddingSite } from "@/types/wedding";
+import { DraftPreviewBar } from "./DraftPreviewBar";
 import { SiteNotPublished } from "./SiteNotPublished";
 
 export const dynamic = "force-dynamic";
@@ -88,6 +89,8 @@ export default async function PublicWeddingPage({ params }: PublicWeddingPagePro
   return (
     <CardGiftProvider value={cardConfig}>
       <WeddingTemplate site={site} />
+      {/* Rascunho só chega aqui para o dono/admin (RLS): barra de prévia com Publicar e Editar. */}
+      {row.status === "draft" ? <DraftPreviewBar /> : null}
     </CardGiftProvider>
   );
 }

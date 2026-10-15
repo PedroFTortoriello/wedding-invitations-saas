@@ -1,18 +1,21 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app/AppShell";
-import { createClient } from "@/lib/supabase/server";
+import { Avatar, EmptyState } from "@/components/app/Panel";
+import { getActingContext } from "@/lib/acting";
 import { getOwnedWeddingRow } from "@/lib/wedding-server";
 
 export const dynamic = "force-dynamic";
 
+const formatDate = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long" });
+
 export default async function MessagesPage() {
-  const row = await getOwnedWeddingRow();
+  const ctx = await getActingContext();
+  const row = await getOwnedWeddingRow(ctx);
   if (!row) {
     redirect("/onboarding");
   }
 
-  const supabase = await createClient();
-  const { data: messages } = await supabase
+  const { data: messages } = await ctx.db
     .from("messages")
     .select("*")
     .eq("wedding_id", row.id)
@@ -22,28 +25,40 @@ export default async function MessagesPage() {
 
   return (
     <AppShell
-      title="Mensagens"
-      subtitle="Recados enviados pelos convidados a partir do site."
+      title="Recados"
+      subtitle={
+        messageList.length
+          ? `${messageList.length} ${messageList.length === 1 ? "recado" : "recados"} deixados pelos convidados no site.`
+          : "O que os convidados escreveram para vocês no site."
+      }
       active="messages"
+      wedding={{ coupleNames: row.couple_names, slug: row.slug, status: row.status }}
+      support={ctx.support}
     >
       {messageList.length === 0 ? (
-        <p className="card p-6 text-sm leading-6 text-ink-soft">
-          Nenhum recado ainda. As mensagens deixadas pelos convidados no site aparecem aqui.
-        </p>
+        <section className="panel">
+          <EmptyState icon="message" title="Nenhum recado ainda">
+            Seu site tem um espaço para os convidados deixarem mensagens. Assim que alguém escrever, o recado aparece
+            aqui.
+          </EmptyState>
+        </section>
       ) : (
-        <div className="grid gap-4">
+        <ul className="columns-1 gap-5 md:columns-2 xl:columns-3">
           {messageList.map((message) => (
-            <article key={message.id} className="card p-6">
-              <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                <h2 className="t-h2">{message.guest_name}</h2>
-                <time className="t-eyebrow text-ink-soft">
-                  {new Intl.DateTimeFormat("pt-BR").format(new Date(message.created_at))}
-                </time>
+            <li key={message.id} className="panel mb-5 break-inside-avoid p-5">
+              <p className="whitespace-pre-line text-base leading-7 text-ink">{message.message}</p>
+              <div className="mt-4 flex items-center gap-3 border-t border-line pt-4">
+                <Avatar name={message.guest_name} />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-ink">{message.guest_name}</p>
+                  <p className="text-[0.8125rem] text-ink-soft">
+                    <time dateTime={message.created_at}>{formatDate.format(new Date(message.created_at))}</time>
+                  </p>
+                </div>
               </div>
-              <p className="mt-4 text-lg leading-8 text-ink-soft">{message.message}</p>
-            </article>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </AppShell>
   );

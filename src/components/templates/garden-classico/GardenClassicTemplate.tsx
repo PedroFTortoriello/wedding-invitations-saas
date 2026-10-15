@@ -20,11 +20,18 @@ export function GardenClassicTemplate({
 }: GardenClassicTemplateProps) {
   const location = wedding.locations[0];
 
+  // Até 3 fotos do casal, primeiro as que ainda não aparecem na página (hero, "O começo",
+  // local); hero e retrato só entram se faltar foto na galeria.
+  const shown = new Set([wedding.heroImage, wedding.footerImage, location?.image]);
+  const photos = [
+    ...wedding.gallery,
+    { id: "hero", src: wedding.heroImage, alt: "Foto do casal" },
+    { id: "footer", src: wedding.footerImage, alt: "Foto do casal" }
+  ].filter((photo, index, all) => photo.src && all.findIndex((p) => p.src === photo.src) === index);
   const gallery = [
-    wedding.heroImage,
-    wedding.gallery[3]?.src,
-    wedding.gallery[4]?.src
-  ].filter(Boolean);
+    ...photos.filter((photo) => !shown.has(photo.src)),
+    ...photos.filter((photo) => shown.has(photo.src))
+  ].slice(0, 3);
 
   const schedule = wedding.schedule.length
     ? wedding.schedule
@@ -47,17 +54,20 @@ export function GardenClassicTemplate({
 
         <div className={styles.heroOverlay} />
 
+        {/* Primeira dobra: .hero-rise (CSS puro, visível sem JS), não reveal no scroll. */}
         <div className={styles.heroContent}>
-          <h1>{wedding.coupleNames}</h1>
+          <h1 className="hero-rise">{wedding.coupleNames}</h1>
 
-          <p>Vão se casar</p>
+          <p className="hero-rise" style={{ animationDelay: "120ms" }}>
+            Vão se casar
+          </p>
 
-          <a href="#confirmacao" data-reveal>
+          <a href="#confirmacao" className="hero-rise" style={{ animationDelay: "240ms" }}>
             Confirmar presença
           </a>
         </div>
 
-        <div className={styles.heroMeta} data-reveal style={{ transitionDelay: "120ms" }}>
+        <div className={`${styles.heroMeta} hero-rise`} style={{ animationDelay: "360ms" }}>
           <time dateTime={wedding.weddingDate}>
             {wedding.weddingDateLabel},{" "}
             {wedding.weddingTime}
@@ -74,7 +84,7 @@ export function GardenClassicTemplate({
         <div className={styles.aboutImage} data-reveal>
           <Image
             src={wedding.footerImage}
-            alt="Foto do casal"
+            alt={`Foto de ${wedding.coupleNames}`}
             width={900}
             height={1200}
             loading="lazy"
@@ -103,7 +113,7 @@ export function GardenClassicTemplate({
             wedding.locations[0]?.image ??
             wedding.heroImage
           }
-          alt="Local do casamento"
+          alt={location?.venue ? `Local do casamento: ${location.venue}` : "Local do casamento"}
           width={1600}
           height={1067}
           sizes="100vw"
@@ -152,11 +162,11 @@ export function GardenClassicTemplate({
         </article>
 
         <div className={styles.gallery}>
-          {gallery.map((src, index) => (
+          {gallery.map((photo, index) => (
             <Image
-              key={src}
-              src={src}
-              alt={`Galeria ${index + 1}`}
+              key={photo.src}
+              src={photo.src}
+              alt={photo.alt}
               width={720}
               height={960}
               loading="lazy"
@@ -195,9 +205,10 @@ export function GardenClassicTemplate({
           conosco
         </h2>
 
-        <a href="#presentes" data-reveal style={{ transitionDelay: "180ms" }}>
-          Ver lista de presentes
-        </a>
+        {/* Reveal no wrapper: no próprio <a> ele apagaria a transição do hover. */}
+        <div data-reveal style={{ transitionDelay: "180ms" }}>
+          <a href="#presentes">Ver lista de presentes</a>
+        </div>
       </section>
     </main>
   );

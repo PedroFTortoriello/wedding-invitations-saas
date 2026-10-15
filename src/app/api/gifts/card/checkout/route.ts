@@ -5,6 +5,7 @@ import {
   computeCardCharge,
   validateCardAmount
 } from "@/lib/card-pricing";
+import { logServerError } from "@/lib/funnel";
 import { MercadoPagoApiError, createGiftPreference } from "@/lib/mercadopago";
 import { flagConnectionError, getChargeContext } from "@/lib/mercadopago-server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -35,6 +36,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Requisição inválida." }, { status: 400 });
   }
 
+  const path = "/api/gifts/card/checkout";
+  let knownWeddingId: string | undefined; // só depois de achar o casamento (FK de funnel_events)
   try {
     const weddingId = String(body.weddingSiteId || "");
     if (!weddingId) {
@@ -42,15 +45,18 @@ export async function POST(request: Request) {
     }
 
     const admin = createAdminClient();
-    const { data: row } = await admin
+    const { data: row, error: rowError } = await admin
       .from("weddings")
       .select(WEDDING_RENDER_COLUMNS)
       .eq("id", weddingId)
       .maybeSingle();
 
     if (!row || row.status !== "published") {
+      // 22P02 = id que não é uuid (requisição forjada), não falha nossa.
+      if (rowError && rowError.code !== "22P02") await logServerError("gifts.card.wedding", rowError, { path });
       return NextResponse.json({ error: "Site não disponível para presentes." }, { status: 404 });
     }
+    knownWeddingId = row.id;
 
     const context = await getChargeContext(weddingId);
     if (!context) {
@@ -96,7 +102,8 @@ export async function POST(request: Request) {
       .single();
 
     if (insertError || !inserted) {
-      console.error("cash_gifts insert (cartão) falhou", insertError);
+      // Público: só o casamento e o erro — nunca nome, valor ou recado do convidado.
+      await logServerError("gifts.card.cash_gift", insertError, { weddingId, path });
       return NextResponse.json({ error: "Não foi possível iniciar o pagamento. Tente de novo." }, { status: 500 });
     }
 
@@ -139,7 +146,7 @@ export async function POST(request: Request) {
       throw err;
     }
   } catch (err) {
-    console.error("checkout do cartão falhou", err instanceof MercadoPagoApiError ? err.code : err);
+    await logServerError("gifts.card.checkout", err, { weddingId: knownWeddingId, path });
     return NextResponse.json(
       { error: "Não foi possível abrir o pagamento no cartão agora. Tente de novo ou use o Pix." },
       { status: 502 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { EditorialLuxuryTemplate } from "@/components/templates/editorial-luxury/EditorialLuxuryTemplate";
-import { getDemoWeddingBySlug } from "@/lib/demo-wedding";
+import { demoWeddingFor } from "@/lib/demo-wedding";
 
 type EditorialLuxuryPageProps = {
   params: Promise<{ slug: string }>;
@@ -9,7 +9,7 @@ type EditorialLuxuryPageProps = {
 
 export async function generateMetadata({ params }: EditorialLuxuryPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const wedding = getDemoWeddingBySlug(slug);
+  const wedding = demoWeddingFor("editorial-luxury", slug);
 
   if (!wedding) {
     return { title: "Modelo não encontrado" };
@@ -27,7 +27,7 @@ export function generateStaticParams() {
 
 export default async function EditorialLuxuryPage({ params }: EditorialLuxuryPageProps) {
   const { slug } = await params;
-  const wedding = getDemoWeddingBySlug(slug);
+  const wedding = demoWeddingFor("editorial-luxury", slug);
 
   if (!wedding) {
     notFound();
@@ -35,7 +35,7 @@ export default async function EditorialLuxuryPage({ params }: EditorialLuxuryPag
 
   return (
     <EditorialLuxuryTemplate
-      wedding={{ ...wedding, templateId: "editorial-luxury", templateName: "Editorial Luxury" }}
+      wedding={{ ...wedding, templateName: "Editorial Luxury" }}
     />
   );
 }

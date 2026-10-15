@@ -1,31 +1,31 @@
 "use client";
 
-import { motion, useReducedMotion, type Transition } from "framer-motion";
 import { useEffect, useState, type CSSProperties, type ElementType, type ReactNode } from "react";
 
 /**
  * Shared motion primitives for the premium wedding templates.
  *
  * Design rule (from the design system): reveals must ENHANCE an already-visible
- * default. Reveal renders its children fully visible under reduced-motion (and
- * animates only for users who haven't asked to reduce it), so content is never
- * shipped blank for that cohort.
+ * default. Reveal usa o scroll-reveal global (data-reveal + RevealObserver +
+ * globals.css): o HTML do servidor sai visível, e só com .js e sem
+ * reduced-motion o CSS esconde até entrar na tela.
  */
-
-const EASE_OUT: Transition["ease"] = [0.22, 1, 0.36, 1];
 
 /** Tags Reveal can render as. Polymorphic so it can wrap list items, figures, etc. */
 type RevealTag = "div" | "li" | "ul" | "ol" | "section" | "article" | "figure" | "span" | "header";
 
 type RevealProps = {
   as?: RevealTag;
-  /** Vertical travel of the entrance, px. */
+  /** Vertical travel of the entrance, px (padrão do CSS: 16). */
   y?: number;
   /** Seconds to delay the entrance (for hand-tuned staggers). */
   delay?: number;
-  /** Entrance duration, seconds. */
+  /** Entrance duration, seconds (padrão do CSS: 0.55). */
   duration?: number;
-  /** Fraction of the element that must be in view before it reveals. */
+  /**
+   * ponytail: no-op — o RevealObserver global usa threshold fixo (0.15).
+   * Mantido só para não quebrar as chamadas; threshold por elemento se algum caso pedir.
+   */
   amount?: number;
   className?: string;
   style?: CSSProperties;
@@ -37,46 +37,44 @@ type RevealProps = {
 };
 
 /**
- * Fade + rise on scroll-into-view, once. Reduced-motion-safe: when the user
- * reduces motion the element renders at its natural, fully-visible state with no
- * animation. We always render the SAME element type (motion[as]) — never swap
- * div→motion.div — so children are never remounted (a swap would orphan any
- * effect-driven descendants, e.g. the gift cards' own reveal observer).
- *
- * ponytail: under motion-on + JS-off the entrance state is hidden until the
- * in-view trigger fires; acceptable here because these templates are already
- * JS-required (countdown, RSVP, gifts, lightbox). Reduced-motion stays visible.
+ * Fade + rise on scroll-into-view, once. Elemento comum com data-reveal: sem
+ * opacity:0 no SSR, então sem JS, para crawlers ou sob reduced-motion o
+ * conteúdo aparece. y/duration viram --reveal-y/--reveal-duration e delay vira
+ * transition-delay (o bloco "Scroll-reveal (P7)" de globals.css lê os três).
  */
 export function Reveal({
   as = "div",
   children,
-  y = 18,
-  delay = 0,
-  duration = 0.6,
-  amount = 0.2,
+  y,
+  delay,
+  duration,
   className,
   style,
   id,
   role,
-  ...aria
+  "aria-label": ariaLabel,
+  "aria-labelledby": ariaLabelledby
 }: RevealProps) {
-  const reduce = useReducedMotion();
-  const MotionTag = motion[as] as ElementType;
+  const Tag = as as ElementType;
+  const vars = {
+    ...(y !== undefined && { "--reveal-y": `${y}px` }),
+    ...(duration !== undefined && { "--reveal-duration": `${Math.round(duration * 1000)}ms` }),
+    ...(delay ? { transitionDelay: `${Math.round(delay * 1000)}ms` } : null),
+    ...style
+  } as CSSProperties;
 
   return (
-    <MotionTag
+    <Tag
+      data-reveal=""
       className={className}
-      style={style}
+      style={Object.keys(vars).length ? vars : undefined}
       id={id}
       role={role}
-      {...aria}
-      initial={reduce ? false : { opacity: 0, y }}
-      whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
-      viewport={{ once: true, amount }}
-      transition={reduce ? undefined : { duration, ease: EASE_OUT, delay }}
+      aria-label={ariaLabel}
+      aria-labelledby={ariaLabelledby}
     >
       {children}
-    </MotionTag>
+    </Tag>
   );
 }
 

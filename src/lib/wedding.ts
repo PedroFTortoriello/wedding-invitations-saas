@@ -1,4 +1,5 @@
 import { romanticImages } from "@/lib/demo-wedding";
+import { sanitizeGiftFraming } from "@/lib/gift-image";
 import type { Database, Json } from "@/lib/supabase/types";
 import type { PixKeyType, WeddingSite } from "@/types/wedding";
 
@@ -52,6 +53,27 @@ export const TEMPLATE_NAMES: Record<WeddingSite["templateId"], string> = {
 
 export const TEMPLATE_IDS = Object.keys(TEMPLATE_NAMES) as WeddingSite["templateId"][];
 
+/**
+ * Foto pública do bucket wedding-photos dentro da pasta do dono. Compara a URL já
+ * resolvida, não o texto cru: "<pasta>/../OUTRO/a.jpg" passa num startsWith e aponta para
+ * a pasta de outro casal. Exige a forma canônica (href igual ao texto) e recusa ponto,
+ * barra e contrabarra codificados, que o servidor do Storage poderia decodificar.
+ */
+export function isOwnerPhotoUrl(value: string, ownerId: string, base = process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  if (!base || !value || !ownerId) return false;
+  try {
+    const url = new URL(value);
+    return (
+      url.href === value &&
+      url.origin === new URL(base).origin &&
+      url.pathname.startsWith(`/storage/v1/object/public/wedding-photos/${ownerId}/`) &&
+      !/%2e|%2f|%5c/i.test(url.pathname)
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function isTemplateId(value: string): value is WeddingSite["templateId"] {
   return (TEMPLATE_IDS as string[]).includes(value);
 }
@@ -68,7 +90,8 @@ const STARTER_CONTENT: WeddingContent = {
   weddingDate: "",
   weddingDateLabel: "Em breve",
   weddingTime: "",
-  heroImage: romanticImages.luxuryVenue,
+  // Mesma foto que a landing mostra: o editor abre com a capa que o casal já viu.
+  heroImage: romanticImages.hero,
   floatingImages: [],
   invitationWords: ["um", "convite", "para", "celebrar", "o", "amor"],
   welcomeText:
@@ -103,7 +126,7 @@ const STARTER_CONTENT: WeddingContent = {
   rsvp: {
     enabled: true,
     title: "Confirme sua presença",
-    subtitle: "RSVP",
+    subtitle: "Responda com carinho até um mês antes do grande dia.",
     allowCompanions: true,
     successMessage: "Presença confirmada. Será uma alegria ter você com a gente."
   },
@@ -176,11 +199,16 @@ export function contentToJson(content: WeddingContent): Json {
 
 /** Extrai a parte de conteúdo (JSONB) de um WeddingSite completo, sem as colunas. */
 export function extractContent(site: WeddingSite): WeddingContent {
-  const content: Record<string, unknown> = { ...site };
+  const content: Record<string, unknown> = { ...site, gifts: sanitizeGifts(site.gifts) };
   for (const key of COLUMN_KEYS) {
     delete content[key];
   }
   return content as WeddingContent;
+}
+
+/** Cotas vindas do JSONB: garante lista e limpa o enquadramento da foto (limita / descarta inválidos). */
+function sanitizeGifts(gifts: unknown): WeddingSite["gifts"] {
+  return Array.isArray(gifts) ? gifts.map(sanitizeGiftFraming) : [];
 }
 
 /** Reconstrói um WeddingSite completo a partir de uma linha do banco. */
@@ -189,6 +217,7 @@ export function rowToWeddingSite(row: WeddingRenderRow): WeddingSite {
   return {
     ...baseContent(),
     ...stored,
+    gifts: sanitizeGifts(stored.gifts),
     id: row.id,
     ownerId: row.owner_id,
     slug: row.slug,

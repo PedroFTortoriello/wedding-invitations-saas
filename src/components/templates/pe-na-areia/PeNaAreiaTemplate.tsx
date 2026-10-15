@@ -16,6 +16,8 @@ import {
   useTransform
 } from "framer-motion";
 import type { WeddingSite } from "@/types/wedding";
+import { DEMO_SENT_NOTE, isDemoWedding } from "@/lib/demo-id";
+import { normalizeRsvp } from "@/lib/public-forms";
 import { GiftRegistry } from "@/components/gift/GiftRegistry";
 import { Reveal, useCountdown, pad } from "@/components/templates/shared/motion";
 import { GuestForms } from "@/components/templates/shared/GuestForms";
@@ -366,18 +368,18 @@ function Hero({ wedding }: Props) {
       <div className={`${styles.wrap} ${styles.heroContent}`}>
         <motion.p
           className={styles.heroIssue}
-          initial={reduce ? false : { opacity: 0, y: 16 }}
-          animate={reduce ? undefined : { opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={reduce ? { duration: 0 } : { duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
           Vamos nos casar à beira-mar
         </motion.p>
 
         <motion.h1
           className={styles.heroNames}
-          initial={reduce ? false : { opacity: 0, y: 28 }}
-          animate={reduce ? undefined : { opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
+          initial={{ opacity: 0, y: 28 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={reduce ? { duration: 0 } : { duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
         >
           {splitCouple(wedding.coupleNames).map((part, i) => (
             <span key={i} className={styles.heroNameLine}>
@@ -389,9 +391,9 @@ function Hero({ wedding }: Props) {
 
         <motion.div
           className={styles.heroPlate}
-          initial={reduce ? false : { opacity: 0, y: 18 }}
-          animate={reduce ? undefined : { opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.22 }}
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={reduce ? { duration: 0 } : { duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.22 }}
         >
           <span className={styles.heroPlateItem}>
             <span className={styles.heroPlateK}>Data</span>
@@ -510,6 +512,15 @@ function RsvpBlock({ wedding }: Props) {
       setError("Diga o seu nome para confirmarmos.");
       return;
     }
+    // Demo (/modelo/...): valida igual ao servidor e simula o sucesso, sem chamar a API.
+    if (isDemoWedding(wedding.id)) {
+      const check = normalizeRsvp({ name, status });
+      setError(check.ok ? null : check.error);
+      if (!check.ok) return;
+      setDeclined(status === "declined");
+      setState("done");
+      return;
+    }
 
     setState("loading");
     setError(null);
@@ -560,13 +571,14 @@ function RsvpBlock({ wedding }: Props) {
               <p className={styles.kicker}>{declined ? "Resposta registrada" : "Confirmado"}</p>
               <p className={styles.rsvpDoneText}>
                 {declined ? "Sentiremos sua falta — obrigado por avisar." : rsvp.successMessage}
+                {isDemoWedding(wedding.id) ? DEMO_SENT_NOTE : null}
               </p>
             </div>
           ) : (
             <form className={styles.form} onSubmit={handleSubmit} noValidate>
               <label className={styles.field}>
                 <span>Nome completo</span>
-                <GuestNameField slug={wedding.slug} placeholder="Digite para buscar seu nome" required />
+                <GuestNameField slug={wedding.slug} weddingId={wedding.id} placeholder="Digite para buscar seu nome" required />
               </label>
               {error ? (
                 <p className={styles.formError} role="alert">

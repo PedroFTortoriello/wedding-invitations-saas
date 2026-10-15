@@ -6,6 +6,8 @@ import type { WeddingGift, WeddingSite } from "@/types/wedding";
 import type { PixChargeResponse } from "@/types/pix";
 import { formatBRL, parseGiftPrice } from "@/lib/gift-price";
 import { computeCardCharge, validateCardAmount } from "@/lib/card-pricing";
+import { isDemoWedding } from "@/lib/demo-id";
+import { GIFT_ASPECT_BY_TEMPLATE, giftImageStyle, normalizeGiftImage } from "@/lib/gift-image";
 import { useCardGiftConfig } from "./CardGiftContext";
 import styles from "./gift-registry.module.css";
 
@@ -15,6 +17,12 @@ export type GiftVariant = "classico" | "civil" | "jardim" | "editorial" | "roman
  * Per-template skin. Shared layout + Pix logic; each template provides its own
  * palette / radius / image grade through these CSS variables, so the registry
  * keeps each identity instead of looking generic.
+ *
+ * Contrato com o root do modelo (.template), lido também pelo GuestForms:
+ * - --font-serif / --font-sans: remapear p/ as fontes do modelo (padrão: Instrument
+ *   Serif/Sans do app). Títulos usam a serif em peso 400; UI usa a sans em 500–600.
+ * - --widget-btn-radius, --widget-card-radius, --widget-btn-case, --widget-btn-tracking:
+ *   opcionais, vencem a skin (padrão: o que a skin abaixo define).
  */
 const SKINS: Record<GiftVariant, CSSProperties> = {
   classico: {
@@ -28,7 +36,7 @@ const SKINS: Record<GiftVariant, CSSProperties> = {
     "--g-price": "#8f4a30",
     "--g-radius": "18px",
     "--g-img-radius": "12px",
-    "--g-aspect": "4 / 3",
+    "--g-aspect": GIFT_ASPECT_BY_TEMPLATE["classico-romantico"],
     "--g-img-filter": "saturate(0.98) contrast(1.02)",
     "--g-scrim": "rgba(46, 28, 20, 0.5)",
     "--g-error": "#8d3d33"
@@ -44,7 +52,9 @@ const SKINS: Record<GiftVariant, CSSProperties> = {
     "--g-price": "#eeede7",
     "--g-radius": "2px",
     "--g-img-radius": "0px",
-    "--g-aspect": "1.2 / 1",
+    "--g-aspect": GIFT_ASPECT_BY_TEMPLATE["civil-minimalista"],
+    // Fundo da "Foto inteira": claro, derivado da tinta marfim (o cartão aqui é translúcido no preto).
+    "--g-backdrop": "color-mix(in srgb, var(--g-ink) 20%, #fff)",
     "--g-img-filter": "grayscale(1) contrast(1.04)",
     "--g-scrim": "rgba(2, 2, 2, 0.72)",
     "--g-error": "#f3a99f"
@@ -60,10 +70,12 @@ const SKINS: Record<GiftVariant, CSSProperties> = {
     "--g-price": "#304254",
     "--g-radius": "16px",
     "--g-img-radius": "999px 999px 12px 12px",
-    "--g-aspect": "0.82 / 1",
+    "--g-aspect": GIFT_ASPECT_BY_TEMPLATE["garden-classico"],
     "--g-img-filter": "sepia(0.18) saturate(0.82) contrast(0.96)",
     "--g-scrim": "rgba(45, 43, 37, 0.6)",
-    "--g-error": "#8d3d33"
+    "--g-error": "#8d3d33",
+    "--g-btn-case": "uppercase",
+    "--g-btn-tracking": "0.14em"
   } as CSSProperties,
   editorial: {
     "--g-card": "#f6f4ef",
@@ -76,10 +88,13 @@ const SKINS: Record<GiftVariant, CSSProperties> = {
     "--g-price": "#16151a",
     "--g-radius": "2px",
     "--g-img-radius": "0px",
-    "--g-aspect": "3 / 4",
+    "--g-aspect": GIFT_ASPECT_BY_TEMPLATE["editorial-luxury"],
     "--g-img-filter": "grayscale(1) contrast(1.04)",
     "--g-scrim": "rgba(16, 15, 18, 0.6)",
-    "--g-error": "#9a3b30"
+    "--g-error": "#9a3b30",
+    "--g-btn-radius": "0px",
+    "--g-btn-case": "uppercase",
+    "--g-btn-tracking": "0.16em"
   } as CSSProperties,
   "romantic-garden": {
     "--g-card": "#fbf6ec",
@@ -92,10 +107,12 @@ const SKINS: Record<GiftVariant, CSSProperties> = {
     "--g-price": "#3e5230",
     "--g-radius": "18px",
     "--g-img-radius": "999px 999px 16px 16px",
-    "--g-aspect": "0.85 / 1",
+    "--g-aspect": GIFT_ASPECT_BY_TEMPLATE["jardim-romantico"],
     "--g-img-filter": "saturate(1.03) contrast(1)",
     "--g-scrim": "rgba(42, 46, 34, 0.55)",
-    "--g-error": "#8d3d33"
+    "--g-error": "#8d3d33",
+    "--g-btn-case": "uppercase",
+    "--g-btn-tracking": "0.14em"
   } as CSSProperties,
   praia: {
     "--g-card": "#fbf8f2",
@@ -108,7 +125,7 @@ const SKINS: Record<GiftVariant, CSSProperties> = {
     "--g-price": "#2e5a6b",
     "--g-radius": "18px",
     "--g-img-radius": "14px",
-    "--g-aspect": "4 / 3",
+    "--g-aspect": GIFT_ASPECT_BY_TEMPLATE["pe-na-areia"],
     "--g-img-filter": "saturate(1.06) contrast(1.02) brightness(1.02)",
     "--g-scrim": "rgba(20, 42, 52, 0.5)",
     "--g-error": "#b0492f"
@@ -125,10 +142,13 @@ const SKINS: Record<GiftVariant, CSSProperties> = {
     "--g-price": "#ddc389",
     "--g-radius": "6px",
     "--g-img-radius": "2px",
-    "--g-aspect": "3 / 4",
+    "--g-aspect": GIFT_ASPECT_BY_TEMPLATE["cinema-noir"],
+    "--g-backdrop": "color-mix(in srgb, var(--g-ink) 20%, #fff)",
     "--g-img-filter": "saturate(0.9) contrast(1.05) brightness(0.88)",
     "--g-scrim": "rgba(8, 6, 4, 0.72)",
-    "--g-error": "#e6a99f"
+    "--g-error": "#e6a99f",
+    "--g-btn-case": "uppercase",
+    "--g-btn-tracking": "0.1em"
   } as CSSProperties
 };
 
@@ -213,15 +233,15 @@ export function GiftRegistry({ wedding, variant, sectionId = "presentes" }: Gift
                   : { transitionDelay: `${index * 70}ms` }
               }
             >
-              <div className={styles.media}>
+              <div className={styles.media} data-fit={gift.image ? normalizeGiftImage(gift).imageFit : undefined}>
                 {gift.image ? (
                   <Image
                     src={gift.image}
                     alt=""
                     fill
-                    sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                    sizes="(min-width: 1024px) 380px, 50vw"
                     loading="lazy"
-                    className={styles.image}
+                    style={giftImageStyle(gift)}
                   />
                 ) : (
                   <span className={styles.placeholder} aria-hidden>
@@ -285,6 +305,9 @@ function GiftPaymentDialog({ wedding, gift, onClose }: GiftPaymentDialogProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  // Demo (/modelo/...): nunca chama a API nem gera Pix pagável — só explica o que aparece aqui.
+  const demo = isDemoWedding(wedding.id);
+  const [demoPix, setDemoPix] = useState(false);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -294,6 +317,10 @@ function GiftPaymentDialog({ wedding, gift, onClose }: GiftPaymentDialogProps) {
   }, []);
 
   async function generate() {
+    if (demo) {
+      setDemoPix(true);
+      return;
+    }
     setError("");
     setCopied(false);
     setLoading(true);
@@ -325,6 +352,10 @@ function GiftPaymentDialog({ wedding, gift, onClose }: GiftPaymentDialogProps) {
 
   // Cria a preferência na conta do casal e manda o convidado para o Checkout Pro.
   async function payWithCard() {
+    if (demo) {
+      setDemoPix(true);
+      return;
+    }
     setError("");
     setLoading(true);
     try {
@@ -498,6 +529,11 @@ function GiftPaymentDialog({ wedding, gift, onClose }: GiftPaymentDialogProps) {
                 {loading ? "Gerando Pix…" : "Gerar Pix"}
               </button>
             )}
+            {demoPix ? (
+              <p role="status" className={`${styles.notice} ${styles.demoPix}`}>
+                Na demonstração o Pix não é gerado. No site de vocês, aqui aparece o QR Code com a chave Pix de vocês.
+              </p>
+            ) : null}
           </div>
         ) : (
           <div className={styles.result}>

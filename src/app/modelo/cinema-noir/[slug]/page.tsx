@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CinemaNoirTemplate } from "@/components/templates/cinema-noir/CinemaNoirTemplate";
-import { getDemoWeddingBySlug } from "@/lib/demo-wedding";
+import { demoWeddingFor } from "@/lib/demo-wedding";
 
 type CinemaNoirPageProps = {
   params: Promise<{ slug: string }>;
@@ -9,7 +9,7 @@ type CinemaNoirPageProps = {
 
 export async function generateMetadata({ params }: CinemaNoirPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const wedding = getDemoWeddingBySlug(slug);
+  const wedding = demoWeddingFor("cinema-noir", slug);
 
   if (!wedding) {
     return { title: "Modelo não encontrado" };
@@ -27,7 +27,7 @@ export function generateStaticParams() {
 
 export default async function CinemaNoirPage({ params }: CinemaNoirPageProps) {
   const { slug } = await params;
-  const wedding = getDemoWeddingBySlug(slug);
+  const wedding = demoWeddingFor("cinema-noir", slug);
 
   if (!wedding) {
     notFound();
@@ -35,7 +35,7 @@ export default async function CinemaNoirPage({ params }: CinemaNoirPageProps) {
 
   return (
     <CinemaNoirTemplate
-      wedding={{ ...wedding, templateId: "cinema-noir", templateName: "Cinema Noir" }}
+      wedding={{ ...wedding, templateName: "Cinema Noir" }}
     />
   );
 }

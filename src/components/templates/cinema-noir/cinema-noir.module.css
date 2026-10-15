@@ -8,8 +8,10 @@
 
 .template {
   --cn-bg: #0e0b09;
-  --cn-bg-2: #15100b;
-  --cn-bg-3: #1c150e;
+  /* Segundo tom das seções alternadas: perto o bastante p/ manter o clima, longe o
+     bastante p/ marcar o ritmo (antes #15100b, indistinguível do --cn-bg). */
+  --cn-bg-2: #1a140e;
+  --cn-bg-3: #241b12;
   --cn-ink: #f4ece0;
   --cn-body: rgba(244, 236, 224, 0.82);
   --cn-muted: #b7a892;
@@ -19,8 +21,19 @@
   --cn-line: rgba(201, 168, 106, 0.26);
   --cn-line-soft: rgba(244, 236, 224, 0.1);
 
-  --cn-serif: var(--cn-display), "Cormorant Garamond", Georgia, serif;
+  /* --cn-circ só cobre â ê î ô û (ver CinemaNoirTemplate.tsx). */
+  --cn-serif: var(--cn-circ), var(--cn-display), "Cormorant Garamond", Georgia, serif;
   --cn-sans: var(--cn-body-font), "Manrope", "Segoe UI", sans-serif;
+
+  /* Widgets compartilhados (presentes, Pix, RSVP, recados) nas fontes do modelo e
+     com cantos retos como os cards daqui; botões seguem pílula como os CTAs. */
+  --font-serif: var(--cn-serif);
+  --font-sans: var(--cn-sans);
+  --widget-card-radius: 2px;
+
+  /* Eyebrow → título: o mesmo respiro em todas as seções. */
+  --cn-head-gap: 1.1rem;
+  --cn-nav-pad: clamp(1rem, 2vw, 1.4rem);
 
   --cn-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -79,6 +92,7 @@
   line-height: 1.02;
   letter-spacing: -0.01em;
   color: var(--cn-ink);
+  text-wrap: balance;
 }
 
 .h2 {
@@ -92,6 +106,8 @@
 
 .lead {
   margin: 0;
+  max-width: 40rem;
+  text-wrap: pretty;
   font-size: clamp(1.05rem, 1.35vw, 1.28rem);
   line-height: 1.62;
   color: var(--cn-body);
@@ -117,6 +133,13 @@
 .section {
   position: relative;
   padding-block: clamp(4.5rem, 10vw, 8.5rem);
+}
+
+/* Cabeçalho de seção (eyebrow + título + lead), centralizado. */
+.head {
+  display: grid;
+  gap: var(--cn-head-gap);
+  justify-items: center;
 }
 
 .ruleGold {
@@ -149,7 +172,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-block: clamp(1rem, 2vw, 1.4rem);
+  padding-block: var(--cn-nav-pad);
 }
 
 .navMono {
@@ -259,7 +282,7 @@
 
 .hero {
   position: relative;
-  min-height: 100svh;
+  min-height: calc(100svh - var(--demo-bar-h, 0px));
   display: flex;
   align-items: flex-end;
   overflow: hidden;
@@ -284,6 +307,14 @@
   background:
     radial-gradient(90% 70% at 50% 30%, transparent 40%, rgba(10, 8, 6, 0.55) 100%),
     linear-gradient(180deg, rgba(10, 8, 6, 0.55) 0%, transparent 26%, transparent 52%, rgba(10, 8, 6, 0.92) 100%);
+}
+/* No celular a data e os nomes sobem até ~45% da altura e pegam o vestido e os faróis: escurecer até lá. */
+@media (max-width: 640px) {
+  .heroScrim {
+    background:
+      radial-gradient(90% 70% at 50% 30%, transparent 40%, rgba(10, 8, 6, 0.55) 100%),
+      linear-gradient(180deg, rgba(10, 8, 6, 0.55) 0%, transparent 22%, rgba(10, 8, 6, 0.7) 44%, rgba(10, 8, 6, 0.94) 100%);
+  }
 }
 
 /* Cinematic letterbox bars. */
@@ -317,6 +348,8 @@
 .heroFrame {
   position: absolute;
   inset: clamp(14px, 2.4vw, 30px);
+  /* Abaixo da nav (CTA de 42px + respiro): a linha não corta mais o "H&L". */
+  top: calc(var(--cn-nav-pad) * 2 + 3.25rem);
   z-index: 2;
   pointer-events: none;
   color: var(--cn-gold);
@@ -330,8 +363,7 @@
 .heroFrameRect {
   fill: none;
   stroke: currentColor;
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
+  stroke-width: 2;
 }
 
 .heroContent {
@@ -475,8 +507,8 @@
     animation: cnKenBurns 22s ease-out forwards;
   }
   .heroFrameRect {
-    stroke-dasharray: 400;
-    stroke-dashoffset: 400;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
     animation: cnDraw 2.6s var(--cn-ease) 0.3s forwards;
   }
 }
@@ -516,7 +548,8 @@
   margin-inline: auto;
 }
 .inviteWords {
-  margin: 1.5rem 0 0;
+  margin: var(--cn-head-gap) 0 0;
+  text-wrap: balance;
   font-family: var(--cn-serif);
   font-weight: 400;
   font-style: italic;
@@ -528,7 +561,6 @@
 .inviteWord {
   display: inline-block;
   margin-right: 0.28em;
-  will-change: opacity, transform, filter;
 }
 .inviteLead {
   margin: 2rem auto 0;
@@ -546,7 +578,7 @@
   text-align: center;
 }
 .countTitle {
-  margin: 0.6rem 0 0;
+  margin: 0;
   font-family: var(--cn-serif);
   font-weight: 400;
   font-size: clamp(1.9rem, 3.6vw, 3rem);
@@ -580,7 +612,8 @@
   font-size: clamp(2.2rem, 7vw, 5rem);
   line-height: 1;
   color: var(--cn-ink);
-  font-variant-numeric: tabular-nums;
+  /* A Cormorant usa numerais oldstyle por padrão: "51 02 15" saía desalinhado. */
+  font-variant-numeric: lining-nums tabular-nums;
 }
 .countLabel {
   font-family: var(--cn-sans);
@@ -608,7 +641,6 @@
   margin-bottom: clamp(3rem, 7vw, 5.5rem);
 }
 .storyHead .h1 {
-  margin-top: 0.75rem;
   font-style: italic;
 }
 .spreads {
@@ -715,7 +747,7 @@
   font-family: var(--cn-serif);
   font-size: clamp(1.6rem, 3vw, 2.3rem);
   color: var(--cn-gold);
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 .programTitle {
   display: block;
@@ -743,7 +775,7 @@
 }
 .locationInfo {
   display: grid;
-  gap: 1.1rem;
+  gap: var(--cn-head-gap);
   align-content: center;
 }
 .locationCity {
@@ -811,6 +843,7 @@
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
 }
 .infoCard {
+  height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -868,9 +901,6 @@
   max-width: 42rem;
   margin: 0 auto clamp(2.5rem, 6vw, 4rem);
   text-align: center;
-  display: grid;
-  gap: 1rem;
-  justify-items: center;
 }
 
 /* --------------------------------------------------------------- Gallery */
@@ -992,6 +1022,8 @@
 }
 .finalImg {
   object-fit: cover;
+  /* Retrato numa faixa larga: o rosto costuma estar no terço de cima. */
+  object-position: 50% 25%;
   filter: saturate(0.85) contrast(1.05) brightness(0.5);
 }
 .finalScrim {
@@ -1005,7 +1037,7 @@
   padding: clamp(3rem, 8vw, 5rem) clamp(1.25rem, 5vw, 2.5rem);
 }
 .finalText {
-  margin: 1.5rem 0 0;
+  margin: 0;
   font-family: var(--cn-serif);
   font-style: italic;
   font-weight: 400;

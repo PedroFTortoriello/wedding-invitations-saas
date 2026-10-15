@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqualStr } from "@/lib/abacatepay";
+import { logServerError } from "@/lib/funnel";
 import { isMercadoPagoSignatureValid } from "@/lib/mercadopago";
 import { syncMercadoPagoPayment } from "@/lib/mercadopago-server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -59,10 +60,16 @@ export async function POST(request: Request) {
     const action = String(payload?.action ?? "").toLowerCase();
     console.warn("Mercado Pago mp-connect:", raw.slice(0, 500));
     if (mpUserId && (action.includes("deauthor") || action.includes("unlink") || action.includes("revoke"))) {
-      await createAdminClient()
+      const { error } = await createAdminClient()
         .from("mp_connections")
         .update({ status: "revoked", last_error: action })
         .eq("mp_user_id", mpUserId);
+      if (error) {
+        await logServerError("webhook.mercadopago.revoke", error, {
+          path: "/api/webhooks/mercadopago",
+          detail: { mpUserId }
+        });
+      }
     }
     return NextResponse.json({ received: true });
   }
@@ -71,15 +78,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true });
   }
 
+  const weddingId = url.searchParams.get("w") ?? undefined;
   try {
-    const result = await syncMercadoPagoPayment({
-      paymentId: dataId,
-      weddingId: url.searchParams.get("w") ?? undefined,
-      mpUserId
-    });
+    const result = await syncMercadoPagoPayment({ paymentId: dataId, weddingId, mpUserId });
     return NextResponse.json({ received: true, matched: result.matched });
   } catch (err) {
-    console.error("webhook mercadopago: falha ao conciliar", err);
+    // `w` vem da notification_url que nós montamos, mas não é verificado: vai no detail
+    // (a FK de funnel_events.wedding_id recusaria um id inexistente e perderia o evento).
+    await logServerError("webhook.mercadopago", err, {
+      path: "/api/webhooks/mercadopago",
+      detail: { weddingId, paymentId: dataId }
+    });
     return NextResponse.json({ error: "retry" }, { status: 500 });
   }
 }

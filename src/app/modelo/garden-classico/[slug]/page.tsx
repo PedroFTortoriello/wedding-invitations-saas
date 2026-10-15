@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { GardenClassicTemplate } from "@/components/templates/garden-classico/GardenClassicTemplate";
-import { getDemoWeddingBySlug } from "@/lib/demo-wedding";
+import { demoWeddingFor } from "@/lib/demo-wedding";
 
 type GardenClassicPageProps = {
   params: Promise<{
@@ -11,7 +11,7 @@ type GardenClassicPageProps = {
 
 export async function generateMetadata({ params }: GardenClassicPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const wedding = getDemoWeddingBySlug(slug);
+  const wedding = demoWeddingFor("garden-classico", slug);
 
   if (!wedding) {
     return {
@@ -31,11 +31,11 @@ export function generateStaticParams() {
 
 export default async function GardenClassicPage({ params }: GardenClassicPageProps) {
   const { slug } = await params;
-  const wedding = getDemoWeddingBySlug(slug);
+  const wedding = demoWeddingFor("garden-classico", slug);
 
   if (!wedding) {
     notFound();
   }
 
-  return <GardenClassicTemplate wedding={{ ...wedding, templateId: "garden-classico", templateName: "Jardim Clássico" }} />;
+  return <GardenClassicTemplate wedding={{ ...wedding, templateName: "Jardim Clássico" }} />;
 }

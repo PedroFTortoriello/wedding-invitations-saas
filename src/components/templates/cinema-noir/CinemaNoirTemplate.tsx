@@ -4,10 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
+import localFont from "next/font/local";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import type { WeddingGalleryImage, WeddingSite } from "@/types/wedding";
 import { GiftRegistry } from "@/components/gift/GiftRegistry";
 import { GuestForms } from "@/components/templates/shared/GuestForms";
+import { galleryRest, storyImage } from "@/components/templates/shared/gallery";
 import { Reveal, useCountdown, pad } from "@/components/templates/shared/motion";
 import styles from "./cinema-noir.module.css";
 
@@ -29,7 +31,23 @@ const sans = Manrope({
   display: "swap"
 });
 
-const EASE = [0.22, 1, 0.36, 1] as const;
+/**
+ * A Cormorant v4 do Google desenha o circunflexo minúsculo (â ê î ô û) como um "Λ"
+ * alto e fino que parece solto/duplicado em pt-BR. Estes woff2 trazem só esses
+ * glifos, com o acento do Ê da própria fonte no lugar (fonts/patch-circumflex.py);
+ * o unicode-range faz só eles virem daqui, o resto continua na Cormorant.
+ */
+const circumflex = localFont({
+  src: [
+    { path: "./fonts/cn-circumflex.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/cn-circumflex-italic.woff2", weight: "400", style: "italic" }
+  ],
+  variable: "--cn-circ",
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
+  declarations: [{ prop: "unicode-range", value: "U+E2, U+EA, U+EE, U+F4, U+FB" }]
+});
 
 type Props = { wedding: WeddingSite };
 
@@ -46,7 +64,7 @@ export function CinemaNoirTemplate({ wedding }: Props) {
   const details = wedding.detailCards.filter((card) => card.active);
 
   return (
-    <main className={`${display.variable} ${sans.variable} ${styles.template}`}>
+    <main className={`${display.variable} ${sans.variable} ${circumflex.variable} ${styles.template}`}>
       <Nav wedding={wedding} />
       <Hero wedding={wedding} />
       <Invite wedding={wedding} />
@@ -58,7 +76,7 @@ export function CinemaNoirTemplate({ wedding }: Props) {
 
       <section id="presentes" className={`${styles.gifts} ${styles.section}`} aria-labelledby="gifts-title">
         <div className={styles.wrap}>
-          <Reveal className={styles.sectionHead}>
+          <Reveal className={`${styles.sectionHead} ${styles.head}`}>
             <p className={styles.eyebrow}>Lista de presentes</p>
             <h2 id="gifts-title" className={styles.h1}>
               Um gesto para a vida a dois
@@ -72,7 +90,7 @@ export function CinemaNoirTemplate({ wedding }: Props) {
         </div>
       </section>
 
-      <Gallery images={wedding.gallery} />
+      <Gallery images={galleryRest(wedding)} />
 
       <GuestForms wedding={wedding} variant="cinema" mode="both" sectionId="confirmar" />
 
@@ -146,7 +164,9 @@ function Hero({ wedding }: Props) {
 
   return (
     <section id="top" ref={ref} className={styles.hero} aria-label={`Casamento de ${wedding.coupleNames}`}>
-      <motion.div className={styles.heroMedia} style={reduce ? undefined : { y: mediaY }}>
+      {/* y: 0 (e não style undefined) sob reduced-motion: o SSR não sabe a
+          preferência e renderiza transform:none; assim a hidratação bate. */}
+      <motion.div className={styles.heroMedia} style={{ y: reduce ? 0 : mediaY }}>
         <Image src={wedding.heroImage} alt="" fill priority sizes="100vw" className={styles.heroImg} />
       </motion.div>
       <div className={styles.heroScrim} />
@@ -156,10 +176,11 @@ function Hero({ wedding }: Props) {
       <GoldDust className={styles.dust} />
 
       <div className={styles.heroFrame} aria-hidden>
-        <svg className={styles.heroFrameSvg} viewBox="0 0 100 100" preserveAspectRatio="none">
-          {/* pathLength normalises dash math to 400 regardless of the non-scaling
-              stroke + preserveAspectRatio=none stretch, so the frame draws closed. */}
-          <rect className={styles.heroFrameRect} x="0.5" y="0.5" width="99" height="99" pathLength={400} />
+        {/* Sem viewBox: 1 unidade = 1px, então nada estica e o pathLength=1 vale de
+            verdade (com non-scaling-stroke o Chrome media o dash em px e a moldura
+            saía em pedaços). Traço de 2px recortado pela borda do svg = linha de 1px. */}
+        <svg className={styles.heroFrameSvg}>
+          <rect className={styles.heroFrameRect} width="100%" height="100%" pathLength={1} />
         </svg>
       </div>
 
@@ -211,7 +232,6 @@ function Hero({ wedding }: Props) {
 /* --------------------------------------------------------------- Convite */
 
 function Invite({ wedding }: Props) {
-  const reduce = useReducedMotion();
   return (
     <section id="convite" className={`${styles.invite} ${styles.section}`} aria-labelledby="invite-title">
       <div className={styles.wrap}>
@@ -219,18 +239,12 @@ function Invite({ wedding }: Props) {
           <Reveal>
             <p className={styles.eyebrow}>O convite</p>
           </Reveal>
+          {/* Palavra a palavra pelo scroll-reveal global: o SSR já sai legível. */}
           <h2 id="invite-title" className={styles.inviteWords}>
             {wedding.invitationWords.map((word, i) => (
-              <motion.span
-                key={`${word}-${i}`}
-                className={styles.inviteWord}
-                initial={reduce ? false : { opacity: 0, y: 14, filter: "blur(8px)" }}
-                whileInView={reduce ? undefined : { opacity: 1, y: 0, filter: "blur(0px)" }}
-                viewport={{ once: true, amount: 0.6 }}
-                transition={reduce ? undefined : { duration: 0.7, ease: EASE, delay: i * 0.08 }}
-              >
+              <Reveal as="span" key={`${word}-${i}`} className={styles.inviteWord} y={14} delay={i * 0.08}>
                 {word}
-              </motion.span>
+              </Reveal>
             ))}
           </h2>
           <Reveal delay={0.1}>
@@ -257,7 +271,7 @@ function Countdown({ wedding }: Props) {
   return (
     <section className={`${styles.count} ${styles.section}`} aria-label="Contagem regressiva">
       <div className={styles.wrap}>
-        <Reveal>
+        <Reveal className={styles.head}>
           <p className={styles.eyebrow}>Contagem regressiva</p>
           <h2 className={styles.countTitle}>{c.isPast ? "Hoje é o grande dia" : "Faltam"}</h2>
         </Reveal>
@@ -292,7 +306,7 @@ function Story({ wedding }: Props) {
     <section id="historia" className={`${styles.story} ${styles.section}`} aria-labelledby="story-title">
       <div className={styles.wrap}>
         <header className={styles.storyHead}>
-          <Reveal>
+          <Reveal className={styles.head}>
             <p className={styles.eyebrow}>{wedding.storyEyebrow}</p>
             <h2 id="story-title" className={styles.h1}>
               {wedding.storyTitle}
@@ -302,7 +316,7 @@ function Story({ wedding }: Props) {
 
         <div className={styles.spreads}>
           {wedding.storyMoments.map((moment, i) => {
-            const img = gallery.length ? gallery[(i + 1) % gallery.length] : undefined;
+            const img = storyImage(gallery, i);
             return (
               <article key={moment.id} className={`${styles.spread} ${i % 2 === 1 ? styles.spreadAlt : ""}`}>
                 <Reveal className={styles.spreadMedia} y={24}>
@@ -350,7 +364,7 @@ function Program({ wedding }: Props) {
     <section id="programa" className={`${styles.program} ${styles.section}`} aria-labelledby="program-title">
       <div className={styles.wrap}>
         <header className={styles.programHead}>
-          <Reveal>
+          <Reveal className={styles.head}>
             <p className={styles.eyebrow}>{wedding.detailsTitle}</p>
             <h2 id="program-title" className={styles.h1}>
               O roteiro da noite
@@ -381,7 +395,7 @@ function Location({ wedding }: Props) {
   const query = encodeURIComponent(
     [location.venue, location.address, location.city].filter(Boolean).join(", ")
   );
-  const embed = `https://www.google.com/maps?q=${query}&z=14&output=embed`;
+  const embed = `https://www.google.com/maps?q=${query}&z=14&hl=pt-BR&output=embed`;
 
   return (
     <section id="local" className={`${styles.location} ${styles.section}`} aria-labelledby="location-title">
@@ -419,7 +433,7 @@ function Info({ details }: { details: WeddingSite["detailCards"] }) {
     <section id="detalhes" className={`${styles.info} ${styles.section}`} aria-labelledby="info-title">
       <div className={styles.wrap}>
         <header className={styles.infoHead}>
-          <Reveal>
+          <Reveal className={styles.head}>
             <p className={styles.eyebrow}>Informações</p>
             <h2 id="info-title" className={styles.h1}>
               O que você precisa saber
@@ -428,23 +442,26 @@ function Info({ details }: { details: WeddingSite["detailCards"] }) {
         </header>
         <div className={styles.infoGrid}>
           {details.map((card, i) => (
-            <Reveal key={card.id} className={styles.infoCard} delay={(i % 3) * 0.06} y={20}>
-              {card.image ? (
-                <div className={styles.infoMedia}>
-                  <Image
-                    src={card.image}
-                    alt=""
-                    fill
-                    loading="lazy"
-                    sizes="(min-width: 900px) 30vw, 100vw"
-                    className={styles.infoImg}
-                  />
+            // Reveal no wrapper: no mesmo elemento ele anularia a elevação do hover.
+            <Reveal key={card.id} delay={(i % 3) * 0.06} y={20}>
+              <div className={styles.infoCard}>
+                {card.image ? (
+                  <div className={styles.infoMedia}>
+                    <Image
+                      src={card.image}
+                      alt=""
+                      fill
+                      loading="lazy"
+                      sizes="(min-width: 900px) 30vw, 100vw"
+                      className={styles.infoImg}
+                    />
+                  </div>
+                ) : null}
+                <div className={styles.infoBody}>
+                  <p className={styles.infoSub}>{card.subtitle}</p>
+                  <h3 className={styles.infoTitle}>{card.title}</h3>
+                  <p className={styles.infoText}>{card.body}</p>
                 </div>
-              ) : null}
-              <div className={styles.infoBody}>
-                <p className={styles.infoSub}>{card.subtitle}</p>
-                <h3 className={styles.infoTitle}>{card.title}</h3>
-                <p className={styles.infoText}>{card.body}</p>
               </div>
             </Reveal>
           ))}
@@ -474,7 +491,7 @@ function Gallery({ images }: { images: WeddingGalleryImage[] }) {
     <section id="galeria" className={`${styles.gallery} ${styles.section}`} aria-labelledby="gallery-title">
       <div className={styles.wrap}>
         <header className={styles.sectionHead}>
-          <Reveal>
+          <Reveal className={styles.head}>
             <p className={styles.eyebrow}>Galeria</p>
             <h2 id="gallery-title" className={styles.h1}>
               Retratos do casal
@@ -542,7 +559,7 @@ function Final({ wedding }: Props) {
       </div>
       <div className={styles.finalScrim} />
       <div className={styles.finalInner}>
-        <Reveal>
+        <Reveal className={styles.head}>
           <p className={styles.eyebrow}>Com carinho</p>
           <p className={styles.finalText}>{wedding.finalText}</p>
         </Reveal>

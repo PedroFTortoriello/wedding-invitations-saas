@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { logServerError } from "@/lib/funnel";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { normalizeMessage } from "@/lib/public-forms";
 
 export const runtime = "nodejs";
+
+const PATH = "/api/messages";
 
 /**
  * Recado público de um convidado. Valida site publicado e grava via service-role.
@@ -21,13 +24,15 @@ export async function POST(request: Request) {
     }
 
     const admin = createAdminClient();
-    const { data: wedding } = await admin
+    const { data: wedding, error: weddingError } = await admin
       .from("weddings")
       .select("id, status")
       .eq("slug", slug)
       .maybeSingle();
 
     if (!wedding || wedding.status !== "published") {
+      // Público: só slug e o erro — nunca nome ou recado do convidado.
+      if (weddingError) await logServerError("messages.wedding", weddingError, { path: PATH, detail: { slug } });
       return NextResponse.json({ error: "Este site não está disponível para recados." }, { status: 404 });
     }
 
@@ -38,11 +43,14 @@ export async function POST(request: Request) {
     });
 
     if (error) {
+      await logServerError("messages.insert", error, { weddingId: wedding.id, path: PATH });
       return NextResponse.json({ error: "Não foi possível enviar agora." }, { status: 500 });
     }
 
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (err) {
+    // JSON malformado é do cliente — e a mensagem do parser ecoa trechos do corpo.
+    if (!(err instanceof SyntaxError)) await logServerError("messages", err, { path: PATH });
     return NextResponse.json({ error: "Requisição inválida." }, { status: 400 });
   }
 }

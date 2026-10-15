@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireUser } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
+import { getActingContext, guardSupportWrite } from "@/lib/acting";
+import { logServerError } from "@/lib/funnel";
 import { isValidSlug, slugify } from "@/lib/slug";
 
 export type UpdateSlugResult = { ok?: boolean; slug?: string; error?: string };
@@ -17,17 +17,23 @@ export type UpdateSlugResult = { ok?: boolean; slug?: string; error?: string };
  * unicidade é garantida pelo índice único da coluna: colisão volta 23505.
  */
 export async function updateSlugAction(input: string): Promise<UpdateSlugResult> {
-  const user = await requireUser();
-  const supabase = await createClient();
+  const ctx = await getActingContext();
+  const supabase = ctx.db;
 
-  const { data: row } = await supabase
+  const { data: row, error: loadError } = await supabase
     .from("weddings")
     .select("id, slug")
-    .eq("owner_id", user.id)
+    .eq("owner_id", ctx.ownerId)
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
-  if (!row) return { error: "Casamento não encontrado." };
+  if (!row) {
+    if (loadError) await logServerError("editor.slug.load", loadError, { userId: ctx.ownerId, path: "/editor" });
+    return { error: "Casamento não encontrado." };
+  }
+
+  const guard = await guardSupportWrite(ctx, "slug_change", row.id);
+  if (!guard.ok) return { error: guard.message };
 
   const slug = slugify(String(input ?? ""));
   if (!isValidSlug(slug)) {
@@ -40,6 +46,7 @@ export async function updateSlugAction(input: string): Promise<UpdateSlugResult>
   const { error } = await supabase.from("weddings").update({ slug }).eq("id", row.id);
   if (error) {
     if (error.code === "23505") return { error: "Essa URL já está em uso. Tente outra." };
+    await logServerError("editor.slug", error, { userId: ctx.ownerId, weddingId: row.id, path: "/editor" });
     return { error: "Não foi possível salvar a URL. Tente novamente." };
   }
 

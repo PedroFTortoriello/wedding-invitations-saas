@@ -17,7 +17,10 @@ const RESERVED = new Set([
   "casamento",
   "modelo",
   "demo",
-  "www"
+  "www",
+  // Slug do casal de demonstração (/modelo/<id>/helena-e-lucas): os formulários dos
+  // modelos mandam o slug para /api/rsvp; um casal real com ele receberia confirmações da demo.
+  "helena-e-lucas"
 ]);
 
 /** Normaliza um texto livre em um slug seguro: minúsculas, sem acento, hifenizado. */

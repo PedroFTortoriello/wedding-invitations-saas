@@ -1,4 +1,12 @@
 import type { WeddingSite } from "@/types/wedding";
+import { DEMO_WEDDING_ID } from "@/lib/demo-id";
+import {
+  DEMO_GIFT_PHOTOS,
+  DEMO_INFO_PHOTOS,
+  DEMO_SHOOTS,
+  DEMO_VENUE,
+  type DemoShootId
+} from "@/lib/demo-photos";
 
 const unsplashImage = (photoId: string, width = 2200) =>
   `https://images.unsplash.com/${photoId}?auto=format&fit=crop&w=${width}&q=82`;
@@ -19,7 +27,7 @@ export const romanticImages = {
 };
 
 export const demoWedding: WeddingSite = {
-  id: "wedding_helena_lucas",
+  id: DEMO_WEDDING_ID,
   slug: "helena-e-lucas",
   status: "published",
   templateId: "classico-romantico",
@@ -94,7 +102,7 @@ export const demoWedding: WeddingSite = {
   detailsSubtitle:
     "Cerimônia, jantar e celebração acontecem no mesmo endereço, com uma curadoria pensada para uma experiência fluida do primeiro brinde à última música.",
   schedule: [
-    { id: "recepcao", time: "16:30", title: "Recepção", note: "Welcome drinks e retratos ao entardecer." },
+    { id: "recepcao", time: "16:30", title: "Recepção", note: "Drinks de boas-vindas e retratos ao entardecer." },
     { id: "cerimonia", time: "17:30", title: "Cerimônia", note: "O sim, diante de quem importa." },
     { id: "jantar", time: "19:00", title: "Jantar", note: "Menu assinado em três tempos." },
     { id: "festa", time: "21:00", title: "Festa", note: "Brindes, dança e a noite toda." }
@@ -103,13 +111,13 @@ export const demoWedding: WeddingSite = {
     {
       id: "principal",
       title: "Local",
-      venue: "Casa Fasano Boa Vista",
-      city: "Porto Feliz, SP",
-      address: "Rodovia Presidente Castello Branco, km 102",
+      // Local fictício (sem endereço): o mapa aponta só para a cidade.
+      venue: "Fazenda Três Ipês",
+      city: "Itu, SP",
       note:
         "A cerimônia será no jardim ao entardecer, seguida por jantar em salão reservado e festa com bar de espumantes.",
       mapUrl:
-        "https://www.google.com/maps/search/?api=1&query=Casa%20Fasano%20Boa%20Vista%20Porto%20Feliz%20SP",
+        "https://www.google.com/maps/search/?api=1&query=Itu%2C%20SP",
       image: romanticImages.ceremonyAisle
     }
   ],
@@ -118,10 +126,10 @@ export const demoWedding: WeddingSite = {
       id: "local",
       type: "location",
       title: "Local",
-      subtitle: "Porto Feliz, SP",
+      subtitle: "Itu, SP",
       image: romanticImages.ceremonyAisle,
       body:
-        "Receberemos todos na Casa Fasano Boa Vista para uma cerimônia ao ar livre, jantar em ambiente reservado e celebração sem deslocamentos.",
+        "Receberemos todos na Fazenda Três Ipês para uma cerimônia ao ar livre, jantar em ambiente reservado e celebração sem deslocamentos.",
       active: true
     },
     {
@@ -145,59 +153,28 @@ export const demoWedding: WeddingSite = {
       active: true
     }
   ],
+  // Só fotos com licença (Unsplash, as mesmas de romanticImages): public/assets/images não
+  // tem licença para LP/anúncio. Títulos escolhidos para bater com a foto; "cover" porque
+  // são fotos de ambiente, não de produto (o padrão "Foto inteira" deixaria borda em volta).
   gifts: [
     {
       id: "lua-de-mel-portugal",
       title: "Lua de Mel em Portugal",
       price: "Valor livre",
       link: "#presentes",
-      image: romanticImages.toast,
-      description: "Uma contribuição para os dias de descanso, vinho e paisagens depois da festa.",
+      image: romanticImages.hands,
+      imageFit: "cover",
+      description: "Uma contribuição para os dias de descanso, vinho e praia depois da festa.",
       active: true
     },
     {
-      id: "primeiro-jantar",
-      title: "Primeiro Jantar em Casa",
+      id: "jantar-especial",
+      title: "Jantar Especial",
       price: "R$ 280,00",
       link: "#presentes",
       image: romanticImages.reception,
-      description: "Para inaugurar a casa nova com uma mesa bonita e uma noite sem pressa.",
-      active: true
-    },
-    {
-      id: "memorias-da-viagem",
-      title: "Memórias da Viagem",
-      price: "R$ 420,00",
-      link: "#presentes",
-      image: romanticImages.blackWhiteWide,
-      description: "Um passeio, uma foto impressa e uma lembrança para levar para a vida.",
-      active: true
-    },
-    {
-      id: "bar-de-espumantes",
-      title: "Brinde Especial",
-      price: "R$ 190,00",
-      link: "#presentes",
-      image: romanticImages.ringSoftGold,
-      description: "Uma cota simbólica para brindar os próximos capítulos com quem a gente ama.",
-      active: true
-    },
-    {
-      id: "valor-livre",
-      title: "Presente Livre",
-      price: "Valor livre",
-      link: "#presentes",
-      image: romanticImages.botanicalDetail,
-      description: "Escolha o valor e deixe um carinho do seu jeito para o casal.",
-      active: true
-    },
-    {
-      id: "noite-de-spa",
-      title: "Noite de Spa a Dois",
-      price: "R$ 320,00",
-      link: "#presentes",
-      image: romanticImages.hands,
-      description: "Um descanso merecido depois de toda a correria dos preparativos.",
+      imageFit: "cover",
+      description: "Uma mesa bonita e uma noite sem pressa para comemorar a vida a dois.",
       active: true
     },
     {
@@ -205,7 +182,8 @@ export const demoWedding: WeddingSite = {
       title: "Aulas de Dança",
       price: "R$ 150,00",
       link: "#presentes",
-      image: romanticImages.ceremonyAisle,
+      image: romanticImages.blackWhitePortrait,
+      imageFit: "cover",
       description: "Para abrir a pista com confiança e rodar a noite inteira.",
       active: true
     },
@@ -214,71 +192,29 @@ export const demoWedding: WeddingSite = {
       title: "Adega para a Casa Nova",
       price: "R$ 600,00",
       link: "#presentes",
-      image: romanticImages.ringEditorial,
+      image: romanticImages.toast,
+      imageFit: "cover",
       description: "Boas garrafas para brindar cada conquista da vida a dois.",
       active: true
     },
     {
-      id: "brunch-de-domingo",
-      title: "Brunch de Domingo",
+      id: "fim-de-semana-campo",
+      title: "Fim de Semana no Campo",
       price: "Valor livre",
-      link: "#presentes",
-      image: romanticImages.reception,
-      description: "Uma cota para os domingos de café, pão quente e risadas sem pressa.",
-      active: true
-    },
-    {
-      id: "jantar-estrelado",
-      title: "Jantar Estrelado",
-      price: "R$ 450,00",
-      link: "#presentes",
-      image: romanticImages.ringEditorial,
-      description: "Uma noite especial num restaurante para celebrar uma data importante.",
-      active: true
-    },
-    {
-      id: "fim-de-semana-serra",
-      title: "Fim de Semana na Serra",
-      price: "Valor livre",
-      link: "#presentes",
-      image: romanticImages.luxuryVenue,
-      description: "Frio, lareira e silêncio — uma escapada a dois sem combinar nada.",
-      active: true
-    },
-    {
-      id: "cafeteira-dos-sonhos",
-      title: "Cafeteira dos Sonhos",
-      price: "R$ 240,00",
-      link: "#presentes",
-      image: romanticImages.toast,
-      description: "Para começar todas as manhãs com um café feito em casa, do jeito certo.",
-      active: true
-    },
-    {
-      id: "plantas-para-o-lar",
-      title: "Plantas para o Lar",
-      price: "R$ 180,00",
-      link: "#presentes",
-      image: romanticImages.botanicalDetail,
-      description: "Verde nas janelas para deixar a casa nova com cara de lar.",
-      active: true
-    },
-    {
-      id: "cinema-em-casa",
-      title: "Cinema em Casa",
-      price: "R$ 520,00",
       link: "#presentes",
       image: romanticImages.blackWhiteWide,
-      description: "Sessão pipoca no sofá, com som bom e maratonas sem fim.",
+      imageFit: "cover",
+      description: "Uma casa no meio do verde e silêncio — uma escapada a dois sem combinar nada.",
       active: true
     },
     {
-      id: "passeio-de-barco",
-      title: "Passeio de Barco",
-      price: "R$ 380,00",
+      id: "cota-aliancas",
+      title: "Cota das Alianças",
+      price: "R$ 500,00",
       link: "#presentes",
-      image: romanticImages.ceremonyAisle,
-      description: "Um dia no mar para celebrar a viagem que é viver a dois.",
+      image: romanticImages.ringSoftGold,
+      imageFit: "cover",
+      description: "Para as alianças que vão acompanhar a gente pela vida inteira.",
       active: true
     },
     {
@@ -286,8 +222,19 @@ export const demoWedding: WeddingSite = {
       title: "Cota dos Padrinhos",
       price: "Valor livre",
       link: "#presentes",
-      image: romanticImages.ringSoftGold,
+      image: romanticImages.ceremonyAisle,
+      imageFit: "cover",
       description: "Um gesto de quem caminha junto desde o começo dessa história.",
+      active: true
+    },
+    {
+      id: "valor-livre",
+      title: "Presente Livre",
+      price: "Valor livre",
+      link: "#presentes",
+      image: romanticImages.hero,
+      imageFit: "cover",
+      description: "Escolha o valor e deixe um carinho do seu jeito para o casal.",
       active: true
     }
   ],
@@ -304,11 +251,11 @@ export const demoWedding: WeddingSite = {
   finalText:
     "Queremos celebrar sem pressa: olhar nos olhos, abraçar forte, dançar perto e sair dessa noite com a memória bonita de que estivemos todos juntos.",
   footerImage: romanticImages.blackWhitePortrait,
-  footerText: "o nosso para sempre começa com vocês ao nosso lado.",
+  footerText: "o nosso começo fica mais bonito com vocês ao nosso lado.",
   rsvp: {
     enabled: true,
     title: "Confirme sua presença",
-    subtitle: "RSVP",
+    subtitle: "Responda até 5 de novembro",
     allowCompanions: true,
     successMessage: "Presença confirmada. Vai ser uma alegria viver essa noite com você."
   },
@@ -329,6 +276,59 @@ export const demoWedding: WeddingSite = {
 
 export function getDemoWeddingBySlug(slug: string) {
   return slug === demoWedding.slug ? demoWedding : null;
+}
+
+/**
+ * Demo de um modelo da vitrine: o casamento base com o ensaio do modelo (lib/demo-photos)
+ * e cartões de informação úteis no lugar dos que repetiam local e presentes.
+ */
+export function demoWeddingFor(templateId: DemoShootId, slug: string): WeddingSite | null {
+  const base = getDemoWeddingBySlug(slug);
+  if (!base) return null;
+  const shoot = DEMO_SHOOTS[templateId];
+
+  return {
+    ...base,
+    templateId,
+    heroImage: shoot.hero,
+    floatingImages: [],
+    gallery: shoot.gallery,
+    footerImage: shoot.portrait,
+    locations: base.locations.map((location, i) => (i === 0 ? { ...location, image: DEMO_VENUE } : location)),
+    gifts: base.gifts.map((gift) => ({ ...gift, image: DEMO_GIFT_PHOTOS[gift.id] ?? gift.image })),
+    detailCards: [
+      {
+        id: "traje",
+        type: "custom",
+        title: "Traje",
+        subtitle: "Passeio completo",
+        image: DEMO_INFO_PHOTOS.traje,
+        body:
+          "Terno e gravata; vestido longo ou midi. A cerimônia é no gramado, então salto bloco ou sapato baixo deixam a caminhada mais tranquila.",
+        active: true
+      },
+      {
+        id: "hospedagem",
+        type: "custom",
+        title: "Hospedagem",
+        subtitle: "Para quem vem de longe",
+        image: DEMO_INFO_PHOTOS.hospedagem,
+        body:
+          "Itu tem hotéis e pousadas a poucos minutos da fazenda. Vem de outra cidade? Fale com a gente que mandamos as nossas indicações.",
+        active: true
+      },
+      {
+        id: "como-chegar",
+        type: "custom",
+        title: "Como chegar",
+        subtitle: "Estacionamento no local",
+        image: DEMO_INFO_PHOTOS.chegada,
+        body:
+          "Itu fica a cerca de 1h30 de São Paulo. A fazenda tem estacionamento gratuito, e o último trecho é de estrada de terra, tranquilo para qualquer carro.",
+        active: true
+      }
+    ]
+  };
 }
 
 export function getDemoWeddingById(id: string) {

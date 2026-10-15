@@ -137,8 +137,9 @@ export async function createPublishCharge(input: CreatePublishChargeInput): Prom
     body: JSON.stringify({
       items: [{ id: productId, quantity: 1 }],
       methods: ["PIX"],
-      returnUrl: `${input.appUrl}/dashboard`,
-      completionUrl: `${input.appUrl}/dashboard?publicacao=paga`,
+      // Volta para /publicar, que acompanha a confirmação do Pix e mostra o site no ar.
+      returnUrl: `${input.appUrl}/publicar`,
+      completionUrl: `${input.appUrl}/publicar?pagamento=concluido`,
       externalId: input.weddingId,
       metadata: { weddingId: input.weddingId }
     })

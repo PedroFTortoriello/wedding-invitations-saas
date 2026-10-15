@@ -15,7 +15,10 @@ import {
   useTransform
 } from "framer-motion";
 import type { WeddingSite } from "@/types/wedding";
+import { DEMO_SENT_NOTE, isDemoWedding } from "@/lib/demo-id";
+import { normalizeRsvp } from "@/lib/public-forms";
 import { GiftRegistry } from "@/components/gift/GiftRegistry";
+import { galleryRest, storyImage } from "@/components/templates/shared/gallery";
 import { Reveal, useCountdown, pad } from "@/components/templates/shared/motion";
 import { GuestForms } from "@/components/templates/shared/GuestForms";
 import { GuestNameField } from "@/components/templates/shared/GuestNameField";
@@ -40,7 +43,7 @@ type Props = { wedding: WeddingSite };
 
 /** Editorial running order — these are a real sequence, so the folio numbers carry meaning. */
 const PROGRAM: ReadonlyArray<[string, string, string]> = [
-  ["16:30", "Recepção", "Welcome drinks e retratos ao entardecer."],
+  ["16:30", "Recepção", "Drinks de boas-vindas e retratos ao entardecer."],
   ["17:30", "Cerimônia", "O sim, diante de quem importa."],
   ["19:00", "Jantar", "Menu assinado, servido sem pressa."],
   ["21:30", "Festa", "Brinde, música e dança até tarde."]
@@ -61,6 +64,8 @@ export function EditorialLuxuryTemplate({ wedding }: Props) {
   const program = wedding.schedule.length
     ? wedding.schedule
     : PROGRAM.map(([time, title, note]) => ({ id: time, time, title, note }));
+  const chapterImg = (i: number) => storyImage(gallery, i);
+  const galleryImages = galleryRest(wedding);
 
   return (
     <main className={`${display.variable} ${sans.variable} ${styles.template}`}>
@@ -99,7 +104,7 @@ export function EditorialLuxuryTemplate({ wedding }: Props) {
 
           <div className={styles.spreads}>
             {wedding.storyMoments.map((moment, i) => {
-              const img = gallery[(i + 1) % Math.max(gallery.length, 1)];
+              const img = chapterImg(i);
               return (
                 <article
                   key={moment.id}
@@ -194,7 +199,7 @@ export function EditorialLuxuryTemplate({ wedding }: Props) {
       <RsvpBlock wedding={wedding} />
 
       {/* Galeria */}
-      {gallery.length ? <Gallery wedding={wedding} /> : null}
+      {galleryImages.length ? <Gallery images={galleryImages} /> : null}
 
       {/* Recados */}
       <GuestForms wedding={wedding} variant="editorial" mode="messages" sectionId="recados" />
@@ -282,36 +287,20 @@ function Hero({ wedding }: Props) {
         <div className={styles.heroScrim} />
       </motion.div>
 
+      {/* .hero-rise (globals.css): entrada só em CSS, visível sem JS e desligada no reduced-motion. */}
       <div className={`${styles.wrap} ${styles.heroContent}`}>
-        <motion.p
-          className={styles.heroIssue}
-          initial={reduce ? false : { opacity: 0, y: 16 }}
-          animate={reduce ? undefined : { opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        >
-          The Wedding Issue
-        </motion.p>
+        <p className={`${styles.heroIssue} hero-rise`}>Especial Casamento</p>
 
-        <motion.h1
-          className={styles.heroNames}
-          initial={reduce ? false : { opacity: 0, y: 28 }}
-          animate={reduce ? undefined : { opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
-        >
+        <h1 className={`${styles.heroNames} hero-rise`} style={{ animationDelay: "120ms" }}>
           {splitCouple(wedding.coupleNames).map((part, i) => (
             <span key={i} className={styles.heroNameLine}>
               {i === 1 ? <em className={styles.heroAmp}>&</em> : null}
               {part}
             </span>
           ))}
-        </motion.h1>
+        </h1>
 
-        <motion.div
-          className={styles.heroPlate}
-          initial={reduce ? false : { opacity: 0, y: 18 }}
-          animate={reduce ? undefined : { opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.22 }}
-        >
+        <div className={`${styles.heroPlate} hero-rise`} style={{ animationDelay: "240ms" }}>
           <span className={styles.heroPlateItem}>
             <span className={styles.heroPlateK}>Data</span>
             {wedding.weddingDateLabel}
@@ -321,7 +310,7 @@ function Hero({ wedding }: Props) {
             <span className={styles.heroPlateK}>Local</span>
             {location?.venue ?? location?.city ?? "Em breve"}
           </span>
-        </motion.div>
+        </div>
       </div>
 
       <a href="#convite" className={styles.heroScroll} aria-label="Rolar para o convite">
@@ -382,7 +371,7 @@ function LocationBlock({ wedding }: Props) {
   const query = encodeURIComponent(
     [location.venue, location.address, location.city].filter(Boolean).join(", ")
   );
-  const embed = `https://www.google.com/maps?q=${query}&z=14&output=embed`;
+  const embed = `https://www.google.com/maps?q=${query}&z=14&hl=pt-BR&output=embed`;
 
   return (
     <section id="local" className={styles.location} aria-labelledby="location-title">
@@ -425,6 +414,15 @@ function RsvpBlock({ wedding }: Props) {
     const name = String(new FormData(form).get("name") ?? "").trim();
     if (!name) {
       setError("Diga o seu nome para confirmarmos.");
+      return;
+    }
+    // Demo (/modelo/...): valida igual ao servidor e simula o sucesso, sem chamar a API.
+    if (isDemoWedding(wedding.id)) {
+      const check = normalizeRsvp({ name, status });
+      setError(check.ok ? null : check.error);
+      if (!check.ok) return;
+      setDeclined(status === "declined");
+      setState("done");
       return;
     }
 
@@ -476,13 +474,14 @@ function RsvpBlock({ wedding }: Props) {
               <p className={styles.kicker}>{declined ? "Resposta registrada" : "Confirmado"}</p>
               <p className={styles.rsvpDoneText}>
                 {declined ? "Sentiremos sua falta — obrigado por avisar." : rsvp.successMessage}
+                {isDemoWedding(wedding.id) ? DEMO_SENT_NOTE : null}
               </p>
             </div>
           ) : (
             <form className={styles.form} onSubmit={handleSubmit} noValidate>
               <label className={styles.field}>
                 <span>Nome completo</span>
-                <GuestNameField slug={wedding.slug} placeholder="Digite para buscar seu nome" required />
+                <GuestNameField slug={wedding.slug} weddingId={wedding.id} placeholder="Digite para buscar seu nome" required />
               </label>
               {error ? (
                 <p className={styles.formError} role="alert">
@@ -523,10 +522,9 @@ function RsvpBlock({ wedding }: Props) {
 
 /* -------------------------------------------------------------- Gallery */
 
-function Gallery({ wedding }: Props) {
+function Gallery({ images }: { images: WeddingSite["gallery"] }) {
   const [active, setActive] = useState<number | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const images = wedding.gallery;
 
   useEffect(() => {
     const dialog = dialogRef.current;

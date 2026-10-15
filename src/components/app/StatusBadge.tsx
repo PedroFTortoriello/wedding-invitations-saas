@@ -9,13 +9,13 @@ const labels: Record<string, string> = {
   draft: "Rascunho",
   suspended: "Suspenso",
   expired: "Expirado",
-  paid: "Pago",
+  paid: "Recebido",
   pending: "Pendente",
   refunded: "Estornado",
   failed: "Não concluído",
   connected: "Conectado",
   confirmed: "Confirmado",
-  declined: "Nao vai"
+  declined: "Não vai"
 };
 
 export function StatusBadge({ status, onDark = false }: StatusBadgeProps) {
@@ -25,20 +25,14 @@ export function StatusBadge({ status, onDark = false }: StatusBadgeProps) {
   const tone = onDark
     ? "bg-on-forest/16 text-on-forest"
     : positive
-      ? "bg-[#5b6842]/16 text-forest"
+      ? "bg-forest/10 text-forest"
       : warning
-        ? "bg-[#c79a3f]/22 text-[#5c3f12]"
-        : "bg-[#8d3d33]/14 text-[#6f2a22]";
-  const dot = onDark
-    ? "bg-on-forest"
-    : positive
-      ? "bg-forest"
-      : warning
-        ? "bg-[#a9781f]"
-        : "bg-[#8d3d33]";
+        ? "bg-warn-soft text-warn"
+        : "bg-danger/10 text-danger";
+  const dot = onDark ? "bg-on-forest" : positive ? "bg-forest" : warning ? "bg-[#b8892f]" : "bg-danger";
 
   return (
-    <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 t-eyebrow ${tone}`}>
+    <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${tone}`}>
       <span className={`size-1.5 rounded-full ${dot}`} aria-hidden />
       {labels[status] ?? status}
     </span>

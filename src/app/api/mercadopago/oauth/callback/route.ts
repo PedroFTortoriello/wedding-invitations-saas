@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { getActingContext, guardSupportWrite } from "@/lib/acting";
 import { MP_OAUTH_COOKIE, MercadoPagoApiError, exchangeOAuthCode, fetchMercadoPagoUser } from "@/lib/mercadopago";
 import { flagConnectionError, saveMercadoPagoConnection } from "@/lib/mercadopago-server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -53,6 +54,7 @@ export async function GET(request: Request) {
     return response;
   }
 
+  const ctx = await getActingContext();
   const admin = createAdminClient();
   const { data: wedding } = await admin
     .from("weddings")
@@ -60,7 +62,14 @@ export async function GET(request: Request) {
     .eq("id", session.weddingId)
     .maybeSingle();
 
-  if (!wedding || wedding.owner_id !== user.id) return back("erro");
+  if (!wedding || wedding.owner_id !== ctx.ownerId) return back("erro");
+
+  const guard = await guardSupportWrite(ctx, "mercadopago", wedding.id);
+  if (!guard.ok) {
+    const response = NextResponse.json({ error: guard.message }, { status: 403 });
+    response.cookies.set(MP_OAUTH_COOKIE, "", { path: "/api/mercadopago", maxAge: 0 });
+    return response;
+  }
 
   try {
     const tokens = await exchangeOAuthCode({ code, codeVerifier: session.verifier });

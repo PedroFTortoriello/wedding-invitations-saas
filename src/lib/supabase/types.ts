@@ -15,9 +15,31 @@ export type Database = {
   public: {
     Tables: {
       profiles: {
-        Row: { id: string; email: string | null; name: string | null; role: UserRole; created_at: string };
-        Insert: { id: string; email?: string | null; name?: string | null; role?: UserRole; created_at?: string };
-        Update: { id?: string; email?: string | null; name?: string | null; role?: UserRole; created_at?: string };
+        Row: {
+          id: string;
+          email: string | null;
+          name: string | null;
+          role: UserRole;
+          created_at: string;
+          /** E.164 só dígitos (0012). Opcional, contato do suporte; nunca no site público. */
+          whatsapp: string | null;
+        };
+        Insert: {
+          id: string;
+          email?: string | null;
+          name?: string | null;
+          role?: UserRole;
+          created_at?: string;
+          whatsapp?: string | null;
+        };
+        Update: {
+          id?: string;
+          email?: string | null;
+          name?: string | null;
+          role?: UserRole;
+          created_at?: string;
+          whatsapp?: string | null;
+        };
         Relationships: [];
       };
       weddings: {
@@ -263,10 +285,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      funnel_events: {
+        Row: {
+          id: number;
+          created_at: string;
+          user_id: string | null;
+          wedding_id: string | null;
+          event: string;
+          level: "info" | "error";
+          path: string | null;
+          detail: Json;
+        };
+        Insert: {
+          id?: never;
+          created_at?: string;
+          user_id?: string | null;
+          wedding_id?: string | null;
+          event: string;
+          level?: "info" | "error";
+          path?: string | null;
+          detail?: Json;
+        };
+        Update: {
+          user_id?: string | null;
+          wedding_id?: string | null;
+          event?: string;
+          level?: "info" | "error";
+          path?: string | null;
+          detail?: Json;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
       is_admin: { Args: Record<string, never>; Returns: boolean };
+      purge_funnel_ad_ids: { Args: Record<string, never>; Returns: undefined };
       mark_publish_paid: {
         Args: { p_charge_id: string; p_wedding_id: string; p_amount_cents?: number | null };
         Returns: boolean;

@@ -19,12 +19,22 @@
   --el-on-black: #f3efe6;
   --el-on-black-soft: rgba(243, 239, 230, 0.74);
   --el-gold-bright: #cda968; /* gold text on dark */
+  /* Widgets (GiftRegistry, GuestForms, modal do Pix) herdam as fontes do modelo. */
+  --font-serif: var(--el-display), Georgia, serif;
+  --font-sans: var(--el-sans), "Segoe UI", sans-serif;
 
   font-family: var(--el-sans), "Segoe UI", system-ui, sans-serif;
   color: var(--el-ink);
   background: var(--el-paper);
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
+}
+
+/* Foco na cor do texto: contrasta no hero preto, no papel e no nav sólido (o anel
+   global é verde-escuro e some no preto). Especificidade baixa: .btn*:focus-visible vence. */
+:where(.template) :where(a, summary, .navToggle):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
 }
 
 .wrap {
@@ -287,7 +297,7 @@
 
 .hero {
   position: relative;
-  min-height: 100svh;
+  min-height: calc(100svh - var(--demo-bar-h, 0px));
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -311,6 +321,14 @@
   background:
     linear-gradient(180deg, rgba(16, 15, 18, 0.5) 0%, rgba(16, 15, 18, 0) 28%),
     linear-gradient(0deg, rgba(16, 15, 18, 0.82) 2%, rgba(16, 15, 18, 0.18) 46%, rgba(16, 15, 18, 0.2) 100%);
+}
+/* No celular o texto sobe até ~58% da altura e pega as partes claras da foto: escurecer até lá. */
+@media (max-width: 640px) {
+  .heroScrim {
+    background:
+      linear-gradient(180deg, rgba(16, 15, 18, 0.5) 0%, rgba(16, 15, 18, 0) 28%),
+      linear-gradient(0deg, rgba(16, 15, 18, 0.86) 2%, rgba(16, 15, 18, 0.7) 52%, rgba(16, 15, 18, 0) 74%);
+  }
 }
 .heroContent {
   position: relative;
@@ -407,7 +425,7 @@
 /* --------------------------------------------------------------- invite */
 
 .invite {
-  padding-block: clamp(4.5rem, 10vw, 8rem);
+  padding-block: clamp(4.5rem, 10vw, 8rem) 0;
   text-align: center;
 }
 .inviteInner {
@@ -437,17 +455,18 @@
 
 /* ---------------------------------------------------------------- story */
 
+/* Densidade: o fio dourado do convite já separa as seções; respiros menores aqui. */
 .story {
-  padding-block: clamp(2rem, 5vw, 4rem) clamp(4.5rem, 10vw, 8rem);
+  padding-block: clamp(3rem, 6vw, 5rem) clamp(3.5rem, 7vw, 5.5rem);
 }
 .storyHead {
   max-width: 40rem;
-  margin-bottom: clamp(2.5rem, 6vw, 4.5rem);
+  margin-bottom: clamp(2rem, 4vw, 3rem);
 }
 .spreads {
   display: flex;
   flex-direction: column;
-  gap: clamp(3.5rem, 8vw, 7rem);
+  gap: clamp(2.5rem, 5vw, 4.5rem);
 }
 .spread {
   display: grid;
@@ -469,16 +488,19 @@
 .spreadMedia:hover .spreadImg {
   transform: scale(1.04);
 }
+/* Folio dentro do canto da foto: o overflow:hidden do .spreadMedia (zoom no hover)
+   cortava o numeral quando ele vazava, e fora da foto o papel sobre papel sumia. */
 .folio {
   position: absolute;
-  left: -0.5rem;
-  bottom: -1.5rem;
+  left: clamp(0.85rem, 2vw, 1.4rem);
+  bottom: clamp(0.6rem, 1.4vw, 1rem);
   font-family: var(--el-display);
   font-size: clamp(4rem, 10vw, 7rem);
   font-weight: 500;
   font-style: italic;
+  line-height: 0.8;
   color: var(--el-paper);
-  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.35);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 2px 24px rgba(0, 0, 0, 0.5); /* borda em foto clara */
   pointer-events: none;
 }
 .spreadBody {
@@ -486,19 +508,24 @@
 }
 
 @media (min-width: 860px) {
+  /* Foto um pouco mais estreita que o texto: menos vazio ao lado de um texto curto. */
   .spread {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  }
+  .spreadAlt {
+    grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
   }
   .spreadAlt .spreadMedia {
     order: 2;
   }
+  /* Numeral no canto voltado para o texto. */
   .folio {
     left: auto;
-    right: -1.25rem;
+    right: clamp(0.85rem, 2vw, 1.4rem);
   }
   .spreadAlt .folio {
     right: auto;
-    left: -1.25rem;
+    left: clamp(0.85rem, 2vw, 1.4rem);
   }
 }
 
@@ -507,7 +534,7 @@
 .count {
   background: var(--el-black);
   color: var(--el-on-black);
-  padding-block: clamp(4rem, 9vw, 7rem);
+  padding-block: clamp(3rem, 6vw, 4.5rem);
   text-align: center;
 }
 .countHead .eyebrow {
@@ -526,7 +553,7 @@
   grid-template-columns: repeat(4, 1fr);
   gap: clamp(0.5rem, 2.5vw, 2rem);
   max-width: 44rem;
-  margin: clamp(2.5rem, 5vw, 3.5rem) auto 0;
+  margin: clamp(1.75rem, 3.5vw, 2.5rem) auto 0;
 }
 .countCell {
   display: flex;
@@ -551,7 +578,7 @@
   color: var(--el-on-black-soft);
 }
 .countFoot {
-  margin-top: clamp(2rem, 4vw, 3rem);
+  margin-top: clamp(1.5rem, 3vw, 2rem);
 }
 .countDate {
   font-family: var(--el-sans);
@@ -564,6 +591,12 @@
 
 /* --------------------------------------------------------------- details */
 
+/* Faixas champanhe: dourado de texto mais escuro p/ folga de AA no eyebrow de 11,5px
+   (#7c6224: 4,75:1 sobre #efe8dc e 4,19:1 sobre #e8dac0; #6b5420: 5,92 e 5,22:1). */
+.details,
+.gifts {
+  --el-gold-ink: #6b5420;
+}
 .details {
   background: var(--el-paper-2);
   padding-block: clamp(4.5rem, 10vw, 8rem);
@@ -636,7 +669,7 @@
   width: 100%;
   height: 100%;
   border: 0;
-  filter: grayscale(0.45) contrast(1.02);
+  filter: grayscale(1) contrast(1.04); /* P&B como as fotos do modelo */
 }
 @media (min-width: 860px) {
   .locationGrid {
@@ -758,7 +791,7 @@
 /* --------------------------------------------------------------- gallery */
 
 .gallery {
-  padding-block: clamp(4.5rem, 10vw, 8rem);
+  padding-block: clamp(4.5rem, 10vw, 8rem) clamp(3rem, 6vw, 5rem);
 }
 .galleryHead {
   max-width: 40rem;
@@ -798,13 +831,19 @@
   outline: 2px solid var(--el-gold-ink);
   outline-offset: 2px;
 }
+/* Colunas pela quantidade de fotos, p/ a última linha não ficar com foto sozinha:
+   múltiplo de 3 → 3 colunas; no desktop, múltiplo de 4 (ou o resto) → 4. */
 @media (min-width: 640px) {
-  .galleryGrid {
+  .galleryGrid:has(> :last-child:nth-child(3n)) {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+/* Regras separadas: em lista o compilador vira :is() e a especificidade empata. */
 @media (min-width: 1024px) {
   .galleryGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .galleryGrid:has(> :last-child:nth-child(4n)) {
     grid-template-columns: repeat(4, 1fr);
   }
 }
@@ -813,6 +852,8 @@
 .lightbox {
   width: min(92vw, 760px);
   max-height: 92vh;
+  /* O reset global zera a margem do <dialog>; sem auto ele cola no canto. */
+  margin: auto;
   padding: 0;
   border: 0;
   background: var(--el-paper);

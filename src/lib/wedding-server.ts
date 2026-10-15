@@ -1,21 +1,21 @@
-import { requireUser } from "@/lib/auth";
+import { getActingContext, type ActingContext } from "@/lib/acting";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { WEDDING_RENDER_COLUMNS, type WeddingRenderRow, type WeddingRow } from "@/lib/wedding";
 import type { WeddingSiteStatus } from "@/types/wedding";
 
 /**
- * Linha `weddings` do usuário logado, ou null se ele ainda não criou um.
- * Redireciona a /login quando não há sessão (via requireUser).
+ * Linha `weddings` do dono em uso (o próprio usuário, ou o cliente no modo suporte),
+ * ou null se ele ainda não criou um. Redireciona a /login quando não há sessão.
+ * Passe o `ctx` quando a página já o resolveu (evita repetir a ida ao Supabase Auth).
  * MVP: um casamento por usuário.
  */
-export async function getOwnedWeddingRow(): Promise<WeddingRow | null> {
-  const user = await requireUser();
-  const supabase = await createClient();
-  const { data } = await supabase
+export async function getOwnedWeddingRow(ctx?: ActingContext): Promise<WeddingRow | null> {
+  const { ownerId, db } = ctx ?? (await getActingContext());
+  const { data } = await db
     .from("weddings")
     .select("*")
-    .eq("owner_id", user.id)
+    .eq("owner_id", ownerId)
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();

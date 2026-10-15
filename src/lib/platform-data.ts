@@ -19,6 +19,7 @@ export const supportWhatsApp = "5511942716215";
 
 /** Taxa única de publicação paga pelo casal. Única fonte de receita da plataforma. */
 export const PUBLISH_FEE_BRL = 149.9;
+export const PUBLISH_FEE_LABEL = "R$ 149,90";
 
 export const demoUser: PlatformUser = {
   id: "user_helena_lucas",
@@ -55,7 +56,7 @@ export const platformTemplates: PlatformTemplate[] = [
     id: "cinema-noir",
     name: "Cinema Noir",
     description:
-      "Convite cinematográfico em espresso e champanhe: hero fílmico com poeira dourada, tipografia Cormorant em escala editorial e reveals em blur — luxo de boutique Cartier/Rolex à noite.",
+      "Convite cinematográfico em espresso e champanhe: hero fílmico com poeira dourada, tipografia Cormorant em escala editorial e entradas suaves — luxo de boutique Cartier/Rolex à noite.",
     previewImage: romanticImages.luxuryVenue,
     status: "active"
   },

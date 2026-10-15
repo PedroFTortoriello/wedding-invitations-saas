@@ -7,6 +7,7 @@ import {
   isMercadoPagoConfigured,
   isPkceEnabled
 } from "@/lib/mercadopago";
+import { getActingContext, guardSupportWrite } from "@/lib/acting";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -29,11 +30,12 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?next=/dashboard`);
   }
 
-  // Mesma regra do painel: o casamento mais antigo do usuário (MVP: um por conta).
-  const { data: wedding } = await supabase
+  // Mesma regra do painel: o casamento mais antigo do dono (MVP: um por conta).
+  const ctx = await getActingContext();
+  const { data: wedding } = await ctx.db
     .from("weddings")
     .select("id")
-    .eq("owner_id", user.id)
+    .eq("owner_id", ctx.ownerId)
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
@@ -41,6 +43,9 @@ export async function GET(request: Request) {
   if (!wedding) {
     return NextResponse.redirect(`${origin}/onboarding`);
   }
+
+  const guard = await guardSupportWrite(ctx, "mercadopago", wedding.id);
+  if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: 403 });
 
   if (!isMercadoPagoConfigured()) {
     return NextResponse.redirect(`${origin}/dashboard?mp=erro`);

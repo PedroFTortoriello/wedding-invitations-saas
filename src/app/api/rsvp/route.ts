@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { logServerError } from "@/lib/funnel";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { normalizeName, normalizeRsvp } from "@/lib/public-forms";
 
 export const runtime = "nodejs";
+
+const PATH = "/api/rsvp";
 
 /**
  * Confirmação de presença pública, por BUSCA na lista do casal: o convidado
@@ -25,13 +28,15 @@ export async function POST(request: Request) {
     }
 
     const admin = createAdminClient();
-    const { data: wedding } = await admin
+    const { data: wedding, error: weddingError } = await admin
       .from("weddings")
       .select("id, status")
       .eq("slug", slug)
       .maybeSingle();
 
     if (!wedding || wedding.status !== "published") {
+      // Público: só slug e o erro — nunca dados do convidado.
+      if (weddingError) await logServerError("rsvp.wedding", weddingError, { path: PATH, detail: { slug } });
       return NextResponse.json({ error: "Este site não está disponível para confirmações." }, { status: 404 });
     }
 
@@ -39,10 +44,11 @@ export async function POST(request: Request) {
 
     // ponytail: lista de casamento é pequena (<1000) — busca tudo e casa em JS
     // p/ conseguir match sem acento/caixa. Se crescer, virar unaccent no SQL.
-    const { data: guests } = await admin
+    const { data: guests, error: guestsError } = await admin
       .from("guests")
       .select("id, name, companions_allowed")
       .eq("wedding_id", wedding.id);
+    if (guestsError) await logServerError("rsvp.guests", guestsError, { weddingId: wedding.id, path: PATH });
 
     const target = normalizeName(name);
     const match = (guests ?? []).find((guest) => normalizeName(guest.name) === target);
@@ -68,11 +74,14 @@ export async function POST(request: Request) {
       .eq("id", match.id);
 
     if (error) {
+      await logServerError("rsvp.update", error, { weddingId: wedding.id, path: PATH });
       return NextResponse.json({ error: "Não foi possível registrar agora." }, { status: 500 });
     }
 
     return NextResponse.json({ ok: true, name: match.name, status });
-  } catch {
+  } catch (err) {
+    // JSON malformado é do cliente — e a mensagem do parser ecoa trechos do corpo.
+    if (!(err instanceof SyntaxError)) await logServerError("rsvp", err, { path: PATH });
     return NextResponse.json({ error: "Requisição inválida." }, { status: 400 });
   }
 }

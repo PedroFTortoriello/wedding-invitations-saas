@@ -1,90 +1,95 @@
 "use client";
 
 import { useActionState } from "react";
+import { Notice } from "@/components/app/Notice";
+import { TemplatePicker } from "@/components/app/TemplatePicker";
 import { createWeddingAction, type CreateWeddingState } from "./actions";
-
-const TEMPLATE_OPTIONS: { id: string; label: string }[] = [
-  { id: "cinema-noir", label: "Cinema Noir" },
-  { id: "editorial-luxury", label: "Editorial Luxury" },
-  { id: "jardim-romantico", label: "Jardim Romântico" },
-  { id: "classico-romantico", label: "Clássico Romântico" },
-  { id: "civil-minimalista", label: "Civil Minimalista" },
-  { id: "garden-classico", label: "Jardim Clássico" }
-];
 
 const initialState: CreateWeddingState = {};
 
-const fieldClass = "min-h-12 rounded-2xl border border-[#5b6842]/14 bg-white px-4 text-ink";
-const labelClass = "grid gap-2 text-sm font-bold text-ink-soft";
+const labelClass = "grid content-start gap-1.5";
+const labelText = "text-sm font-medium text-ink";
+const legendClass = "text-base font-semibold text-ink";
 
 export function OnboardingForm({ defaultCoupleNames }: { defaultCoupleNames: string }) {
   const [state, formAction, pending] = useActionState(createWeddingAction, initialState);
 
   return (
-    <form action={formAction} className="card p-6">
-      <p className="t-eyebrow text-ink-soft">Dados do casal</p>
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
-        <label className={`${labelClass} md:col-span-2`}>
-          Nome do casal
+    <form action={formAction} className="panel grid gap-8 p-5 sm:p-7">
+      <fieldset className="grid gap-4">
+        <legend className={`${legendClass} mb-4`}>O casal</legend>
+        <label className={labelClass}>
+          <span className={labelText}>Nomes do casal</span>
           <input
             name="coupleNames"
             type="text"
             required
+            minLength={3}
             defaultValue={defaultCoupleNames}
             placeholder="Helena & Lucas"
-            className={fieldClass}
+            autoComplete="off"
+            className="field"
           />
         </label>
 
-        <label className={`${labelClass} md:col-span-2`}>
-          URL do site (deixe em branco para gerar automaticamente)
-          <div className="flex items-center gap-2">
-            <span className="shrink-0 text-sm text-ink-soft">/casamento/</span>
-            <input name="slug" type="text" placeholder="helena-e-lucas" className={`${fieldClass} w-full`} />
+        <div className={labelClass}>
+          <label htmlFor="onboarding-slug" className={labelText}>
+            Endereço do site
+          </label>
+          <div className="flex items-center rounded-[0.625rem] border border-line-strong bg-field transition-colors duration-150 focus-within:border-forest focus-within:shadow-[0_0_0_3px_color-mix(in_oklab,var(--color-forest)_18%,transparent)]">
+            <span className="whitespace-nowrap pl-3 text-[0.9375rem] text-ink-soft">/casamento/</span>
+            <input
+              id="onboarding-slug"
+              name="slug"
+              type="text"
+              placeholder="helena-e-lucas"
+              spellCheck={false}
+              autoCapitalize="none"
+              autoCorrect="off"
+              aria-describedby="onboarding-slug-hint"
+              className="min-h-11 min-w-0 flex-1 bg-transparent py-2 pl-0.5 pr-3 text-[0.9375rem] text-ink outline-none"
+            />
           </div>
-        </label>
+          <p id="onboarding-slug-hint" className="text-[0.8125rem] text-ink-soft">
+            Deixe em branco para gerar a partir dos nomes.
+          </p>
+        </div>
+      </fieldset>
 
+      <fieldset className="grid gap-4 sm:grid-cols-2">
+        <legend className={`${legendClass} mb-4`}>O casamento</legend>
         <label className={labelClass}>
-          Modelo
-          <select name="templateId" defaultValue="classico-romantico" className={fieldClass}>
-            {TEMPLATE_OPTIONS.map((template) => (
-              <option key={template.id} value={template.id}>
-                {template.label}
-              </option>
-            ))}
-          </select>
+          <span className={labelText}>Data</span>
+          <input name="weddingDate" type="date" className="field" />
         </label>
-
         <label className={labelClass}>
-          Cidade do evento
-          <input name="city" type="text" placeholder="Porto Feliz, SP" className={fieldClass} />
+          <span className={labelText}>Horário</span>
+          <input name="weddingTime" type="time" className="field" />
         </label>
-
         <label className={labelClass}>
-          Data
-          <input name="weddingDate" type="date" className={fieldClass} />
+          <span className={labelText}>Local</span>
+          <input name="venue" type="text" placeholder="Fazenda Santa Maria" className="field" />
         </label>
-
         <label className={labelClass}>
-          Horário
-          <input name="weddingTime" type="time" className={fieldClass} />
+          <span className={labelText}>Cidade</span>
+          <input name="city" type="text" placeholder="Porto Feliz, SP" className="field" />
         </label>
+      </fieldset>
 
-        <label className={`${labelClass} md:col-span-2`}>
-          Local (venue)
-          <input name="venue" type="text" placeholder="Casa Fasano Boa Vista" className={fieldClass} />
-        </label>
+      <div className="grid gap-4">
+        <div>
+          <p className={legendClass}>Modelo</p>
+          <p className="mt-1 text-[0.8125rem] text-ink-soft">Dá para trocar a qualquer momento no editor, sem perder nada.</p>
+        </div>
+        <TemplatePicker name="templateId" defaultValue="classico-romantico" columns={2} />
       </div>
 
-      {state.error ? (
-        <p role="alert" className="mt-5 rounded-2xl bg-[#8d3d33]/10 px-4 py-3 text-sm font-bold text-[#8d3d33]">
-          {state.error}
-        </p>
-      ) : null}
-
-      <button type="submit" disabled={pending} className="btn btn-primary mt-6 w-full text-sm disabled:opacity-60">
-        {pending ? "Criando…" : "Criar e ir para o editor"}
-      </button>
+      <div className="grid gap-3">
+        {state.error ? <Notice tone="error">{state.error}</Notice> : null}
+        <button type="submit" disabled={pending} className="btn btn-sm btn-primary min-h-12 w-full text-[0.9375rem] disabled:opacity-60">
+          {pending ? "Criando o site…" : "Criar site e abrir o editor"}
+        </button>
+      </div>
     </form>
   );
 }

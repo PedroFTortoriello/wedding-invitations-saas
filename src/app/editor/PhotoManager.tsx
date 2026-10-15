@@ -3,6 +3,7 @@
 import { useRef, useState, type DragEvent } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
+import { Icon } from "@/components/app/icons";
 import type { WeddingGalleryImage, WeddingSite } from "@/types/wedding";
 
 const BUCKET = "wedding-photos";
@@ -74,6 +75,7 @@ export function PhotoManager({
   const [error, setError] = useState("");
   const dragId = useRef<string | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
+  const [dropActive, setDropActive] = useState(false);
 
   const showFooter = TEMPLATES_WITH_FOOTER_PHOTO.has(templateId);
   const isCustomCover = gallery.some((p) => p.src === heroImage);
@@ -158,48 +160,53 @@ export function PhotoManager({
     onReorder(next);
   }
 
+  const fileInput = (
+    <input
+      type="file"
+      accept="image/jpeg,image/png,image/webp,image/avif"
+      multiple
+      className="sr-only"
+      disabled={uploading}
+      onChange={(event) => {
+        void onFiles(Array.from(event.target.files ?? []));
+        event.target.value = "";
+      }}
+    />
+  );
+
   return (
-    <div className="grid gap-4">
-      <div className={`grid gap-4 ${showFooter ? "sm:grid-cols-2" : ""}`}>
-        <PreviewSlot
-          label="Capa do site"
-          src={heroImage}
-          isCustom={isCustomCover}
-          hint="Foto de exemplo — use o botão “Capa” em uma foto sua abaixo."
-        />
-        {showFooter ? (
-          <PreviewSlot
-            label="Foto do rodapé"
-            src={footerImage}
-            isCustom={isCustomFooter}
-            hint="Foto de exemplo — use o botão “Rodapé” em uma foto sua abaixo."
-          />
-        ) : null}
+    <div className="grid gap-6">
+      <div className={`grid gap-3 ${showFooter ? "grid-cols-2" : ""}`}>
+        <PreviewSlot label="Capa" src={heroImage} isCustom={isCustomCover} />
+        {showFooter ? <PreviewSlot label="Rodapé" src={footerImage} isCustom={isCustomFooter} /> : null}
       </div>
 
       <div className="grid gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h3 className="text-sm font-bold text-ink">Minhas fotos ({gallery.length})</h3>
-          <label className={`btn btn-secondary cursor-pointer text-sm ${uploading ? "opacity-60" : ""}`}>
-            {uploading ? "Enviando…" : "Adicionar fotos"}
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/avif"
-              multiple
-              className="sr-only"
-              disabled={uploading}
-              onChange={(event) => {
-                void onFiles(Array.from(event.target.files ?? []));
-                event.target.value = "";
-              }}
-            />
-          </label>
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-medium text-ink">
+            Suas fotos{" "}
+            <span className="font-normal text-ink-soft">
+              ({gallery.length} de {MAX_GALLERY})
+            </span>
+          </p>
+          {gallery.length ? (
+            <label
+              className={`btn btn-sm btn-secondary cursor-pointer has-focus-visible:outline-2 has-focus-visible:outline-forest ${
+                uploading ? "opacity-60" : ""
+              }`}
+            >
+              <Icon name="upload" size={16} />
+              {uploading ? "Enviando…" : "Enviar fotos"}
+              {fileInput}
+            </label>
+          ) : null}
         </div>
 
         {gallery.length ? (
-          <ul className="grid grid-cols-2 gap-3">
+          <ul className="grid grid-cols-2 gap-2.5">
             {gallery.map((img, index) => {
               const isCover = img.src === heroImage;
+              const isFooter = showFooter && img.src === footerImage;
               return (
                 <li
                   key={img.id}
@@ -220,56 +227,49 @@ export function PhotoManager({
                     if (dragOver !== img.id) setDragOver(img.id);
                   }}
                   onDrop={(event) => onDrop(event, img.id)}
-                  className={`group relative aspect-square cursor-move overflow-hidden rounded-xl border bg-bg-2 transition ${
-                    isCover ? "border-forest ring-2 ring-forest" : "border-[#5b6842]/14"
-                  } ${dragOver === img.id ? "ring-2 ring-gold" : ""}`}
+                  className={`group relative aspect-square cursor-grab overflow-hidden rounded-lg bg-bg-2 ring-offset-2 ring-offset-surface transition-shadow duration-150 active:cursor-grabbing ${
+                    dragOver === img.id ? "ring-2 ring-gold" : isCover ? "ring-2 ring-forest" : ""
+                  }`}
                 >
-                  <Image
-                    src={img.src}
-                    alt={img.alt || ""}
-                    fill
-                    sizes="180px"
-                    className="object-cover"
-                    draggable={false}
-                  />
+                  <Image src={img.src} alt={img.alt || ""} fill sizes="180px" className="object-cover" draggable={false} />
+
+                  {isCover || isFooter ? (
+                    <span className="absolute left-1.5 top-1.5 rounded-full bg-forest px-2 py-0.5 text-[0.6875rem] font-semibold text-on-forest">
+                      {isCover && isFooter ? "Capa · Rodapé" : isCover ? "Capa" : "Rodapé"}
+                    </span>
+                  ) : null}
 
                   <button
                     type="button"
-                    aria-label="Remover foto"
+                    aria-label={`Apagar foto ${index + 1}`}
                     onClick={() => void remove(img.id)}
-                    className="absolute right-1.5 top-1.5 grid h-8 w-8 place-items-center rounded-full bg-black/55 text-lg leading-none text-white transition hover:bg-black/80"
+                    className="absolute right-1.5 top-1.5 grid size-8 place-items-center rounded-full bg-black/55 text-white transition-colors duration-150 hover:bg-danger focus-visible:outline-2 focus-visible:outline-white"
                   >
-                    ×
+                    <Icon name="trash" size={15} />
                   </button>
 
-                  <div className="absolute inset-x-0 bottom-0 flex items-center gap-1 bg-linear-to-t from-black/75 to-transparent p-1.5">
+                  <div className="absolute inset-x-0 bottom-0 flex items-center gap-1 bg-linear-to-t from-black/70 to-transparent p-1.5 pt-6">
                     <button
                       type="button"
-                      aria-label="Mover para a esquerda"
+                      aria-label={`Mover foto ${index + 1} para antes`}
                       disabled={index === 0}
                       onClick={() => moveBy(img.id, -1)}
-                      className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/85 text-sm font-bold text-ink transition hover:bg-white disabled:opacity-30"
+                      className="grid size-7 shrink-0 place-items-center rounded-full bg-white/90 text-ink transition-colors duration-150 hover:bg-white disabled:opacity-30"
                     >
-                      ‹
+                      <Icon name="chevronLeft" size={15} />
                     </button>
-                    <div className="flex flex-1 items-center gap-1">
-                      <RolePill active={isCover} label="Capa" onClick={() => onSetCover(img.src)} />
-                      {showFooter ? (
-                        <RolePill
-                          active={img.src === footerImage}
-                          label="Rodapé"
-                          onClick={() => onSetFooter(img.src)}
-                        />
-                      ) : null}
+                    <div className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-1">
+                      {isCover ? null : <RolePill label="Capa" onClick={() => onSetCover(img.src)} />}
+                      {showFooter && !isFooter ? <RolePill label="Rodapé" onClick={() => onSetFooter(img.src)} /> : null}
                     </div>
                     <button
                       type="button"
-                      aria-label="Mover para a direita"
+                      aria-label={`Mover foto ${index + 1} para depois`}
                       disabled={index === gallery.length - 1}
                       onClick={() => moveBy(img.id, 1)}
-                      className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/85 text-sm font-bold text-ink transition hover:bg-white disabled:opacity-30"
+                      className="grid size-7 shrink-0 place-items-center rounded-full bg-white/90 text-ink transition-colors duration-150 hover:bg-white disabled:opacity-30"
                     >
-                      ›
+                      <Icon name="chevronRight" size={15} />
                     </button>
                   </div>
                 </li>
@@ -278,65 +278,64 @@ export function PhotoManager({
           </ul>
         ) : (
           <label
-            className={`grid cursor-pointer place-items-center gap-1 rounded-2xl border border-dashed border-[#5b6842]/30 bg-bg-2/40 px-6 py-12 text-center ${
-              uploading ? "opacity-60" : ""
-            }`}
+            onDragOver={(event) => {
+              event.preventDefault();
+              setDropActive(true);
+            }}
+            onDragLeave={() => setDropActive(false)}
+            onDrop={(event) => {
+              event.preventDefault();
+              setDropActive(false);
+              void onFiles(Array.from(event.dataTransfer.files));
+            }}
+            className={`grid cursor-pointer place-items-center gap-1 rounded-lg border border-dashed px-6 py-10 text-center transition-colors duration-150 has-focus-visible:outline-2 has-focus-visible:outline-forest ${
+              dropActive ? "border-forest bg-forest/5" : "border-line-strong bg-field hover:border-forest/50"
+            } ${uploading ? "opacity-60" : ""}`}
           >
-            <span className="text-sm font-bold text-ink">Adicione suas fotos</span>
-            <span className="text-xs text-ink-soft">JPG, PNG, WEBP ou AVIF · até 8 MB cada</span>
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/avif"
-              multiple
-              className="sr-only"
-              disabled={uploading}
-              onChange={(event) => {
-                void onFiles(Array.from(event.target.files ?? []));
-                event.target.value = "";
-              }}
-            />
+            <span className="mb-1 grid size-11 place-items-center rounded-full bg-forest/8 text-forest">
+              <Icon name="upload" size={20} />
+            </span>
+            <span className="text-sm font-semibold text-ink">{uploading ? "Enviando…" : "Enviar suas fotos"}</span>
+            <span className="text-[0.8125rem] text-ink-soft">Clique ou arraste aqui · JPG, PNG, WEBP ou AVIF até 8 MB</span>
+            {fileInput}
           </label>
         )}
 
-        <div className="flex min-h-5 items-center gap-2 text-sm">
-          {error ? (
-            <span className="font-bold text-[#8d3d33]">{error}</span>
-          ) : gallery.length ? (
-            <span className="text-ink-soft">Arraste as fotos (ou use ‹ ›) para reordenar a galeria.</span>
-          ) : null}
-        </div>
+        {error ? (
+          <p role="alert" className="text-sm font-medium text-danger">
+            {error}
+          </p>
+        ) : gallery.length > 1 ? (
+          <p className="text-[0.8125rem] text-ink-soft">Arraste as fotos (ou use as setas) para mudar a ordem.</p>
+        ) : null}
       </div>
     </div>
   );
 }
 
-function PreviewSlot({ label, src, isCustom, hint }: { label: string; src: string; isCustom: boolean; hint: string }) {
+function PreviewSlot({ label, src, isCustom }: { label: string; src: string; isCustom: boolean }) {
   return (
-    <div className="grid gap-2">
-      <h3 className="text-sm font-bold text-ink">{label}</h3>
-      <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-[#5b6842]/14 bg-bg-2">
-        {src ? (
-          <Image src={src} alt={`${label} atual`} fill sizes="360px" className="object-cover" />
-        ) : null}
+    <figure className="grid gap-1.5">
+      <div className="relative aspect-4/3 w-full overflow-hidden rounded-lg border border-line bg-bg-2">
+        {src ? <Image src={src} alt={`${label} atual do site`} fill sizes="360px" className="object-cover" /> : null}
         {!isCustom ? (
-          <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/70 to-transparent p-3">
-            <p className="text-xs font-bold text-white">{hint}</p>
-          </div>
+          <span className="absolute inset-x-1.5 bottom-1.5 rounded-md bg-black/60 px-2 py-1 text-[0.6875rem] font-medium leading-4 text-white">
+            Foto de exemplo
+          </span>
         ) : null}
       </div>
-    </div>
+      <figcaption className="text-[0.8125rem] font-medium text-ink">{label}</figcaption>
+    </figure>
   );
 }
 
-function RolePill({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
+function RolePill({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <button
       type="button"
-      aria-pressed={active}
       onClick={onClick}
-      className={`flex-1 rounded-full px-2 py-1 text-[11px] font-bold transition ${
-        active ? "bg-forest text-[#f3efe4]" : "bg-white/85 text-ink hover:bg-white"
-      }`}
+      aria-label={`Usar como ${label.toLowerCase()}`}
+      className="rounded-full bg-white/90 px-2 py-1 text-[0.6875rem] font-semibold text-ink transition-colors duration-150 hover:bg-white"
     >
       {label}
     </button>

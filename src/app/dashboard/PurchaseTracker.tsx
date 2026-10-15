@@ -1,0 +1,44 @@
+"use client";
+
+import { useEffect } from "react";
+import { track } from "@/lib/analytics";
+import { PUBLISH_FEE_BRL } from "@/lib/platform-data";
+import { purchaseEventId } from "@/lib/tracking-shared";
+
+const POLL_MS = 500;
+const MAX_TRIES = 20;
+
+/**
+ * Purchase da taxa no navegador, uma vez por navegador. Deduplica com o Purchase
+ * que o webhook manda pela Conversions API (mesmo event_id). O Pixel/GA carregam
+ * depois da hidratação e só com consentimento, então espera os scripts por ~10s;
+ * sem eles não marca como enviado (tenta de novo na próxima visita).
+ */
+export function PurchaseTracker({ weddingId }: { weddingId: string }) {
+  useEffect(() => {
+    const key = `noivar_purchase_${weddingId}`;
+    try {
+      if (localStorage.getItem(key)) return;
+    } catch {
+      return; // sem storage não há como garantir "uma vez"
+    }
+
+    let tries = 0;
+    const timer = window.setInterval(() => {
+      if (window.fbq || window.gtag) {
+        track("purchase", { value: PUBLISH_FEE_BRL }, { eventId: purchaseEventId(weddingId) });
+        try {
+          localStorage.setItem(key, "1");
+        } catch {
+          // ignora: no pior caso reenvia, e o event_id deduplica
+        }
+      } else if (++tries < MAX_TRIES) {
+        return;
+      }
+      window.clearInterval(timer);
+    }, POLL_MS);
+    return () => window.clearInterval(timer);
+  }, [weddingId]);
+
+  return null;
+}

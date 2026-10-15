@@ -21,6 +21,9 @@
   --jr-line: rgba(42, 46, 34, 0.16);
   --jr-line-soft: rgba(42, 46, 34, 0.09);
   --jr-arch: 999px 999px 18px 18px;
+  /* fontes dos widgets compartilhados (presentes, formulários, modal do Pix) */
+  --font-serif: var(--jr-display), Georgia, serif;
+  --font-sans: var(--jr-sans), system-ui, sans-serif;
 
   font-family: var(--jr-sans), system-ui, sans-serif;
   color: var(--jr-ink);
@@ -29,6 +32,16 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
+}
+
+/*
+ * Foco de teclado na cor do texto: claro sobre o hero e o verde, verde sobre o
+ * creme. :where() deixa a especificidade baixa; as regras próprias de cada
+ * botão abaixo continuam vencendo.
+ */
+:where(.template) :is(a, button, summary):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
 }
 
 .wrap {
@@ -324,7 +337,7 @@
 
 .hero {
   position: relative;
-  min-height: 100svh;
+  min-height: calc(100svh - var(--demo-bar-h, 0px));
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -347,7 +360,8 @@
   inset: 0;
   background:
     linear-gradient(180deg, rgba(28, 36, 22, 0.5) 0%, rgba(28, 36, 22, 0) 26%),
-    linear-gradient(0deg, rgba(28, 36, 22, 0.82) 2%, rgba(28, 36, 22, 0.2) 48%, rgba(28, 36, 22, 0.24) 100%);
+    /* escuro até ~60% da altura: o texto do hero ocupa a metade de baixo (AA sobre foto clara) */
+    linear-gradient(0deg, rgba(28, 36, 22, 0.86) 0%, rgba(28, 36, 22, 0.66) 42%, rgba(28, 36, 22, 0.32) 64%, rgba(28, 36, 22, 0.2) 100%);
 }
 /* arched "garden-window" frame drawn over the hero photo */
 .heroArch {
@@ -385,7 +399,7 @@
   font-weight: 600;
   letter-spacing: 0.34em;
   text-transform: uppercase;
-  color: var(--jr-blush);
+  color: var(--jr-on-green); /* 12px sobre foto: o blush ficava abaixo de 4,5:1 no celular */
   text-shadow: 0 1px 12px rgba(28, 36, 22, 0.5);
 }
 .heroNames {
@@ -402,19 +416,22 @@
   display: block;
 }
 .heroAmp {
-  font-style: italic;
+  /* a Gilda só tem regular: sem itálico sintetizado (o <em> viria inclinado) */
+  font-style: normal;
   color: var(--jr-blush);
   margin-right: 0.18em;
 }
+/* grid em vez de flex-wrap: o divisor acompanha a linha e o "Local" quebra dentro da célula */
 .heroPlate {
-  display: inline-flex;
-  flex-wrap: wrap;
+  display: inline-grid;
+  grid-template-columns: auto 1px auto;
   align-items: center;
-  gap: clamp(0.75rem, 3vw, 2rem);
+  gap: 0.85rem clamp(1rem, 3vw, 2rem);
   margin-top: clamp(1.75rem, 4vw, 2.75rem);
-  padding: 1.05rem 2rem;
+  padding: 1.05rem clamp(1.25rem, 4vw, 2rem);
   border-radius: 16px;
-  background: color-mix(in oklab, var(--jr-cream) 18%, transparent);
+  /* vidro escuro: o creme clareava a foto atrás do texto claro (DATA/LOCAL a ~2,5:1) */
+  background: rgba(28, 36, 22, 0.46);
   backdrop-filter: blur(8px) saturate(1.05);
   border: 1px solid rgba(243, 239, 226, 0.28);
 }
@@ -437,6 +454,15 @@
   width: 1px;
   align-self: stretch;
   background: rgba(243, 239, 226, 0.32);
+}
+/* celular: Data e Local empilhados, sem divisor (em 430px a data já quebrava) */
+@media (max-width: 479px) {
+  .heroPlate {
+    grid-template-columns: auto;
+  }
+  .heroPlateDivider {
+    display: none;
+  }
 }
 .heroScroll {
   position: absolute;
@@ -520,12 +546,12 @@
 }
 .storyHead {
   max-width: 40rem;
-  margin-bottom: clamp(2.5rem, 6vw, 4.5rem);
+  margin-bottom: clamp(2rem, 4vw, 3rem);
 }
 .spreads {
   display: flex;
   flex-direction: column;
-  gap: clamp(3.5rem, 8vw, 7rem);
+  gap: clamp(3rem, 6vw, 5rem);
 }
 .spread {
   display: grid;
@@ -536,6 +562,7 @@
 .spreadMedia {
   position: relative;
   aspect-ratio: 4 / 5;
+  max-height: 35rem; /* no desktop o 4/5 dava 655px para ~200px de texto */
   overflow: hidden;
   border-radius: var(--jr-arch);
   box-shadow: 0 24px 60px rgba(44, 58, 36, 0.16);
@@ -577,6 +604,7 @@
   }
   .spreadAlt .spreadMedia {
     order: 2;
+    justify-self: end; /* com o teto de altura a foto fica mais estreita que a coluna: cola na borda */
   }
 }
 
@@ -585,7 +613,7 @@
 .count {
   background: var(--jr-green-deep);
   color: var(--jr-on-green);
-  padding-block: clamp(4rem, 9vw, 7rem);
+  padding-block: clamp(3rem, 6vw, 4.5rem);
   text-align: center;
 }
 .countHead {
@@ -617,7 +645,7 @@
   grid-template-columns: repeat(4, 1fr);
   gap: clamp(0.5rem, 2.5vw, 2rem);
   max-width: 44rem;
-  margin: clamp(2.5rem, 5vw, 3.5rem) auto 0;
+  margin: clamp(1.75rem, 3.5vw, 2.5rem) auto 0;
 }
 .countCell {
   display: flex;
@@ -643,7 +671,7 @@
   color: var(--jr-on-green-soft);
 }
 .countFoot {
-  margin-top: clamp(2rem, 4vw, 3rem);
+  margin-top: clamp(1.25rem, 2.5vw, 1.75rem);
 }
 .countDate {
   font-family: var(--jr-sans);
@@ -658,11 +686,11 @@
 
 .details {
   background: var(--jr-cream-2);
-  padding-block: clamp(4.5rem, 10vw, 8rem);
+  padding-block: clamp(3.5rem, 7vw, 5.5rem);
 }
 .detailsHead {
   max-width: 44rem;
-  margin-bottom: clamp(2.5rem, 5vw, 3.5rem);
+  margin-bottom: clamp(2rem, 4vw, 2.75rem);
 }
 .program {
   list-style: none;
@@ -675,7 +703,7 @@
   grid-template-columns: 5rem minmax(0, 1fr);
   gap: clamp(1rem, 4vw, 3rem);
   align-items: baseline;
-  padding-block: clamp(1.25rem, 3vw, 1.85rem);
+  padding-block: clamp(1rem, 2vw, 1.35rem);
   border-bottom: 1px solid var(--jr-line);
 }
 .programTime {
@@ -723,7 +751,7 @@
   position: relative;
   aspect-ratio: 4 / 3;
   overflow: hidden;
-  border-radius: var(--jr-arch);
+  border-radius: 18px; /* o arco cortava o cartão do embed */
   border: 1px solid var(--jr-line);
   box-shadow: 0 24px 60px rgba(44, 58, 36, 0.16);
 }
@@ -841,7 +869,7 @@
 .field select:focus-visible {
   outline: none;
   border-color: var(--jr-green);
-  box-shadow: 0 0 0 3px rgba(62, 82, 48, 0.16);
+  box-shadow: 0 0 0 2px var(--jr-green);
 }
 .formError {
   margin: 0;
@@ -917,6 +945,8 @@
 .lightbox {
   width: min(92vw, 720px);
   max-height: 92vh;
+  /* O reset global zera a margem do <dialog>; sem auto ele cola no canto. */
+  margin: auto;
   padding: 0;
   border: 0;
   border-radius: 20px;
@@ -1005,7 +1035,6 @@
   margin: 0.75rem 0 0;
   max-width: 32rem;
   font-family: var(--jr-display);
-  font-style: italic;
   font-size: 1.15rem;
   line-height: 1.55;
   color: var(--jr-on-green-soft);

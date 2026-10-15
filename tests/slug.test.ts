@@ -39,6 +39,10 @@ describe("isValidSlug", () => {
     expect(isValidSlug("login")).toBe(false);
   });
 
+  it("rejects the demo couple slug", () => {
+    expect(isValidSlug("helena-e-lucas")).toBe(false);
+  });
+
   it("rejects uppercase and bad characters", () => {
     expect(isValidSlug("Pedro")).toBe(false);
     expect(isValidSlug("pedro_rafaela")).toBe(false);

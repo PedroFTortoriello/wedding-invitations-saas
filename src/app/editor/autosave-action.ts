@@ -1,11 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireUser } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
+import { getActingContext, guardSupportWrite } from "@/lib/acting";
+import { logServerError } from "@/lib/funnel";
 import {
   contentToJson,
   extractContent,
+  isOwnerPhotoUrl,
   isTemplateId,
   monogramFromNames,
   rowToWeddingSite,
@@ -15,15 +16,9 @@ import {
 import type { PixKeyType, WeddingGalleryImage, WeddingSite } from "@/types/wedding";
 
 const PIX_KEY_TYPES: PixKeyType[] = ["cpf", "cnpj", "email", "phone", "random"];
-const BUCKET = "wedding-photos";
 const MAX_GALLERY = 40;
 
 export type AutosaveResult = { ok?: boolean; error?: string };
-
-function ownerPrefix(ownerId: string): string | null {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  return url ? `${url}/storage/v1/object/public/${BUCKET}/${ownerId}/` : null;
-}
 
 /**
  * Auto-save do editor ao vivo: recebe o WeddingSite inteiro e persiste TODO o
@@ -34,17 +29,30 @@ function ownerPrefix(ownerId: string): string | null {
  * direto pro Storage), então não esbarra no limite de 1 MB das Server Actions.
  */
 export async function autosaveWeddingAction(input: WeddingSite): Promise<AutosaveResult> {
-  const user = await requireUser();
-  const supabase = await createClient();
-  const { data } = await supabase
+  const ctx = await getActingContext();
+  const supabase = ctx.db;
+  const { data, error: loadError } = await supabase
     .from("weddings")
     .select("*")
-    .eq("owner_id", user.id)
+    .eq("owner_id", ctx.ownerId)
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
   const row = (data as WeddingRow) ?? null;
-  if (!row) return { error: "Casamento não encontrado." };
+  if (!row) {
+    if (loadError) {
+      await logServerError("editor.autosave.load", loadError, {
+        event: "autosave_failed",
+        userId: ctx.ownerId,
+        path: "/editor"
+      });
+    }
+    return { error: "Casamento não encontrado." };
+  }
+
+  // A aba foi aberta para OUTRO casamento (o cookie de suporte mudou, expirou ou saiu em outra
+  // aba): nunca gravar um site por cima de outro.
+  if (input?.id !== row.id) return { error: "A conta aberta mudou. Recarregue a página." };
 
   const site = rowToWeddingSite(row); // autoritativo p/ id/owner/slug/status/gifts
 
@@ -53,9 +61,20 @@ export async function autosaveWeddingAction(input: WeddingSite): Promise<Autosav
   if (!isTemplateId(input.templateId)) return { error: "Modelo inválido." };
   const pixKeyType: PixKeyType = (PIX_KEY_TYPES as string[]).includes(input.pixKeyType) ? input.pixKeyType : "random";
   const pixKey = String(input.pixKey ?? "").trim();
+  const pixHolderName = String(input.pixHolderName ?? "").trim();
+  // Modo suporte: Pix é dinheiro. Qualquer diferença do que está salvo é bloqueada (e auditada).
+  if (
+    ctx.support &&
+    (pixKey !== site.pixKey.trim() ||
+      pixHolderName !== site.pixHolderName.trim() ||
+      (pixKey !== "" && pixKeyType !== site.pixKeyType))
+  ) {
+    const blocked = await guardSupportWrite(ctx, "pix_change", row.id);
+    if (!blocked.ok) return { error: blocked.message };
+  }
 
-  // Imagens: só storage do dono ou já existentes (evita URLs forasteiras).
-  const prefix = ownerPrefix(user.id);
+  // Imagens: só storage do dono ou já existentes (evita URLs forasteiras). No modo suporte o
+  // upload do navegador cai na pasta do admin (RLS do storage é por auth.uid()).
   const existing = new Set<string>([
     site.heroImage,
     site.footerImage,
@@ -64,7 +83,13 @@ export async function autosaveWeddingAction(input: WeddingSite): Promise<Autosav
     ...site.detailCards.map((c) => c.image),
     ...site.gifts.map((g) => g.image ?? "")
   ]);
-  const okSrc = (s: string) => Boolean(s && ((prefix && s.startsWith(prefix)) || existing.has(s)));
+  const okSrc = (s: string) =>
+    Boolean(
+      s &&
+        (isOwnerPhotoUrl(s, ctx.ownerId) ||
+          existing.has(s) ||
+          (ctx.support !== null && isOwnerPhotoUrl(s, ctx.support.adminId)))
+    );
   const keepImg = (candidate: string, fallback: string) => (okSrc(candidate) ? candidate : fallback);
 
   const gallery: WeddingGalleryImage[] = (Array.isArray(input.gallery) ? input.gallery : [])
@@ -103,18 +128,30 @@ export async function autosaveWeddingAction(input: WeddingSite): Promise<Autosav
     gifts: site.gifts // presentes são geridos em /presentes — nunca sobrescreve pelo editor
   };
 
+  const guard = await guardSupportWrite(ctx, "autosave", row.id);
+  if (!guard.ok) return { error: guard.message };
+
   const { error } = await supabase
     .from("weddings")
     .update({
       couple_names: coupleNames,
-      pix_key: pixKey || null,
-      pix_key_type: pixKey ? pixKeyType : null,
-      pix_holder_name: String(input.pixHolderName ?? "").trim() || null,
+      // Suporte nunca grava as colunas do Pix (conferido acima).
+      ...(ctx.support
+        ? {}
+        : { pix_key: pixKey || null, pix_key_type: pixKey ? pixKeyType : null, pix_holder_name: pixHolderName || null }),
       content: contentToJson(extractContent(merged))
     })
     .eq("id", row.id);
 
-  if (error) return { error: "Não foi possível salvar." };
+  if (error) {
+    await logServerError("editor.autosave", error, {
+      event: "autosave_failed",
+      userId: ctx.ownerId,
+      weddingId: row.id,
+      path: "/editor"
+    });
+    return { error: "Não foi possível salvar." };
+  }
 
   revalidatePath("/dashboard");
   revalidatePath(`/casamento/${row.slug}`);

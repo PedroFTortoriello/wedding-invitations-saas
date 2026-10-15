@@ -1,14 +1,40 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import {
+  useActionState,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  useTransition,
+  type DragEvent
+} from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
-import { addGiftAction, type GiftActionState } from "./actions";
+import { Icon } from "@/components/app/icons";
+import { ImageAdjuster } from "@/components/app/ImageAdjuster";
+import { Notice } from "@/components/app/Notice";
+import { SubmitButton } from "@/components/app/SubmitButton";
+import { SupportBlockedButton } from "@/components/app/SupportBar";
+import {
+  DEFAULT_GIFT_FRAMING,
+  GIFT_ASPECT_BY_TEMPLATE,
+  giftImageStyle,
+  normalizeGiftImage,
+  type GiftImageFraming
+} from "@/lib/gift-image";
+import type { WeddingGift, WeddingSite } from "@/types/wedding";
+import {
+  addGiftAction,
+  removeGiftAction,
+  toggleGiftAction,
+  updateGiftImageAction,
+  type GiftActionState
+} from "./actions";
 
 const initial: GiftActionState = {};
-const fieldClass =
-  "min-h-12 w-full rounded-2xl border border-[#5b6842]/16 bg-white px-4 text-ink placeholder:text-ink-soft/70";
-const labelText = "text-sm font-semibold text-ink";
+const labelText = "text-sm font-medium text-ink";
 const optional = <span className="font-normal text-ink-soft"> (opcional)</span>;
 
 const BUCKET = "wedding-photos";
@@ -22,6 +48,121 @@ const EXT: Record<string, string> = {
 const ACCEPT = "image/jpeg,image/png,image/webp,image/avif";
 
 type GiftExtraction = { title?: string; price?: string | null; image?: string | null; error?: string };
+type ImportStatus = { kind: "busy" } | { kind: "ok"; text: string; photo: boolean } | { kind: "error"; text: string };
+type TemplateId = WeddingSite["templateId"];
+
+/** Envio de foto para o storage do casal (pasta do dono) — usado na nova cota e no "Ajustar foto". */
+function useGiftUpload() {
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+
+  async function upload(file: File | undefined): Promise<string | null> {
+    if (!file) return null;
+    setUploadError("");
+    if (!EXT[file.type]) {
+      setUploadError("Use JPG, PNG, WEBP ou AVIF.");
+      return null;
+    }
+    if (file.size > MAX_BYTES) {
+      setUploadError("Imagem acima de 8 MB.");
+      return null;
+    }
+    setUploading(true);
+    try {
+      const supabase = createClient();
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setUploadError("Sessão expirada. Recarregue a página.");
+        return null;
+      }
+      const path = `${user.id}/${crypto.randomUUID()}.${EXT[file.type]}`;
+      const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+        contentType: file.type,
+        upsert: false
+      });
+      if (error) {
+        setUploadError("Falha ao enviar a imagem. Tente novamente.");
+        return null;
+      }
+      return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return { uploading, uploadError, setUploadError, upload };
+}
+
+/** <input type="file"> escondido dentro de um <label> estilizado como botão. */
+function PhotoInput({ disabled, onFile }: { disabled: boolean; onFile: (file: File | undefined) => void }) {
+  return (
+    <input
+      type="file"
+      accept={ACCEPT}
+      className="sr-only"
+      disabled={disabled}
+      onChange={(event) => {
+        onFile(event.target.files?.[0]);
+        event.target.value = "";
+      }}
+    />
+  );
+}
+
+/**
+ * Imagem vinda do Ctrl/Cmd+V (ex.: "Copiar imagem" na página da loja). Só age se o
+ * clipboard tiver um arquivo de imagem — texto colado num campo segue o fluxo normal.
+ */
+function pastedImage(event: { clipboardData: DataTransfer | null; target: EventTarget | null }): File | undefined {
+  const data = event.clipboardData;
+  if (!data) return undefined;
+  const inTextField =
+    event.target instanceof Element && event.target.closest("input:not([type=file]), textarea, [contenteditable]");
+  if (inTextField && data.types.includes("text/plain")) return undefined;
+  return Array.from(data.files).find((file) => file.type.startsWith("image/"));
+}
+
+/** Arrastar e soltar um arquivo sobre a área da foto; a validação de tipo/tamanho fica no upload. */
+function useFileDrop(onFile: (file: File | undefined) => void, disabled: boolean) {
+  const [dragging, setDragging] = useState(false);
+  const hasFiles = (event: DragEvent) => event.dataTransfer.types.includes("Files");
+
+  return {
+    dragging,
+    dropProps: {
+      onDragOver(event: DragEvent<HTMLElement>) {
+        if (!hasFiles(event)) return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = disabled ? "none" : "copy";
+        setDragging(true);
+      },
+      onDragLeave(event: DragEvent<HTMLElement>) {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragging(false);
+      },
+      onDrop(event: DragEvent<HTMLElement>) {
+        if (!hasFiles(event)) return;
+        event.preventDefault();
+        setDragging(false);
+        if (!disabled) onFile(event.dataTransfer.files[0]);
+      }
+    }
+  };
+}
+
+const noSubscribe = () => () => {};
+/** Atalho de colar exibido nas dicas: ⌘V em Apple, Ctrl+V no resto (o servidor renderiza Ctrl+V). */
+function usePasteKey() {
+  return useSyncExternalStore(
+    noSubscribe,
+    () => (/Mac|iPhone|iPad/.test(navigator.userAgent) ? "⌘V" : "Ctrl+V"),
+    () => "Ctrl+V"
+  );
+}
+
+const fileButton =
+  "btn btn-sm btn-ghost min-h-9 cursor-pointer px-3 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-forest";
 
 function UploadIcon() {
   return (
@@ -44,236 +185,458 @@ function UploadIcon() {
   );
 }
 
-export function GiftManager() {
+export function GiftManager({
+  templateId,
+  weddingId,
+  support = false
+}: {
+  templateId: TemplateId;
+  /** Conferido no servidor: a aba não grava numa conta diferente da que foi aberta (modo suporte). */
+  weddingId: string;
+  /** Modo suporte: a barra do topo ocupa 48px, então o formulário gruda mais abaixo. */
+  support?: boolean;
+}) {
   const [state, formAction, pending] = useActionState(addGiftAction, initial);
   const formRef = useRef<HTMLFormElement>(null);
   const [imageUrl, setImageUrl] = useState("");
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState("");
+  const [framing, setFraming] = useState<GiftImageFraming>(DEFAULT_GIFT_FRAMING);
+  const { uploading, uploadError, setUploadError, upload } = useGiftUpload();
 
   const [link, setLink] = useState("");
-  const [importing, setImporting] = useState(false);
-  const [importMsg, setImportMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [importStatus, setImportStatus] = useState<ImportStatus | null>(null);
+  const importing = importStatus?.kind === "busy";
+  const lastImport = useRef({ title: "", price: "", image: "" });
+  const pasteKey = usePasteKey();
+
+  // Foto nova (enviada ou importada) sempre começa em "Foto inteira", centralizada.
+  function chooseImage(url: string) {
+    setImageUrl(url);
+    setFraming(DEFAULT_GIFT_FRAMING);
+  }
 
   useEffect(() => {
     if (!state.ok) return;
     formRef.current?.reset();
+    lastImport.current = { title: "", price: "", image: "" };
     // Reset da UI depois que o servidor confirmou a cota.
     /* eslint-disable react-hooks/set-state-in-effect */
     setImageUrl("");
+    setFraming(DEFAULT_GIFT_FRAMING);
     setLink("");
-    setImportMsg(null);
+    setImportStatus(null);
     setUploadError("");
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, [state.ok]);
+    // Depende do objeto `state` (novo a cada envio), não de state.ok: na 2ª cota seguida
+    // ok continua true e o formulário não era limpo.
+  }, [state, setUploadError]);
 
   async function onFile(file: File | undefined) {
-    if (!file) return;
-    setUploadError("");
-    if (!EXT[file.type]) {
-      setUploadError("Use JPG, PNG, WEBP ou AVIF.");
-      return;
-    }
-    if (file.size > MAX_BYTES) {
-      setUploadError("Imagem acima de 8 MB.");
-      return;
-    }
-    setUploading(true);
-    try {
-      const supabase = createClient();
-      const {
-        data: { user }
-      } = await supabase.auth.getUser();
-      if (!user) {
-        setUploadError("Sessão expirada. Recarregue a página.");
-        return;
-      }
-      const path = `${user.id}/${crypto.randomUUID()}.${EXT[file.type]}`;
-      const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
-        contentType: file.type,
-        upsert: false
-      });
-      if (error) {
-        setUploadError("Falha ao enviar a imagem. Tente novamente.");
-        return;
-      }
-      setImageUrl(supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl);
-    } finally {
-      setUploading(false);
-    }
+    const url = await upload(file);
+    if (url) chooseImage(url);
   }
+  const { dragging, dropProps } = useFileDrop((file) => void onFile(file), uploading);
+
+  // Ctrl/Cmd+V com imagem em qualquer ponto da página vai para a nova cota. No window
+  // (depois do React): o editor de foto de uma cota aberta consome o evento antes.
+  const onWindowPaste = useEffectEvent((event: ClipboardEvent) => {
+    if (event.defaultPrevented) return;
+    const file = pastedImage(event);
+    if (!file) return;
+    event.preventDefault();
+    if (!uploading) void onFile(file);
+  });
+  useEffect(() => {
+    const handler = (event: ClipboardEvent) => onWindowPaste(event);
+    window.addEventListener("paste", handler);
+    return () => window.removeEventListener("paste", handler);
+  }, []);
 
   async function onImport() {
     const url = link.trim();
     if (!url) return;
-    setImporting(true);
-    setImportMsg(null);
+    setImportStatus({ kind: "busy" });
     try {
       const res = await fetch("/api/gifts/extract", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url })
       });
-      const data = (await res.json()) as GiftExtraction;
-      if (!res.ok) {
-        setImportMsg({ ok: false, text: data.error ?? "Não foi possível importar esse link." });
+      const data = (await res.json().catch(() => ({}))) as GiftExtraction;
+      // Nada do que o casal já digitou é apagado: só sobrescreve o que a loja devolveu.
+      const filled = [data.title && "nome", data.price && "valor", data.image && "foto"].filter(
+        (field): field is string => Boolean(field)
+      );
+      if (!res.ok || !filled.length) {
+        setImportStatus({ kind: "error", text: data.error ?? "A loja não liberou os dados desse produto." });
         return;
       }
-      const form = formRef.current;
-      if (form) {
-        const titleEl = form.elements.namedItem("title") as HTMLInputElement | null;
-        const priceEl = form.elements.namedItem("price") as HTMLInputElement | null;
-        if (titleEl && data.title) titleEl.value = data.title;
-        if (priceEl && data.price) priceEl.value = data.price;
+      // Campo que ainda guarda o valor do import anterior e não veio agora é limpo: senão o
+      // preço/foto de outro produto fica junto do nome novo. O que o casal digitou fica.
+      const last = lastImport.current;
+      for (const field of ["title", "price"] as const) {
+        const input = formRef.current?.elements.namedItem(field) as HTMLInputElement | null;
+        const value = data[field];
+        if (!input) continue;
+        if (value) input.value = value;
+        else if (input.value === last[field]) input.value = "";
       }
-      if (data.image) setImageUrl(data.image);
-      setImportMsg({
-        ok: true,
-        text: data.image
-          ? "Nome, valor e imagem preenchidos. Revise abaixo antes de adicionar."
-          : "Nome e valor preenchidos (sem imagem). Revise abaixo antes de adicionar."
-      });
+      if (data.image) chooseImage(data.image);
+      else if (last.image) setImageUrl((current) => (current === last.image ? "" : current));
+      lastImport.current = { title: data.title ?? "", price: data.price ?? "", image: data.image ?? "" };
+      const list = new Intl.ListFormat("pt-BR").format(filled);
+      const verb = filled.length > 1 ? "preenchidos" : filled[0] === "foto" ? "preenchida" : "preenchido";
+      setImportStatus({ kind: "ok", text: `${list[0].toUpperCase()}${list.slice(1)} ${verb}`, photo: Boolean(data.image) });
     } catch {
-      setImportMsg({ ok: false, text: "Falha de conexão. Tente novamente." });
-    } finally {
-      setImporting(false);
+      setImportStatus({ kind: "error", text: "Falha de conexão. Tente novamente." });
     }
   }
 
   return (
-    <form ref={formRef} action={formAction} className="card p-6 sm:p-8">
+    <form
+      ref={formRef}
+      action={formAction}
+      className={`panel p-5 lg:sticky ${support ? "lg:top-18" : "lg:top-6"}`}
+      aria-labelledby="new-gift-title"
+    >
+      <input type="hidden" name="weddingId" value={weddingId} />
       <input type="hidden" name="image" value={imageUrl} />
+      <input type="hidden" name="imageFit" value={framing.imageFit} />
+      <input type="hidden" name="imageFocusX" value={framing.imageFocus.x} />
+      <input type="hidden" name="imageFocusY" value={framing.imageFocus.y} />
+      <input type="hidden" name="imageZoom" value={framing.imageZoom} />
 
-      <div>
-        <h2 className="t-h3 text-ink">Nova cota de presente</h2>
-        <p className="mt-1.5 text-sm leading-6 text-ink-soft">Adicione um item ou puxe os dados de um link.</p>
-      </div>
+      <h2 id="new-gift-title" className="text-base font-semibold">
+        Nova cota
+      </h2>
 
       {/* Importar por link */}
-      <div className="mt-6">
+      <div className="mt-4 grid gap-1.5">
         <label htmlFor="gift-link" className={labelText}>
-          Link do produto{optional}
+          Puxar de um link{optional}
         </label>
-        <div className="mt-2 flex flex-col gap-2.5 sm:flex-row">
+        <div className="flex gap-2">
           <input
             id="gift-link"
             type="url"
             inputMode="url"
             value={link}
             onChange={(event) => setLink(event.target.value)}
-            placeholder="Cole o link (Amazon, Mercado Livre…)"
-            className={fieldClass}
+            placeholder="Amazon, Mercado Livre, loja…"
+            aria-describedby="gift-link-hint"
+            className="field"
           />
           <button
             type="button"
             onClick={() => void onImport()}
             disabled={importing || !link.trim()}
-            className="btn btn-secondary shrink-0 whitespace-nowrap text-sm"
+            aria-busy={importing}
+            className="btn btn-sm btn-secondary min-h-11 shrink-0 disabled:opacity-50"
           >
-            {importing ? "Buscando…" : "Buscar dados"}
+            {importing ? "Buscando…" : "Buscar"}
           </button>
         </div>
-        <p className={`mt-2 text-sm leading-5 ${importMsg ? (importMsg.ok ? "font-semibold text-forest" : "font-semibold text-[#8d3d33]") : "text-ink-soft"}`}>
-          {importMsg ? importMsg.text : "Puxa nome, valor e imagem automaticamente."}
+        <p
+          id="gift-link-hint"
+          aria-live="polite"
+          className={`text-[0.8125rem] leading-5 ${importStatus ? "text-ink" : "text-ink-soft"}`}
+        >
+          {!importStatus ? "Preenche nome, valor e foto automaticamente." : null}
+          {importStatus?.kind === "busy" ? "Buscando na loja…" : null}
+          {importStatus?.kind === "ok" ? (
+            <>
+              <span className="font-medium text-forest">{importStatus.text}</span>
+              {importStatus.photo ? (
+                ". Revise antes de adicionar."
+              ) : (
+                <>
+                  {" "}
+                  — a loja não liberou a foto: <span className="sm:hidden">envie a foto abaixo.</span>
+                  <span className="hidden sm:inline">cole ({pasteKey}) ou envie a imagem.</span>
+                </>
+              )}
+            </>
+          ) : null}
+          {importStatus?.kind === "error" ? (
+            <>
+              <span className="block font-medium text-danger">{importStatus.text}</span>
+              <span className="sm:hidden">Preencha abaixo e envie a foto.</span>
+              <span className="hidden sm:inline">
+                Para a foto: na loja, clique com o botão direito na imagem, “Copiar imagem”, e cole aqui ({pasteKey}).
+              </span>
+            </>
+          ) : null}
         </p>
       </div>
 
-      {/* Divisória */}
-      <div className="my-6 flex items-center gap-3 text-xs text-ink-soft">
-        <span className="h-px flex-1 bg-[#5b6842]/14" />
-        ou preencha manualmente
-        <span className="h-px flex-1 bg-[#5b6842]/14" />
+      <div className="my-5 flex items-center gap-3 text-[0.8125rem] text-ink-soft">
+        <span className="h-px flex-1 bg-line" />
+        ou preencha à mão
+        <span className="h-px flex-1 bg-line" />
       </div>
 
-      {/* Campos */}
-      <div className="grid gap-5">
-        <label className="grid gap-2">
-          <span className={labelText}>Título</span>
-          <input name="title" type="text" required placeholder="Lua de mel, jantar especial…" className={fieldClass} />
+      <div className="grid gap-4">
+        <label className="grid gap-1.5">
+          <span className={labelText}>Nome da cota</span>
+          <input name="title" type="text" required placeholder="Lua de mel, jantar especial…" className="field" />
         </label>
 
-        <label className="grid gap-2">
+        <label className="grid gap-1.5">
           <span className={labelText}>Valor{optional}</span>
-          <input name="price" type="text" placeholder="R$ 250,00 ou Valor livre" className={fieldClass} />
+          <input name="price" type="text" placeholder="R$ 250,00 — vazio vira “Valor livre”" className="field" />
         </label>
 
-        <div className="grid gap-2">
-          <span className={labelText}>Imagem{optional}</span>
+        <div className="grid gap-1.5">
+          <span className={labelText}>Foto{optional}</span>
+          <span aria-live="polite" className="sr-only">
+            {uploading ? "Enviando a foto…" : imageUrl ? "Foto escolhida. Ajuste o enquadramento abaixo." : ""}
+          </span>
           {imageUrl ? (
-            <div className="overflow-hidden rounded-2xl border border-[#5b6842]/16">
-              <div className="relative aspect-[3/2] bg-bg-2">
-                <Image src={imageUrl} alt="" fill sizes="(max-width: 640px) 100vw, 420px" className="object-cover" />
-              </div>
-              <div className="flex items-center justify-between gap-3 px-4 py-2.5">
-                <span className="text-xs text-ink-soft">{uploading ? "Enviando…" : "Imagem selecionada"}</span>
-                <div className="flex items-center gap-4">
-                  <label className="cursor-pointer text-sm font-semibold text-forest hover:underline">
+            <div
+              {...dropProps}
+              className={`grid gap-3 rounded-lg border bg-field p-3 transition-colors duration-150 motion-reduce:transition-none ${dragging ? "border-forest" : "border-line-strong"}`}
+            >
+              <ImageAdjuster src={imageUrl} aspect={GIFT_ASPECT_BY_TEMPLATE[templateId]} value={framing} onChange={setFraming} />
+              <div className="flex items-center justify-between gap-3 border-t border-line pt-2">
+                <span className="text-[0.8125rem] text-ink-soft">
+                  {uploading ? "Enviando…" : dragging ? "Solte para trocar" : "Foto escolhida"}
+                </span>
+                <div className="flex items-center gap-1">
+                  <label className={fileButton}>
                     Trocar
-                    <input
-                      type="file"
-                      accept={ACCEPT}
-                      className="sr-only"
-                      disabled={uploading}
-                      onChange={(event) => {
-                        void onFile(event.target.files?.[0]);
-                        event.target.value = "";
-                      }}
-                    />
+                    <PhotoInput disabled={uploading} onFile={(file) => void onFile(file)} />
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => setImageUrl("")}
-                    className="text-sm font-semibold text-[#8d3d33] hover:underline"
-                  >
+                  <button type="button" onClick={() => setImageUrl("")} className="btn btn-sm btn-ghost min-h-9 px-3 text-danger">
                     Remover
                   </button>
                 </div>
               </div>
             </div>
           ) : (
-            <label className="flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-[#5b6842]/35 bg-white/50 px-4 py-7 text-center transition-colors hover:border-[#5b6842]/55 hover:bg-white">
+            <label
+              {...dropProps}
+              className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed px-4 py-6 text-center transition-colors duration-150 hover:border-forest/50 hover:bg-surface has-focus-visible:outline-2 has-focus-visible:outline-forest motion-reduce:transition-none ${dragging ? "border-forest bg-surface" : "border-line-strong bg-field"}`}
+            >
               <UploadIcon />
-              <span className="text-sm font-semibold text-ink">{uploading ? "Enviando…" : "Enviar foto"}</span>
-              <span className="text-xs text-ink-soft">JPG, PNG ou WEBP · até 8 MB</span>
-              <input
-                type="file"
-                accept={ACCEPT}
-                className="sr-only"
-                disabled={uploading}
-                onChange={(event) => {
-                  void onFile(event.target.files?.[0]);
-                  event.target.value = "";
-                }}
-              />
+              <span className="mt-1 text-sm text-ink">
+                {uploading ? (
+                  <span className="font-semibold">Enviando…</span>
+                ) : dragging ? (
+                  <span className="font-semibold">Solte a imagem aqui</span>
+                ) : (
+                  <>
+                    <span className="font-semibold">Escolher foto</span>
+                    <span className="hidden text-ink-soft sm:inline"> · ou cole a imagem ({pasteKey})</span>
+                  </>
+                )}
+              </span>
+              <span className="text-[0.8125rem] text-ink-soft">JPG, PNG, WEBP ou AVIF · até 8 MB</span>
+              <PhotoInput disabled={uploading} onFile={(file) => void onFile(file)} />
             </label>
           )}
-          {uploadError ? <span className="text-sm font-semibold text-[#8d3d33]">{uploadError}</span> : null}
+          {uploadError ? <span role="alert" className="text-sm font-medium text-danger">{uploadError}</span> : null}
         </div>
 
-        <label className="grid gap-2">
+        <label className="grid gap-1.5">
           <span className={labelText}>Descrição{optional}</span>
-          <textarea name="description" rows={3} className="rounded-2xl border border-[#5b6842]/16 bg-white p-4 text-ink placeholder:text-ink-soft/70" />
+          <textarea name="description" rows={3} placeholder="Uma frase sobre o presente" className="field" />
         </label>
       </div>
 
       {state.error ? (
-        <p role="alert" className="mt-5 rounded-2xl bg-[#8d3d33]/10 px-4 py-3 text-sm font-semibold text-[#8d3d33]">
+        <Notice tone="error" className="mt-4">
           {state.error}
-        </p>
+        </Notice>
       ) : null}
       {state.ok ? (
-        <p role="status" className="mt-5 rounded-2xl bg-forest/10 px-4 py-3 text-sm font-semibold text-forest">
-          Cota adicionada.
-        </p>
+        <Notice tone="success" className="mt-4">
+          Cota adicionada ao site.
+        </Notice>
       ) : null}
 
-      <button
-        type="submit"
-        disabled={pending || uploading}
-        className="btn btn-primary mt-7 w-full text-sm sm:w-auto"
-      >
+      <button type="submit" disabled={pending || uploading} className="btn btn-sm btn-primary mt-5 w-full disabled:opacity-60">
         {pending ? "Adicionando…" : "Adicionar cota"}
       </button>
     </form>
+  );
+}
+
+/** Linha de uma cota em "No site agora", com o ajuste de foto abrindo logo abaixo (sem modal). */
+export function GiftRow({
+  gift,
+  templateId,
+  support = false
+}: {
+  gift: WeddingGift;
+  templateId: TemplateId;
+  /** Modo suporte: remover cota fica só com o casal (o servidor também recusa). */
+  support?: boolean;
+}) {
+  const [editing, setEditing] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const editorId = `gift-photo-${gift.id}`;
+
+  function close() {
+    setEditing(false);
+    toggleRef.current?.focus();
+  }
+
+  return (
+    <li className={`px-5 py-4 ${gift.active ? "" : "bg-bg-2/40"}`}>
+      <div className="flex gap-4">
+        <div className="relative size-16 shrink-0 overflow-hidden rounded-lg border border-line bg-field">
+          {gift.image ? (
+            <Image
+              src={gift.image}
+              alt=""
+              fill
+              sizes="64px"
+              className={gift.active ? "" : "opacity-60"}
+              style={giftImageStyle(gift)}
+            />
+          ) : (
+            <span className="grid h-full place-items-center text-ink-soft">
+              <Icon name="gift" size={22} />
+            </span>
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <p className="text-[0.9375rem] font-semibold text-ink">{gift.title}</p>
+            {gift.active ? null : (
+              <span className="rounded-full bg-forest/8 px-2 py-0.5 text-xs font-semibold text-ink-soft">Oculta no site</span>
+            )}
+          </div>
+          <p className="mt-0.5 text-sm font-semibold tabular-nums text-forest">{gift.price}</p>
+          {gift.description ? <p className="mt-1 line-clamp-2 text-sm leading-5 text-ink-soft">{gift.description}</p> : null}
+          {gift.image ? (
+            <button
+              ref={toggleRef}
+              type="button"
+              onClick={() => (editing ? close() : setEditing(true))}
+              aria-expanded={editing}
+              aria-controls={editorId}
+              className="btn btn-sm btn-ghost -ml-2 mt-1 min-h-9 px-2 whitespace-nowrap text-forest"
+            >
+              <Icon name="image" size={16} />
+              Ajustar foto
+            </button>
+          ) : null}
+        </div>
+        <div className="flex shrink-0 items-start gap-1">
+          <form action={toggleGiftAction}>
+            <input type="hidden" name="giftId" value={gift.id} />
+            <SubmitButton className="btn btn-sm btn-ghost px-3" pendingLabel="…">
+              {gift.active ? "Ocultar" : "Mostrar"}
+            </SubmitButton>
+          </form>
+          {support ? (
+            <SupportBlockedButton className="icon-btn" aria-label={`Remover a cota ${gift.title}`}>
+              <Icon name="trash" size={17} />
+            </SupportBlockedButton>
+          ) : (
+            <form action={removeGiftAction}>
+              <input type="hidden" name="giftId" value={gift.id} />
+              <SubmitButton className="icon-btn hover:text-danger" aria-label={`Remover a cota ${gift.title}`}>
+                <Icon name="trash" size={17} />
+              </SubmitButton>
+            </form>
+          )}
+        </div>
+      </div>
+
+      {editing && gift.image ? (
+        <GiftPhotoEditor id={editorId} gift={gift} image={gift.image} templateId={templateId} onClose={close} />
+      ) : null}
+    </li>
+  );
+}
+
+type GiftPhotoEditorProps = {
+  id: string;
+  gift: WeddingGift;
+  image: string;
+  templateId: TemplateId;
+  onClose: () => void;
+};
+
+function GiftPhotoEditor({ id, gift, image: savedImage, templateId, onClose }: GiftPhotoEditorProps) {
+  const [image, setImage] = useState(savedImage);
+  const [framing, setFraming] = useState(() => normalizeGiftImage(gift));
+  const [error, setError] = useState("");
+  const [saving, startSaving] = useTransition();
+  const { uploading, uploadError, upload } = useGiftUpload();
+
+  async function onFile(file: File | undefined) {
+    const url = await upload(file);
+    if (!url) return;
+    // Foto trocada: mantém o modo escolhido, mas recentraliza e zera o zoom.
+    setImage(url);
+    setFraming((current) => ({ ...current, imageFocus: DEFAULT_GIFT_FRAMING.imageFocus, imageZoom: 1 }));
+  }
+  const busy = uploading || saving;
+  const { dragging, dropProps } = useFileDrop((file) => void onFile(file), busy);
+  const pasteKey = usePasteKey();
+
+  // O foco entra no editor ao abrir: assim o Ctrl/Cmd+V vai para esta cota, não para a "Nova cota".
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => rootRef.current?.focus({ preventScroll: true }), []);
+
+  function save() {
+    setError("");
+    startSaving(async () => {
+      const result = await updateGiftImageAction(gift.id, { ...framing, image: image === savedImage ? undefined : image });
+      if (result.error) setError(result.error);
+      else onClose();
+    });
+  }
+
+  return (
+    <div
+      ref={rootRef}
+      id={id}
+      role="group"
+      tabIndex={-1}
+      aria-label={`Ajustar a foto de ${gift.title}`}
+      {...dropProps}
+      onPaste={(event) => {
+        const file = pastedImage(event);
+        if (!file) return;
+        event.preventDefault();
+        if (!busy) void onFile(file);
+      }}
+      className={`mt-4 grid gap-4 rounded-lg border bg-field p-4 outline-none transition-[opacity,translate,border-color] duration-200 starting:-translate-y-1 starting:opacity-0 motion-reduce:transition-none ${dragging ? "border-forest" : "border-line-strong"}`}
+    >
+      <ImageAdjuster src={image} aspect={GIFT_ASPECT_BY_TEMPLATE[templateId]} value={framing} onChange={setFraming} />
+
+      {error || uploadError ? (
+        <Notice tone="error">{error || uploadError}</Notice>
+      ) : null}
+      <span aria-live="polite" className="sr-only">
+        {uploading ? "Enviando a foto…" : image !== savedImage ? "Foto trocada. Salve para aplicar." : ""}
+      </span>
+
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
+        <label className={fileButton}>
+          <Icon name="upload" size={16} />
+          {uploading ? "Enviando…" : dragging ? "Solte para trocar" : "Trocar foto"}
+          <PhotoInput disabled={busy} onFile={(file) => void onFile(file)} />
+        </label>
+        <span className="hidden text-[0.8125rem] text-ink-soft sm:inline">ou cole a imagem ({pasteKey})</span>
+        <div className="ml-auto flex items-center gap-2">
+          <button type="button" onClick={onClose} disabled={saving} className="btn btn-sm btn-ghost px-3">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={save}
+            disabled={saving || uploading}
+            aria-busy={saving}
+            className="btn btn-sm btn-primary"
+          >
+            {saving ? "Salvando…" : "Salvar"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

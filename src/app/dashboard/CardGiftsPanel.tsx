@@ -1,4 +1,7 @@
+import { Icon } from "@/components/app/icons";
+import { Notice } from "@/components/app/Notice";
 import { StatusBadge } from "@/components/app/StatusBadge";
+import { SupportBlockedButton, SupportBlockedNote } from "@/components/app/SupportBar";
 import type { MercadoPagoConnectionSummary } from "@/lib/mercadopago-server";
 import { disconnectMercadoPagoAction, setCardFeePayerAction } from "./mercadopago-actions";
 
@@ -6,6 +9,8 @@ type CardGiftsPanelProps = {
   /** false quando a plataforma ainda não tem credenciais do Mercado Pago no ambiente. */
   configured: boolean;
   connection: MercadoPagoConnectionSummary | null;
+  /** Modo suporte: conectar, desconectar e mudar a taxa ficam só com o casal. */
+  blocked?: boolean;
 };
 
 /**
@@ -13,106 +18,148 @@ type CardGiftsPanelProps = {
  * OAuth (um login e um "Autorizar" — nada de chave ou token), e o dinheiro do cartão
  * cai direto na conta dele. O Pix segue igual, 0% de taxa.
  */
-export function CardGiftsPanel({ configured, connection }: CardGiftsPanelProps) {
+export function CardGiftsPanel({ configured, connection, blocked = false }: CardGiftsPanelProps) {
   if (!configured) return null;
 
   const connected = connection?.status === "active";
   const account = connection?.nickname || connection?.email;
 
   return (
-    <section id="cartao" className="mt-6">
-      <article className="card p-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="max-w-2xl">
-            <p className="t-eyebrow text-ink-soft">Cartão de crédito</p>
-            <h2 className="mt-3 t-h1">Receber presentes no cartão</h2>
-            <p className="mt-2 text-sm leading-6 text-ink-soft">
-              Além do Pix, seus convidados podem presentear no cartão, em até 12x. O dinheiro cai direto na sua
-              conta do Mercado Pago — a Noivar não fica com nada e não encosta no valor.
-            </p>
+    <section id="cartao" className={`panel p-5 ${blocked ? "scroll-mt-28" : "scroll-mt-20"}`}>
+      <div className="flex items-start gap-3">
+        <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-forest/8 text-forest">
+          <Icon name="card" size={19} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-base font-semibold">Presentes no cartão</h3>
+            {connected ? <StatusBadge status="connected" /> : null}
           </div>
-          {connected ? <StatusBadge status="connected" /> : null}
+          <p className="mt-1 text-sm leading-5 text-ink-soft">
+            Convidados presenteiam em até 12x e o dinheiro cai direto na sua conta do Mercado Pago. A Noivar não fica
+            com nada.
+          </p>
         </div>
+      </div>
 
-        {connected ? (
-          <div className="mt-6 grid gap-4">
-            <p className="text-sm leading-6 text-ink">
-              Conectado{account ? ` como ${account}` : ""}.{" "}
-              {connection?.liveMode === false ? "Conta de teste: nenhuma cobrança é real." : ""}
-            </p>
+      {connected ? (
+        <div className="mt-5 grid gap-4">
+          <p className="text-sm text-ink">
+            Conectado{account ? <> como <strong className="font-semibold">{account}</strong></> : null}.
+            {connection?.liveMode === false ? " Conta de teste: nenhuma cobrança é real." : ""}
+          </p>
 
-            {connection?.lastError ? (
-              <p role="alert" className="rounded-2xl bg-[#c79a3f]/22 px-4 py-3 text-sm font-bold text-[#5c3f12]">
-                Atenção: {connection.lastError}.
-              </p>
-            ) : null}
+          {connection?.lastError ? <Notice tone="warn">Atenção: {connection.lastError}.</Notice> : null}
 
-            <form action={setCardFeePayerAction} className="grid gap-3 rounded-3xl bg-[#f7f0e5] p-4">
-              <fieldset className="grid gap-2">
-                <legend className="t-eyebrow text-ink-soft">Quem paga a taxa do cartão</legend>
-                <label className="mt-2 flex items-center gap-2 text-sm font-bold text-ink">
+          <form action={blocked ? undefined : setCardFeePayerAction} className="grid gap-3">
+            <fieldset disabled={blocked} className="grid gap-2 disabled:opacity-70">
+              <legend className="mb-2 text-sm font-semibold text-ink">Quem paga a taxa do cartão?</legend>
+              {[
+                {
+                  value: "guest",
+                  title: "O convidado",
+                  text: "A taxa soma no total dele e vocês recebem 100% do presente.",
+                  checked: connection?.feePayer !== "couple"
+                },
+                {
+                  value: "couple",
+                  title: "Nós",
+                  text: "A taxa do Mercado Pago sai do valor recebido.",
+                  checked: connection?.feePayer === "couple"
+                }
+              ].map((option) => (
+                <label
+                  key={option.value}
+                  className="flex cursor-pointer items-start gap-3 rounded-lg border border-line bg-field p-3 transition-colors duration-150 hover:border-line-strong has-checked:border-forest has-checked:shadow-[0_0_0_1px_var(--color-forest)]"
+                >
                   <input
                     type="radio"
                     name="feePayer"
-                    value="guest"
-                    defaultChecked={connection?.feePayer !== "couple"}
-                    className="size-4 accent-forest"
+                    value={option.value}
+                    defaultChecked={option.checked}
+                    className="mt-0.5 size-4 accent-forest"
                   />
-                  O convidado (vocês recebem 100% do presente)
+                  <span className="grid gap-0.5">
+                    <span className="text-sm font-semibold text-ink">{option.title}</span>
+                    <span className="text-[0.8125rem] leading-5 text-ink-soft">{option.text}</span>
+                  </span>
                 </label>
-                <label className="flex items-center gap-2 text-sm font-bold text-ink">
-                  <input
-                    type="radio"
-                    name="feePayer"
-                    value="couple"
-                    defaultChecked={connection?.feePayer === "couple"}
-                    className="size-4 accent-forest"
-                  />
-                  Nós (a taxa do Mercado Pago sai do valor recebido)
-                </label>
-              </fieldset>
-              <p className="text-sm leading-6 text-ink-soft">
-                A taxa é do Mercado Pago, não da Noivar. Com a primeira opção, ela aparece somada no total do
-                convidado e vocês recebem o valor cheio do presente.
+              ))}
+            </fieldset>
+            <details className="group text-[0.8125rem] leading-5 text-ink-soft">
+              <summary className="inline-flex cursor-pointer list-none items-center gap-1 font-semibold text-ink hover:underline">
+                E o parcelamento?
+                <Icon name="chevronDown" size={14} className="transition-transform duration-150 group-open:rotate-180" />
+              </summary>
+              <p className="mt-2">
+                A escolha acima vale com o parcelamento no modo padrão do Mercado Pago, em que os juros das parcelas são
+                pagos pelo convidado. Se vocês ativarem o parcelamento sem juros na conta de vocês, esses juros passam a
+                sair do valor recebido.
               </p>
-              <p className="text-sm leading-6 text-ink-soft">
-                <strong className="text-ink">Importante:</strong> isso vale com o parcelamento no modo padrão do
-                Mercado Pago, em que os juros das parcelas são pagos pelo convidado. Se vocês ativarem o
-                parcelamento sem juros na conta de vocês, esses juros passam a sair do valor recebido.
-              </p>
-              <button type="submit" className="btn btn-secondary justify-self-start text-sm">
-                Salvar
-              </button>
-            </form>
+            </details>
+            <div className="flex flex-wrap items-center gap-2">
+              {blocked ? (
+                <SupportBlockedButton className="btn btn-sm btn-secondary">Salvar escolha</SupportBlockedButton>
+              ) : (
+                <button type="submit" className="btn btn-sm btn-secondary">
+                  Salvar escolha
+                </button>
+              )}
+            </div>
+          </form>
 
-            <form action={disconnectMercadoPagoAction}>
-              <button type="submit" className="text-sm font-bold text-[#8d3d33] underline underline-offset-4">
+          {blocked ? (
+            <div className="grid gap-2 border-t border-line pt-3">
+              <SupportBlockedButton className="btn btn-sm btn-ghost -ml-3 justify-self-start text-danger">
+                Desconectar o Mercado Pago
+              </SupportBlockedButton>
+              <SupportBlockedNote />
+            </div>
+          ) : (
+            <form action={disconnectMercadoPagoAction} className="border-t border-line pt-3">
+              <button type="submit" className="btn btn-sm btn-ghost -ml-3 text-danger">
                 Desconectar o Mercado Pago
               </button>
             </form>
-          </div>
-        ) : (
-          <div className="mt-6 grid gap-4">
-            {connection ? (
-              <p role="alert" className="rounded-2xl bg-[#8d3d33]/10 px-4 py-3 text-sm font-bold text-[#8d3d33]">
-                A conexão com o Mercado Pago caiu. Conecte de novo para voltar a aceitar cartão.
-              </p>
-            ) : null}
-            <ol className="grid gap-2 text-sm leading-6 text-ink-soft">
-              <li>1. Clique no botão abaixo — você vai para a página do Mercado Pago.</li>
-              <li>2. Entre na sua conta. Quem compra no Mercado Livre já tem uma, é o mesmo login.</li>
-              <li>3. Toque em “Autorizar” e pronto: você volta para cá com o cartão ativo.</li>
-            </ol>
-            <a href="/api/mercadopago/oauth/start" className="btn btn-primary !text-on-forest justify-self-start text-sm">
-              Conectar Mercado Pago
-            </a>
-            <p className="text-sm leading-6 text-ink-soft">
-              É opcional: sem conectar, seu site segue recebendo presentes por Pix, com 0% de taxa. Se a sua conta
-              do Mercado Pago ainda não tiver a identidade confirmada, faça isso no app dele antes.
-            </p>
-          </div>
-        )}
-      </article>
+          )}
+        </div>
+      ) : (
+        <div className="mt-5 grid gap-4">
+          {connection ? (
+            <Notice tone="error">A conexão com o Mercado Pago caiu. Conecte de novo para voltar a aceitar cartão.</Notice>
+          ) : null}
+          <ol className="grid gap-2.5">
+            {[
+              "Clique em conectar: você vai para a página do Mercado Pago.",
+              "Entre na sua conta. Quem compra no Mercado Livre já tem uma.",
+              "Toque em “Autorizar” e volte para cá com o cartão ativo."
+            ].map((text, index) => (
+              <li key={text} className="flex items-start gap-3 text-sm leading-5 text-ink">
+                <span className="grid size-6 shrink-0 place-items-center rounded-full border border-line-strong text-xs font-semibold text-ink-soft">
+                  {index + 1}
+                </span>
+                {text}
+              </li>
+            ))}
+          </ol>
+          {blocked ? (
+            <div className="grid justify-items-start gap-2">
+              <SupportBlockedButton className="btn btn-sm btn-primary">Conectar Mercado Pago</SupportBlockedButton>
+              <SupportBlockedNote />
+            </div>
+          ) : (
+            <div>
+              <a href="/api/mercadopago/oauth/start" className="btn btn-sm btn-primary">
+                Conectar Mercado Pago
+              </a>
+            </div>
+          )}
+          <p className="text-[0.8125rem] leading-5 text-ink-soft">
+            É opcional: sem conectar, o site segue recebendo por Pix, com 0% de taxa. Se sua conta do Mercado Pago ainda
+            não tiver a identidade confirmada, faça isso no app dele antes.
+          </p>
+        </div>
+      )}
     </section>
   );
 }

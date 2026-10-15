@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logServerError } from "@/lib/funnel";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { normalizeName } from "@/lib/public-forms";
 
@@ -24,16 +25,23 @@ export async function GET(request: Request) {
   }
 
   const admin = createAdminClient();
-  const { data: wedding } = await admin
+  const { data: wedding, error: weddingError } = await admin
     .from("weddings")
     .select("id, status")
     .eq("slug", slug)
     .maybeSingle();
   if (!wedding || wedding.status !== "published") {
+    // Público: só slug e o erro — nunca o termo buscado (é nome de convidado).
+    if (weddingError) {
+      await logServerError("rsvp.search.wedding", weddingError, { path: "/api/rsvp/search", detail: { slug } });
+    }
     return NextResponse.json({ names: [] });
   }
 
-  const { data: guests } = await admin.from("guests").select("name").eq("wedding_id", wedding.id);
+  const { data: guests, error: guestsError } = await admin.from("guests").select("name").eq("wedding_id", wedding.id);
+  if (guestsError) {
+    await logServerError("rsvp.search.guests", guestsError, { weddingId: wedding.id, path: "/api/rsvp/search" });
+  }
 
   // Casa sem acento/caixa; prefixo antes de substring; nomes idênticos só uma vez.
   const seen = new Set<string>();

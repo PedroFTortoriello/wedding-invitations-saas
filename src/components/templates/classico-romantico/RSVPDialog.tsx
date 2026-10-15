@@ -2,17 +2,20 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { RSVPConfiguration } from "@/types/wedding";
+import { DEMO_SENT_NOTE, isDemoWedding } from "@/lib/demo-id";
+import { normalizeRsvp } from "@/lib/public-forms";
 import { GuestNameField } from "@/components/templates/shared/GuestNameField";
 import styles from "./classic-romantic.module.css";
 
 type RSVPDialogProps = {
   config: RSVPConfiguration;
   slug: string;
+  weddingId: string;
   open: boolean;
   onClose: () => void;
 };
 
-export function RSVPDialog({ config, slug, open, onClose }: RSVPDialogProps) {
+export function RSVPDialog({ config, slug, weddingId, open, onClose }: RSVPDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [submitted, setSubmitted] = useState(false);
   const [declined, setDeclined] = useState(false);
@@ -33,6 +36,15 @@ export function RSVPDialog({ config, slug, open, onClose }: RSVPDialogProps) {
 
   async function submit(status: "confirmed" | "declined", form: HTMLFormElement) {
     const name = String(new FormData(form).get("name") ?? "").trim();
+    // Demo (/modelo/...): valida igual ao servidor e simula o sucesso, sem chamar a API.
+    if (isDemoWedding(weddingId)) {
+      const check = normalizeRsvp({ name, status });
+      setError(check.ok ? null : check.error);
+      if (!check.ok) return;
+      setDeclined(status === "declined");
+      setSubmitted(true);
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -80,6 +92,7 @@ export function RSVPDialog({ config, slug, open, onClose }: RSVPDialogProps) {
           <h2 id="rsvp-title">{declined ? "Resposta registrada" : "Presença registrada"}</h2>
           <p className={styles["dialog-success"]}>
             {declined ? "Sentiremos sua falta — obrigado por avisar." : config.successMessage}
+            {isDemoWedding(weddingId) ? DEMO_SENT_NOTE : null}
           </p>
         </div>
       ) : (
@@ -91,7 +104,7 @@ export function RSVPDialog({ config, slug, open, onClose }: RSVPDialogProps) {
           <h2 id="rsvp-title">{config.title}</h2>
           <label>
             <span>Nome completo</span>
-            <GuestNameField slug={slug} placeholder="Digite para buscar seu nome" required />
+            <GuestNameField slug={slug} weddingId={weddingId} placeholder="Digite para buscar seu nome" required />
           </label>
           {error ? (
             <p role="alert" style={{ color: "#8d3d33", fontWeight: 700, margin: 0 }}>

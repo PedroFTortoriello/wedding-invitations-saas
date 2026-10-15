@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { JardimRomanticoTemplate } from "@/components/templates/jardim-romantico/JardimRomanticoTemplate";
-import { getDemoWeddingBySlug } from "@/lib/demo-wedding";
+import { demoWeddingFor } from "@/lib/demo-wedding";
 
 type JardimRomanticoPageProps = {
   params: Promise<{ slug: string }>;
@@ -9,7 +9,7 @@ type JardimRomanticoPageProps = {
 
 export async function generateMetadata({ params }: JardimRomanticoPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const wedding = getDemoWeddingBySlug(slug);
+  const wedding = demoWeddingFor("jardim-romantico", slug);
 
   if (!wedding) {
     return { title: "Modelo não encontrado" };
@@ -27,7 +27,7 @@ export function generateStaticParams() {
 
 export default async function JardimRomanticoPage({ params }: JardimRomanticoPageProps) {
   const { slug } = await params;
-  const wedding = getDemoWeddingBySlug(slug);
+  const wedding = demoWeddingFor("jardim-romantico", slug);
 
   if (!wedding) {
     notFound();
@@ -35,7 +35,7 @@ export default async function JardimRomanticoPage({ params }: JardimRomanticoPag
 
   return (
     <JardimRomanticoTemplate
-      wedding={{ ...wedding, templateId: "jardim-romantico", templateName: "Jardim Romântico" }}
+      wedding={{ ...wedding, templateName: "Jardim Romântico" }}
     />
   );
 }

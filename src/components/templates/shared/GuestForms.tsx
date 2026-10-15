@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, type CSSProperties, type FormEvent } from "react";
+import { DEMO_SENT_NOTE as DEMO_NOTE, isDemoWedding } from "@/lib/demo-id";
+import { normalizeMessage, normalizeRsvp } from "@/lib/public-forms";
 import type { WeddingSite } from "@/types/wedding";
 import { GuestNameField } from "./GuestNameField";
 import styles from "./guest-forms.module.css";
@@ -8,6 +10,7 @@ import styles from "./guest-forms.module.css";
 export type GuestFormsVariant =
   | "classico"
   | "editorial"
+  | "romantic-garden"
   | "jardim"
   | "civil"
   | "garden"
@@ -16,10 +19,28 @@ export type GuestFormsVariant =
   | "cinema";
 type Mode = "both" | "rsvp" | "messages";
 
+/** Jardim Romântico: tokens verdes do modelo (--jr-*), mesmo nome de variant do GiftRegistry. */
+const ROMANTIC_GARDEN = {
+  "--gf-bg": "#ece4d3",
+  "--gf-card": "#fbf6ec",
+  "--gf-ink": "#2a2e22",
+  "--gf-muted": "#54583f",
+  "--gf-border": "rgba(42, 46, 34, 0.16)",
+  "--gf-field": "#fffdf8",
+  "--gf-accent": "#3e5230",
+  "--gf-on-accent": "#f3efe2",
+  "--gf-radius": "18px",
+  "--gf-eyebrow": "#3e5230",
+  "--gf-btn-case": "uppercase",
+  "--gf-btn-tracking": "0.14em"
+} as CSSProperties;
+
 /**
  * Formulários públicos compartilhados (RSVP + recados), skinnáveis por modelo via
- * CSS vars — mesmo padrão do GiftRegistry. Fontes herdam do modelo (blend). Postam
- * em /api/rsvp e /api/messages (validação server-side em public-forms).
+ * CSS vars — mesmo padrão e mesmo contrato do GiftRegistry (ver GiftRegistry.tsx):
+ * o título usa --font-serif em peso 400, o resto herda a fonte do modelo. Postam
+ * em /api/rsvp e /api/messages (validação server-side em public-forms). No casamento
+ * de demonstração validam igual, mas só simulam o sucesso: nada é enviado.
  */
 const SKINS: Record<GuestFormsVariant, CSSProperties> = {
   classico: {
@@ -44,20 +65,14 @@ const SKINS: Record<GuestFormsVariant, CSSProperties> = {
     "--gf-accent": "#16151a",
     "--gf-on-accent": "#f6f4ef",
     "--gf-radius": "2px",
-    "--gf-eyebrow": "#9c7b3f"
+    "--gf-eyebrow": "#7c6224", // dourado de texto do modelo (5,26:1); #9c7b3f dava 3,59:1
+    "--gf-btn-radius": "0px",
+    "--gf-btn-case": "uppercase",
+    "--gf-btn-tracking": "0.16em"
   } as CSSProperties,
-  jardim: {
-    "--gf-bg": "#f1eadc",
-    "--gf-card": "#faf1e1",
-    "--gf-ink": "#2d2b25",
-    "--gf-muted": "#514c3f",
-    "--gf-border": "rgba(45, 43, 37, 0.18)",
-    "--gf-field": "#fffdf8",
-    "--gf-accent": "#304254",
-    "--gf-on-accent": "#faf1e1",
-    "--gf-radius": "16px",
-    "--gf-eyebrow": "#6a7a4a"
-  } as CSSProperties,
+  "romantic-garden": ROMANTIC_GARDEN,
+  // Legado: o jardim-romantico usava "jardim" (accent azul-ardósia, fora do modelo).
+  jardim: ROMANTIC_GARDEN,
   civil: {
     "--gf-bg": "#f0eee8",
     "--gf-card": "#ffffff",
@@ -68,7 +83,7 @@ const SKINS: Record<GuestFormsVariant, CSSProperties> = {
     "--gf-accent": "#14140f",
     "--gf-on-accent": "#f7f5ef",
     "--gf-radius": "2px",
-    "--gf-eyebrow": "#8a8578"
+    "--gf-eyebrow": "#6b675c" // 5,65:1 (#8a8578 dava 3,68:1)
   } as CSSProperties,
   garden: {
     "--gf-bg": "#e6e6dd",
@@ -80,7 +95,9 @@ const SKINS: Record<GuestFormsVariant, CSSProperties> = {
     "--gf-accent": "#33495c",
     "--gf-on-accent": "#eef0ea",
     "--gf-radius": "14px",
-    "--gf-eyebrow": "#41576b"
+    "--gf-eyebrow": "#41576b",
+    "--gf-btn-case": "uppercase",
+    "--gf-btn-tracking": "0.14em"
   } as CSSProperties,
   olive: {
     "--gf-bg": "#efeade",
@@ -118,7 +135,9 @@ const SKINS: Record<GuestFormsVariant, CSSProperties> = {
     "--gf-on-accent": "#14100b",
     "--gf-radius": "6px",
     "--gf-eyebrow": "#c9a86a",
-    "--gf-error": "#e6a99f"
+    "--gf-error": "#e6a99f",
+    "--gf-btn-case": "uppercase",
+    "--gf-btn-tracking": "0.1em"
   } as CSSProperties
 };
 
@@ -138,7 +157,7 @@ export function GuestForms({ wedding, variant, mode = "both", sectionId = "confi
     <section id={sectionId} className={styles.root} style={SKINS[variant]} aria-label="Confirmação e recados">
       <div className={`${styles.wrap} ${showRsvp && showMessages ? styles.two : ""}`}>
         {showRsvp ? <RsvpCard wedding={wedding} /> : null}
-        {showMessages ? <MessageCard slug={wedding.slug} /> : null}
+        {showMessages ? <MessageCard slug={wedding.slug} demo={isDemoWedding(wedding.id)} /> : null}
       </div>
     </section>
   );
@@ -151,11 +170,20 @@ function RsvpCard({ wedding }: { wedding: WeddingSite }) {
   const [state, setState] = useState<FormState>("idle");
   const [declined, setDeclined] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const demo = isDemoWedding(wedding.id);
 
   async function submit(status: "confirmed" | "declined", form: HTMLFormElement) {
     const name = String(new FormData(form).get("name") ?? "").trim();
     if (!name) {
       setError("Diga o seu nome para confirmarmos.");
+      return;
+    }
+    if (demo) {
+      const check = normalizeRsvp({ name, status });
+      setError(check.ok ? null : check.error);
+      if (!check.ok) return;
+      setDeclined(status === "declined");
+      setState("done");
       return;
     }
     setState("loading");
@@ -192,12 +220,13 @@ function RsvpCard({ wedding }: { wedding: WeddingSite }) {
       {state === "done" ? (
         <p className={styles.done} role="status">
           {declined ? "Sentiremos sua falta — obrigado por avisar." : rsvp.successMessage}
+          {demo ? DEMO_NOTE : null}
         </p>
       ) : (
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <label className={styles.field}>
             <span>Nome completo</span>
-            <GuestNameField slug={wedding.slug} placeholder="Digite para buscar seu nome" required />
+            <GuestNameField slug={wedding.slug} weddingId={wedding.id} placeholder="Digite para buscar seu nome" required />
           </label>
           {error ? (
             <p className={styles.error} role="alert">
@@ -220,7 +249,7 @@ function RsvpCard({ wedding }: { wedding: WeddingSite }) {
               border: "none",
               color: "inherit",
               opacity: 0.72,
-              fontWeight: 700,
+              fontWeight: 600,
               textDecoration: "underline",
               textUnderlineOffset: 4,
               cursor: "pointer"
@@ -234,24 +263,28 @@ function RsvpCard({ wedding }: { wedding: WeddingSite }) {
   );
 }
 
-function MessageCard({ slug }: { slug: string }) {
+function MessageCard({ slug, demo }: { slug: string; demo: boolean }) {
   const [state, setState] = useState<FormState>("idle");
   const [error, setError] = useState<string | null>(null);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
+    const guestName = String(data.get("guestName") ?? "").trim();
+    const message = String(data.get("message") ?? "").trim();
+    if (demo) {
+      const check = normalizeMessage({ guestName, message });
+      setError(check.ok ? null : check.error);
+      if (check.ok) setState("done");
+      return;
+    }
     setState("loading");
     setError(null);
     try {
       const res = await fetch("/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          slug,
-          guestName: String(data.get("guestName") ?? "").trim(),
-          message: String(data.get("message") ?? "").trim()
-        })
+        body: JSON.stringify({ slug, guestName, message })
       });
       const json = (await res.json()) as { ok?: boolean; error?: string };
       if (!res.ok) {
@@ -273,6 +306,7 @@ function MessageCard({ slug }: { slug: string }) {
       {state === "done" ? (
         <p className={styles.done} role="status">
           Recado enviado. Obrigado pelo carinho!
+          {demo ? DEMO_NOTE : null}
         </p>
       ) : (
         <form className={styles.form} onSubmit={onSubmit} noValidate>

@@ -22,6 +22,12 @@ export type WeddingGift = {
   price: string;
   link: string;
   image?: string;
+  /** Enquadramento da foto (ver lib/gift-image). Sem valor = "contain" (foto inteira). */
+  imageFit?: "contain" | "cover";
+  /** Ponto de foco em % (0–100). */
+  imageFocus?: { x: number; y: number };
+  /** Zoom de 1 a 3 (100–300%). */
+  imageZoom?: number;
   active: boolean;
 };
 

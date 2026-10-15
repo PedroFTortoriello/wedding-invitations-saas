@@ -16,7 +16,10 @@ import {
   useTransform
 } from "framer-motion";
 import type { WeddingSite } from "@/types/wedding";
+import { DEMO_SENT_NOTE, isDemoWedding } from "@/lib/demo-id";
+import { normalizeRsvp } from "@/lib/public-forms";
 import { GiftRegistry } from "@/components/gift/GiftRegistry";
+import { galleryRest, storyImage } from "@/components/templates/shared/gallery";
 import { Reveal, useCountdown, pad } from "@/components/templates/shared/motion";
 import { GuestForms } from "@/components/templates/shared/GuestForms";
 import { GuestNameField } from "@/components/templates/shared/GuestNameField";
@@ -99,7 +102,7 @@ export function JardimRomanticoTemplate({ wedding }: Props) {
 
           <div className={styles.spreads}>
             {wedding.storyMoments.map((moment, i) => {
-              const img = gallery[(i + 1) % Math.max(gallery.length, 1)];
+              const img = storyImage(gallery, i);
               return (
                 <article
                   key={moment.id}
@@ -197,7 +200,7 @@ export function JardimRomanticoTemplate({ wedding }: Props) {
       {gallery.length ? <Gallery wedding={wedding} /> : null}
 
       {/* Recados */}
-      <GuestForms wedding={wedding} variant="jardim" mode="messages" sectionId="recados" />
+      <GuestForms wedding={wedding} variant="romantic-garden" mode="messages" sectionId="recados" />
 
       <Footer wedding={wedding} />
     </main>
@@ -406,36 +409,20 @@ function Hero({ wedding }: Props) {
         <div className={styles.heroScrim} />
       </motion.div>
 
+      {/* Entrada por CSS (.hero-rise): visível no HTML do servidor, sem JS. */}
       <div className={`${styles.wrap} ${styles.heroContent}`}>
-        <motion.p
-          className={styles.heroIssue}
-          initial={reduce ? false : { opacity: 0, y: 16 }}
-          animate={reduce ? undefined : { opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        >
-          Vamos nos casar
-        </motion.p>
+        <p className={`${styles.heroIssue} hero-rise`}>Vamos nos casar</p>
 
-        <motion.h1
-          className={styles.heroNames}
-          initial={reduce ? false : { opacity: 0, y: 28 }}
-          animate={reduce ? undefined : { opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
-        >
+        <h1 className={`${styles.heroNames} hero-rise`} style={{ animationDelay: "120ms" }}>
           {splitCouple(wedding.coupleNames).map((part, i) => (
             <span key={i} className={styles.heroNameLine}>
               {i === 1 ? <em className={styles.heroAmp}>&</em> : null}
               {part}
             </span>
           ))}
-        </motion.h1>
+        </h1>
 
-        <motion.div
-          className={styles.heroPlate}
-          initial={reduce ? false : { opacity: 0, y: 18 }}
-          animate={reduce ? undefined : { opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.22 }}
-        >
+        <div className={`${styles.heroPlate} hero-rise`} style={{ animationDelay: "240ms" }}>
           <span className={styles.heroPlateItem}>
             <span className={styles.heroPlateK}>Data</span>
             {wedding.weddingDateLabel}
@@ -446,7 +433,7 @@ function Hero({ wedding }: Props) {
             <span className={styles.heroPlateK}>Local</span>
             {location?.venue ?? location?.city ?? "Em breve"}
           </span>
-        </motion.div>
+        </div>
       </div>
 
       <a href="#convite" className={styles.heroScroll} aria-label="Rolar para o convite">
@@ -508,7 +495,7 @@ function LocationBlock({ wedding }: Props) {
   const query = encodeURIComponent(
     [location.venue, location.address, location.city].filter(Boolean).join(", ")
   );
-  const embed = `https://www.google.com/maps?q=${query}&z=14&output=embed`;
+  const embed = `https://www.google.com/maps?q=${query}&z=14&hl=pt-BR&output=embed`;
 
   return (
     <section id="local" className={styles.location} aria-labelledby="location-title">
@@ -551,6 +538,15 @@ function RsvpBlock({ wedding }: Props) {
     const name = String(new FormData(form).get("name") ?? "").trim();
     if (!name) {
       setError("Diga o seu nome para confirmarmos.");
+      return;
+    }
+    // Demo (/modelo/...): valida igual ao servidor e simula o sucesso, sem chamar a API.
+    if (isDemoWedding(wedding.id)) {
+      const check = normalizeRsvp({ name, status });
+      setError(check.ok ? null : check.error);
+      if (!check.ok) return;
+      setDeclined(status === "declined");
+      setState("done");
       return;
     }
 
@@ -603,13 +599,14 @@ function RsvpBlock({ wedding }: Props) {
               <p className={styles.kicker}>{declined ? "Resposta registrada" : "Confirmado"}</p>
               <p className={styles.rsvpDoneText}>
                 {declined ? "Sentiremos sua falta — obrigado por avisar." : rsvp.successMessage}
+                {isDemoWedding(wedding.id) ? DEMO_SENT_NOTE : null}
               </p>
             </div>
           ) : (
             <form className={styles.form} onSubmit={handleSubmit} noValidate>
               <label className={styles.field}>
                 <span>Nome completo</span>
-                <GuestNameField slug={wedding.slug} placeholder="Digite para buscar seu nome" required />
+                <GuestNameField slug={wedding.slug} weddingId={wedding.id} placeholder="Digite para buscar seu nome" required />
               </label>
               {error ? (
                 <p className={styles.formError} role="alert">
@@ -653,7 +650,7 @@ function RsvpBlock({ wedding }: Props) {
 function Gallery({ wedding }: Props) {
   const [active, setActive] = useState<number | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const images = wedding.gallery;
+  const images = galleryRest(wedding);
 
   useEffect(() => {
     const dialog = dialogRef.current;

@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
+import { isDemoWedding } from "@/lib/demo-id";
+import { normalizeName } from "@/lib/public-forms";
+import styles from "./guest-forms.module.css";
 
 /**
  * Campo de nome do RSVP com BUSCA na lista do casal (autocomplete). O convidado
@@ -8,13 +11,18 @@ import { useEffect, useId, useRef, useState, type CSSProperties, type KeyboardEv
  * errado. É um drop-in: renderiza um <input name="name"> de verdade (o FormData
  * dos formulários continua funcionando), embrulhado num container relativo, então
  * as regras `.field input` de cada modelo seguem valendo. O dropdown é claro e
- * legível sobre qualquer skin (claro ou escuro).
+ * legível sobre qualquer skin (claro ou escuro) e usa a --font-sans do modelo.
  */
 
 const MIN_QUERY = 2;
 
+/** Lista fictícia da demo (/modelo/*): a busca filtra aqui e não chama a API. */
+const DEMO_GUEST_NAMES = ["Ana Souza", "Bruno Lima", "Carla Dias"];
+
 type Props = {
   slug: string;
+  /** Id do casamento: no casamento de demonstração a busca é local (sem fetch). */
+  weddingId?: string;
   /** Nome do campo no form (o backend lê `name`). */
   name?: string;
   placeholder?: string;
@@ -27,6 +35,7 @@ type Props = {
 
 export function GuestNameField({
   slug,
+  weddingId,
   name = "name",
   placeholder = "Digite para buscar seu nome",
   required,
@@ -44,6 +53,7 @@ export function GuestNameField({
   const skipSearch = useRef(false); // não rebusca logo após escolher da lista
   const listId = useId();
   const boxRef = useRef<HTMLDivElement>(null);
+  const demo = isDemoWedding(weddingId);
 
   useEffect(() => {
     if (skipSearch.current) {
@@ -60,6 +70,14 @@ export function GuestNameField({
           setItems([]);
           setOpen(false);
           setSearched(false);
+          return;
+        }
+        if (demo) {
+          const target = normalizeName(q);
+          setItems(DEMO_GUEST_NAMES.filter((n) => normalizeName(n).includes(target)));
+          setActive(-1);
+          setSearched(true);
+          setOpen(true);
           return;
         }
         setLoading(true);
@@ -85,7 +103,7 @@ export function GuestNameField({
       controller.abort();
       clearTimeout(timer);
     };
-  }, [value, slug]);
+  }, [value, slug, demo]);
 
   // Fecha ao clicar fora.
   useEffect(() => {
@@ -140,7 +158,7 @@ export function GuestNameField({
         aria-controls={listId}
         aria-autocomplete="list"
         aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
-        className={className}
+        className={className ? `${styles.nameInput} ${className}` : styles.nameInput}
         style={INPUT}
         onChange={(event) => setValue(event.target.value)}
         onFocus={() => {
@@ -170,7 +188,11 @@ export function GuestNameField({
               </li>
             ))
           ) : (
-            <li style={NOTE}>Nenhum nome encontrado. Confira como está no convite.</li>
+            <li style={NOTE}>
+              {demo
+                ? `Na demonstração, experimente: ${DEMO_GUEST_NAMES.join(", ")}.`
+                : "Nenhum nome encontrado. Confira como está no convite."}
+            </li>
           )}
         </ul>
       ) : null}
@@ -196,7 +218,11 @@ const PANEL: CSSProperties = {
   border: "1px solid rgba(20, 20, 15, 0.14)",
   borderRadius: 12,
   boxShadow: "0 18px 44px rgba(0, 0, 0, 0.2)",
-  fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif"
+  // O painel fica dentro do <label> do modelo: não herda caixa alta nem peso dele.
+  fontFamily: "var(--font-sans)",
+  fontWeight: 400,
+  letterSpacing: "normal",
+  textTransform: "none"
 };
 const OPTION: CSSProperties = {
   padding: "10px 12px",

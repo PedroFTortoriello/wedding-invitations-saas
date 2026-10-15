@@ -1,18 +1,24 @@
+import Image from "next/image";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app/AppShell";
-import { MetricCard } from "@/components/app/MetricCard";
+import { CopyLink } from "@/components/app/CopyLink";
+import { Icon, type IconName } from "@/components/app/icons";
+import { Notice } from "@/components/app/Notice";
+import { PublishButton } from "@/components/app/PublishButton";
+import { Avatar, EmptyState, PanelHeader } from "@/components/app/Panel";
 import { StatusBadge } from "@/components/app/StatusBadge";
-import { createClient } from "@/lib/supabase/server";
+import { SupportBlockedButton, SupportBlockedNote } from "@/components/app/SupportBar";
+import { getActingContext } from "@/lib/acting";
 import { getOwnedWeddingRow } from "@/lib/wedding-server";
 import { getMercadoPagoConnectionSummary } from "@/lib/mercadopago-server";
 import { rowToWeddingSite } from "@/lib/wedding";
-import { formatCurrency } from "@/lib/platform-data";
-import { PublishPanel } from "./PublishPanel";
-import { CoordinatorLink } from "./CoordinatorLink";
+import { formatCurrency, PUBLISH_FEE_LABEL } from "@/lib/platform-data";
+import { hasRecentPurchase } from "../publicar/recent-purchase";
 import { CardGiftsPanel } from "./CardGiftsPanel";
 import { generateCoordinatorLinkAction, revokeCoordinatorLinkAction } from "./coordinator-actions";
+import { PurchaseTracker } from "./PurchaseTracker";
 
 export const dynamic = "force-dynamic";
 
@@ -38,31 +44,39 @@ export default async function DashboardPage({
   searchParams: Promise<{ publicacao?: string; mp?: string }>;
 }) {
   const { publicacao, mp } = await searchParams;
-  const row = await getOwnedWeddingRow();
+  // Checkouts criados antes de /publicar voltam para cá: a confirmação agora mora lá.
+  if (publicacao === "paga") {
+    redirect("/publicar?pagamento=concluido");
+  }
+  const ctx = await getActingContext();
+  const row = await getOwnedWeddingRow(ctx);
   if (!row) {
     redirect("/onboarding");
   }
 
   const site = rowToWeddingSite(row);
-  const supabase = await createClient();
+  const supabase = ctx.db;
+  const support = ctx.support;
 
-  // Origem absoluta para montar o link da cerimonialista (APP_URL em prod, host da requisição em dev).
+  // Origem absoluta para os links (APP_URL em prod, host da requisição em dev).
   const hdrs = await headers();
   const appOrigin =
     process.env.APP_URL || `${hdrs.get("x-forwarded-proto") ?? "http"}://${hdrs.get("host") ?? "localhost:3000"}`;
+  const siteUrl = `${appOrigin}/casamento/${site.slug}`;
 
   // Conexão do cartão. Sem credenciais da plataforma no ambiente, o bloco nem aparece.
   const mercadoPagoConfigured = Boolean(process.env.MERCADOPAGO_CLIENT_ID && process.env.MERCADOPAGO_CLIENT_SECRET);
 
   // Tudo em paralelo: cada consulta é uma ida ao Supabase — em série, somariam.
-  const [{ data: guests }, { data: messages }, { data: gifts }, mpConnection] = await Promise.all([
+  const [{ data: guests }, { data: messages }, { data: gifts }, mpConnection, recentPurchase] = await Promise.all([
     supabase.from("guests").select("*").eq("wedding_id", row.id).order("created_at", { ascending: false }),
     supabase.from("messages").select("*").eq("wedding_id", row.id).order("created_at", { ascending: false }),
     supabase.from("cash_gifts").select("*").eq("wedding_id", row.id).order("created_at", { ascending: false }),
-    mercadoPagoConfigured ? getMercadoPagoConnectionSummary(row.id) : Promise.resolve(null)
+    mercadoPagoConfigured ? getMercadoPagoConnectionSummary(row.id) : Promise.resolve(null),
+    // Modo suporte: nunca dispara o Purchase da campanha no navegador do admin.
+    support ? false : hasRecentPurchase(row.id, row.publish_paid_at)
   ]);
   const cardConnected = mpConnection?.status === "active";
-  const cardFeeOnCouple = cardConnected && mpConnection?.feePayer === "couple";
   const mpFlash = mp ? MP_FLASH[mp] : undefined;
 
   const guestList = guests ?? [];
@@ -75,237 +89,427 @@ export default async function DashboardPage({
   const grossCashGifts = giftList
     .filter((gift) => gift.status === "paid")
     .reduce((total, gift) => total + Number(gift.gross_amount), 0);
+  const pixToConfirm = giftList.filter((gift) => gift.status === "pending" && gift.payment_method === "pix").length;
 
   const daysLeft = daysUntil(site.weddingDate);
   const isPublished = site.status === "published";
+  const paid = Boolean(row.publish_paid_at);
 
-  const nextSteps = [
-    { done: isPublished, label: isPublished ? "Site publicado e link ativo" : "Publicar o site (pague a taxa única)" },
+  const steps: { done: boolean; label: string; hint: string; href: string; icon: IconName }[] = [
     {
-      done: pending === 0 && guestList.length > 0,
-      label:
-        guestList.length === 0
-          ? "Compartilhe o link para receber as primeiras confirmações"
-          : pending > 0
-            ? `Acompanhe ${pending} convidado(s) ainda pendente(s)`
-            : "Todos os convidados responderam"
+      done: site.gallery.length > 0,
+      label: "Adicionar suas fotos",
+      hint: "Capa, galeria e rodapé do site",
+      href: "/editor?secao=fotos",
+      icon: "image"
     },
-    { done: Boolean(site.pixKey), label: site.pixKey ? "Chave Pix configurada" : "Configure sua chave Pix no editor" },
+    {
+      done: Boolean(site.pixKey),
+      label: "Cadastrar a chave Pix",
+      hint: "Os presentes caem direto nela, 0% de taxa",
+      href: "/editor?secao=pix",
+      icon: "pix"
+    },
+    {
+      done: site.gifts.length > 0,
+      label: "Criar as cotas de presente",
+      hint: "Lua de mel, jantar, valor livre…",
+      href: "/presentes",
+      icon: "gift"
+    },
+    {
+      done: guestList.length > 0,
+      label: "Montar a lista de convidados",
+      hint: "Só quem está na lista confirma presença",
+      href: "/convidados",
+      icon: "users"
+    },
+    {
+      done: isPublished,
+      label: "Publicar o site",
+      hint: `Taxa única de ${PUBLISH_FEE_LABEL}`,
+      href: "/publicar",
+      icon: "flag"
+    },
     ...(mercadoPagoConfigured
       ? [
           {
             done: cardConnected,
-            label: cardConnected ? "Cartão ativo (Mercado Pago)" : "Ative o cartão conectando o Mercado Pago (opcional)"
+            label: "Aceitar presentes no cartão",
+            hint: "Opcional, via Mercado Pago",
+            href: "#cartao",
+            icon: "card" as const
           }
         ]
-      : []),
-    { done: false, label: "Compartilhe o link no WhatsApp e nas redes" }
+      : [])
   ];
+  const doneCount = steps.filter((step) => step.done).length;
+  const allDone = doneCount === steps.length;
+
+  const shareText = encodeURIComponent(`Nosso site de casamento está no ar: ${siteUrl}`);
 
   return (
     <AppShell
-      title="Painel do casal"
-      subtitle="Acompanhe publicação, convidados, presentes e personalização do site em um painel único."
+      title="Visão geral"
       active="dashboard"
+      wedding={{ coupleNames: site.coupleNames, slug: site.slug, status: site.status }}
+      support={support}
     >
-      {publicacao === "paga" && !isPublished ? (
-        <p role="status" className="mb-6 rounded-2xl bg-forest/10 px-4 py-3 text-sm font-bold text-forest">
-          Pagamento recebido. Clique em “Publicar agora” para colocar seu site no ar.
-        </p>
-      ) : null}
+      <div className="grid gap-5">
+        {recentPurchase ? <PurchaseTracker weddingId={row.id} /> : null}
+        {mpFlash ? <Notice tone={mpFlash.ok ? "success" : "error"}>{mpFlash.text}</Notice> : null}
 
-      {mpFlash ? (
-        <p
-          role={mpFlash.ok ? "status" : "alert"}
-          className={`mb-6 rounded-2xl px-4 py-3 text-sm font-bold ${
-            mpFlash.ok ? "bg-forest/10 text-forest" : "bg-[#8d3d33]/10 text-[#8d3d33]"
-          }`}
-        >
-          {mpFlash.text}
-        </p>
-      ) : null}
+        {/* Site */}
+        <section className="panel grid overflow-hidden md:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]" aria-labelledby="site-title">
+          <div className="p-5 sm:p-7">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <StatusBadge status={site.status} />
+              <span className="text-[0.8125rem] text-ink-soft">Modelo {site.templateName}</span>
+            </div>
+            <h2
+              id="site-title"
+              className="mt-4 font-serif text-[2.5rem] italic leading-[1.02] tracking-[-0.015em] text-balance sm:text-[3.25rem]"
+            >
+              {site.coupleNames}
+            </h2>
+            <p className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[0.9375rem] text-ink">
+              <span className="inline-flex items-center gap-1.5">
+                <Icon name="calendar" size={17} className="text-ink-soft" />
+                {site.weddingDateLabel || "Data a definir"}
+                {site.weddingTime ? ` · ${site.weddingTime}` : ""}
+              </span>
+              {daysLeft > 0 ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <Icon name="clock" size={17} className="text-ink-soft" />
+                  Faltam {daysLeft} {daysLeft === 1 ? "dia" : "dias"}
+                </span>
+              ) : null}
+            </p>
 
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Status do site" value={isPublished ? "Publicado" : "Rascunho"} helper={isPublished ? "Seu link público está ativo." : "Publique para deixar o site no ar."} />
-        <MetricCard label="Contagem regressiva" value={`${daysLeft} dias`} helper={site.weddingDateLabel} />
-        <MetricCard label="Confirmações" value={`${confirmed}/${guestList.length}`} helper="Confirmações registradas no painel." />
-        <MetricCard label="Mensagens" value={String(messageList.length)} helper="Recados carinhosos dos convidados." />
-      </div>
+            <div className="mt-6">
+              <CopyLink url={siteUrl} label="Link do site" />
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Link href="/editor" className="btn btn-sm btn-primary">
+                <Icon name="edit" size={16} />
+                Editar site
+              </Link>
+              <Link href={`/casamento/${site.slug}`} target="_blank" className="btn btn-sm btn-secondary">
+                {isPublished ? "Ver site" : "Ver prévia"}
+                <Icon name="external" size={15} />
+              </Link>
+              {isPublished ? (
+                <a
+                  href={`https://wa.me/?text=${shareText}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-sm btn-secondary"
+                >
+                  <Icon name="share" size={16} />
+                  Enviar no WhatsApp
+                </a>
+              ) : null}
+            </div>
+          </div>
+          <div className="relative hidden min-h-64 bg-bg-2 md:block">
+            {site.heroImage ? (
+              <Image src={site.heroImage} alt="Foto de capa do site" fill sizes="320px" className="object-cover" priority />
+            ) : null}
+          </div>
+        </section>
 
-      <section className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <article className="card card-accent p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        {/* Publicação — a ação mais importante enquanto o site é rascunho */}
+        {!isPublished ? (
+          <section
+            id="publicar"
+            className={`grid ${support ? "scroll-mt-28" : "scroll-mt-20"} gap-5 rounded-[0.875rem] bg-forest p-5 text-on-forest sm:p-7 md:grid-cols-[1fr_auto] md:items-center`}
+          >
             <div>
-              <p className="t-eyebrow text-ink-soft">{isPublished ? "Site publicado" : "Rascunho"}</p>
-              <h2 className="mt-3 t-h1 italic">{site.coupleNames}</h2>
-              <p className="mt-4 max-w-2xl text-sm leading-6 text-ink-soft">
-                Modelo {site.templateName}. Edite os dados e publique quando estiver pronto.
+              <h2 className="font-serif text-[1.625rem] leading-tight sm:text-[1.875rem]">
+                {paid ? "Pagamento confirmado. Falta só colocar no ar." : "Seu site ainda é um rascunho"}
+              </h2>
+              <p className="mt-2 max-w-xl text-[0.9375rem] leading-6 text-on-forest/90">
+                {paid
+                  ? "Publique quando quiser: o link passa a funcionar para os convidados na hora."
+                  : `Só vocês veem a prévia. Publique com uma taxa única de ${PUBLISH_FEE_LABEL}, sem mensalidade, e os presentes via Pix vão 100% para vocês.`}
               </p>
             </div>
-            <StatusBadge status={site.status} />
-          </div>
-          <div className="mt-7 grid gap-3 rounded-3xl bg-[#f7f0e5] p-4 md:grid-cols-[1fr_auto_auto] md:items-center">
-            <code className="break-all text-sm text-ink-soft">/casamento/{site.slug}</code>
-            <Link href={`/casamento/${site.slug}`} className="btn btn-primary !text-on-forest text-sm">
-              Visualizar
-            </Link>
-            <Link href="/editor" className="btn btn-secondary text-sm">
-              Editar site
-            </Link>
-          </div>
-          <PublishPanel weddingId={row.id} status={site.status} paid={Boolean(row.publish_paid_at)} />
-        </article>
+            {/* Pagar acontece em /publicar; taxa já paga (cortesia/legado) publica daqui mesmo. */}
+            {paid ? (
+              <PublishButton weddingId={row.id} paid onDark blocked={Boolean(support)} />
+            ) : (
+              <Link href="/publicar" className="btn btn-sm btn-inverse justify-self-start">
+                Ver o que falta e publicar
+                <Icon name="chevronRight" size={16} />
+              </Link>
+            )}
+          </section>
+        ) : null}
 
-        <article className="card-forest p-6 text-on-forest">
-          <p className="t-eyebrow text-on-forest">Presentes em dinheiro</p>
-          <h2 className="mt-3 t-h1">{cardFeeOnCouple ? "0% de taxa da Noivar" : "0% de taxa · 100% para o casal"}</h2>
-          <p className="mt-4 text-sm leading-6 text-on-forest">
-            Recebidos {formatCurrency(grossCashGifts)} em presentes — Pix direto na sua chave
-            {cardConnected ? " e cartão direto na sua conta do Mercado Pago" : ""}, sem intermediação.
-          </p>
-          <Link href="/presentes" className="btn btn-inverse !text-black mt-7 w-full text-sm">
-            Ver presentes
-          </Link>
-        </article>
-      </section>
+        {/* Números */}
+        <section aria-label="Resumo" className="panel grid grid-cols-2 lg:grid-cols-4">
+          <Stat
+            label="Confirmados"
+            value={`${confirmed}`}
+            suffix={guestList.length ? `de ${guestList.length}` : undefined}
+            href="/convidados"
+            progress={guestList.length ? confirmed / guestList.length : undefined}
+            className="border-b border-r border-line lg:border-b-0"
+          />
+          <Stat
+            label="Sem resposta"
+            value={`${pending}`}
+            href="/convidados?status=pending"
+            className="border-b border-line lg:border-b-0 lg:border-r"
+          />
+          <Stat label="Recados" value={`${messageList.length}`} href="/mensagens" className="border-r border-line" />
+          <Stat
+            label="Presentes recebidos"
+            value={formatCurrency(grossCashGifts)}
+            note={pixToConfirm ? `${pixToConfirm} Pix a confirmar` : undefined}
+            href="/checkout"
+          />
+        </section>
 
-      <CardGiftsPanel configured={mercadoPagoConfigured} connection={mpConnection} />
+        <div className="grid items-start gap-5 lg:grid-cols-2">
+          {!allDone ? (
+            <section className="panel" aria-labelledby="steps-title">
+              <div className="flex items-center justify-between gap-3 px-5 pt-5">
+                <h2 id="steps-title" className="text-base font-semibold">
+                  Primeiros passos
+                </h2>
+                <span className="text-sm text-ink-soft">
+                  {doneCount} de {steps.length}
+                </span>
+              </div>
+              <div className="mx-5 mt-3 h-1.5 overflow-hidden rounded-full bg-forest/10" aria-hidden>
+                <div className="h-full rounded-full bg-forest" style={{ width: `${(doneCount / steps.length) * 100}%` }} />
+              </div>
+              <ul className="mt-3 px-2 pb-2">
+                {steps.map((step) => (
+                  <li key={step.label}>
+                    <Link
+                      href={step.href}
+                      className="group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150 hover:bg-forest/5"
+                    >
+                      <span
+                        className={`grid size-8 shrink-0 place-items-center rounded-full ${
+                          step.done ? "bg-forest text-on-forest" : "border border-line-strong text-ink-soft"
+                        }`}
+                      >
+                        <Icon name={step.done ? "check" : step.icon} size={15} strokeWidth={step.done ? 2.6 : 1.7} />
+                      </span>
+                      <span className="grid min-w-0 flex-1">
+                        <span className={`text-[0.9375rem] ${step.done ? "text-ink-soft" : "font-semibold text-ink"}`}>
+                          {step.label}
+                          {step.done ? <span className="sr-only"> (feito)</span> : null}
+                        </span>
+                        {step.done ? null : <span className="text-[0.8125rem] text-ink-soft">{step.hint}</span>}
+                      </span>
+                      {step.done ? null : (
+                        <Icon
+                          name="chevronRight"
+                          size={16}
+                          className="text-ink-soft transition-transform duration-150 group-hover:translate-x-0.5"
+                        />
+                      )}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
-      <section className="mt-6 grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
-        <article className="card p-6">
-          <div className="flex items-center justify-between">
-            <p className="t-eyebrow text-ink-soft">Confirmações de presença</p>
-            <span className="t-eyebrow text-ink-soft">
-              {confirmed}/{guestList.length}
-            </span>
-          </div>
-          {guestList.length === 0 ? (
-            <p className="mt-5 text-sm leading-6 text-ink-soft">Nenhuma confirmação ainda. Compartilhe o link do site.</p>
-          ) : (
-            <ul className="mt-5 grid gap-3">
-              {guestList.slice(0, 6).map((guest) => (
-                <li
-                  key={guest.id}
-                  className="flex items-center justify-between gap-3 border-t border-[#5b6842]/10 pt-3 first:border-0 first:pt-0"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate font-bold text-ink">{guest.name}</p>
-                    <p className="truncate text-xs text-ink-soft">
-                      {guest.companions_confirmed > 0 ? `+${guest.companions_confirmed} acompanhante` : guest.contact ?? "—"}
+          <section className={`panel ${allDone ? "lg:col-span-2" : ""}`}>
+            <PanelHeader title="Confirmações recentes" href="/convidados" linkLabel="Ver lista" />
+            {guestList.length === 0 ? (
+              <EmptyState
+                icon="users"
+                title="Nenhum convidado na lista"
+                action={
+                  <Link href="/convidados" className="btn btn-sm btn-secondary">
+                    Montar a lista
+                  </Link>
+                }
+              >
+                No site, só quem está na lista consegue confirmar presença.
+              </EmptyState>
+            ) : (
+              <ul className="mt-2 divide-y divide-line px-5 pb-2">
+                {guestList.slice(0, 6).map((guest) => (
+                  <li key={guest.id} className="flex items-center gap-3 py-2.5">
+                    <Avatar name={guest.name} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[0.9375rem] font-medium text-ink">{guest.name}</p>
+                      <p className="truncate text-[0.8125rem] text-ink-soft">
+                        {guest.companions_confirmed > 0
+                          ? `+${guest.companions_confirmed} acompanhante${guest.companions_confirmed > 1 ? "s" : ""}`
+                          : "Sem acompanhantes"}
+                      </p>
+                    </div>
+                    <StatusBadge status={guest.status} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
+
+        <div className="grid items-start gap-5 lg:grid-cols-2">
+          <section className="panel">
+            <PanelHeader title="Recados" href="/mensagens" linkLabel="Ver todos" />
+            {messageList.length === 0 ? (
+              <EmptyState icon="message" title="Nenhum recado ainda">
+                As mensagens que os convidados deixam no site aparecem aqui.
+              </EmptyState>
+            ) : (
+              <ul className="mt-2 divide-y divide-line px-5 pb-2">
+                {messageList.slice(0, 3).map((message) => (
+                  <li key={message.id} className="py-3.5">
+                    <p className="line-clamp-3 text-[0.9375rem] leading-6 text-ink">{message.message}</p>
+                    <p className="mt-1.5 text-[0.8125rem] text-ink-soft">
+                      {message.guest_name} · {formatDay(message.created_at)}
                     </p>
-                  </div>
-                  <StatusBadge status={guest.status} />
-                </li>
-              ))}
-            </ul>
-          )}
-        </article>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
 
-        <article className="card p-6">
-          <p className="t-eyebrow text-ink-soft">Mensagens recentes</p>
-          {messageList.length === 0 ? (
-            <p className="mt-5 text-sm leading-6 text-ink-soft">Os recados dos convidados aparecem aqui.</p>
-          ) : (
-            <ul className="mt-5 grid gap-4">
-              {messageList.slice(0, 4).map((message) => (
-                <li key={message.id} className="border-t border-[#5b6842]/10 pt-4 first:border-0 first:pt-0">
-                  <p className="text-sm leading-6 text-ink">“{message.message}”</p>
-                  <p className="mt-2 text-xs font-bold text-ink-soft">— {message.guest_name}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </article>
+          <section className="panel">
+            <PanelHeader title="Presentes em dinheiro" href="/checkout" linkLabel="Recebimentos" />
+            {giftList.length === 0 ? (
+              <EmptyState icon="wallet" title="Nenhum presente ainda">
+                Quando um convidado presentear pelo site, o valor aparece aqui. No Pix, 100% vai para vocês.
+              </EmptyState>
+            ) : (
+              <ul className="mt-2 divide-y divide-line px-5 pb-2">
+                {giftList.slice(0, 5).map((gift) => (
+                  <li key={gift.id} className="flex items-center gap-3 py-2.5">
+                    <Avatar name={gift.guest_name} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[0.9375rem] font-medium text-ink">{gift.guest_name}</p>
+                      <p className="text-[0.8125rem] text-ink-soft">
+                        {formatDay(gift.paid_at ?? gift.created_at)} · {gift.payment_method === "card" ? "Cartão" : "Pix"}
+                      </p>
+                    </div>
+                    <div className="grid justify-items-end gap-1">
+                      <span className="text-[0.9375rem] font-semibold tabular-nums text-ink">
+                        {formatCurrency(Number(gift.gross_amount))}
+                      </span>
+                      <StatusBadge status={gift.status} />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
 
-        <article className="card p-6 md:col-span-2 xl:col-span-1">
-          <div className="flex items-center justify-between">
-            <p className="t-eyebrow text-ink-soft">Recebimentos</p>
-            <span className="t-eyebrow text-ink-soft">{formatCurrency(grossCashGifts)}</span>
-          </div>
-          {giftList.length === 0 ? (
-            <p className="mt-5 text-sm leading-6 text-ink-soft">Os presentes em dinheiro recebidos aparecem aqui.</p>
-          ) : (
-            <ul className="mt-5 grid gap-3">
-              {giftList.slice(0, 6).map((gift) => (
-                <li
-                  key={gift.id}
-                  className="flex items-center justify-between gap-3 border-t border-[#5b6842]/10 pt-3 first:border-0 first:pt-0"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate font-bold text-ink">{gift.guest_name}</p>
-                    <p className="text-xs text-ink-soft">
-                      {formatDay(gift.paid_at ?? gift.created_at)} · {gift.payment_method === "card" ? "Cartão" : "Pix"}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-3">
-                    <span className="font-black text-ink">{formatCurrency(Number(gift.gross_amount))}</span>
-                    <StatusBadge status={gift.status} />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </article>
-      </section>
+        {/* Integrações e acessos */}
+        <div className="mt-4">
+          <h2 className="font-serif text-[1.625rem] leading-tight">Integrações e acessos</h2>
+          <p className="mt-1 text-[0.9375rem] text-ink-soft">Formas extras de receber presentes e de dividir a organização.</p>
+        </div>
+        <div className="grid items-start gap-5 lg:grid-cols-2">
+          <CardGiftsPanel configured={mercadoPagoConfigured} connection={mpConnection} blocked={Boolean(support)} />
 
-      <section className="mt-6">
-        <article className="card p-6">
-          <div className="max-w-2xl">
-            <p className="t-eyebrow text-ink-soft">Cerimonialista</p>
-            <h2 className="mt-3 t-h1">Acesso da cerimonialista</h2>
-            <p className="mt-2 text-sm leading-6 text-ink-soft">
-              Um link só-leitura para sua cerimonialista acompanhar convidados, confirmações, programação do
-              dia, locais e recados — sem login e sem acesso ao seu Pix. Você pode desativar quando quiser.
-            </p>
-          </div>
-
-          {row.coordinator_token ? (
-            <div className="mt-6 grid gap-4">
-              <CoordinatorLink url={`${appOrigin}/coordenacao/${row.coordinator_token}`} />
-              <div className="flex flex-wrap items-center gap-4">
-                <form action={generateCoordinatorLinkAction}>
-                  <button type="submit" className="btn btn-secondary text-sm">
-                    Gerar novo link
-                  </button>
-                </form>
-                <form action={revokeCoordinatorLinkAction}>
-                  <button type="submit" className="text-sm font-bold text-[#8d3d33] underline underline-offset-4">
-                    Desativar acesso
-                  </button>
-                </form>
+          <section className="panel p-5">
+            <div className="flex items-start gap-3">
+              <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-forest/8 text-forest">
+                <Icon name="users" size={19} />
+              </span>
+              <div>
+                <h3 className="text-base font-semibold">Acesso da cerimonialista</h3>
+                <p className="mt-1 text-sm leading-5 text-ink-soft">
+                  Um link só de leitura com convidados, confirmações, programação, locais e recados. Sem login e sem
+                  acesso ao seu Pix.
+                </p>
               </div>
             </div>
-          ) : (
-            <form action={generateCoordinatorLinkAction} className="mt-6">
-              <button type="submit" className="btn btn-primary text-sm">
-                Gerar link da cerimonialista
-              </button>
-            </form>
-          )}
-        </article>
-      </section>
 
-      <section className="mt-6">
-        <article className="card p-6">
-          <p className="t-eyebrow text-ink-soft">Próximos passos</p>
-          <ul className="mt-5 grid gap-3 md:grid-cols-2">
-            {nextSteps.map((step) => (
-              <li key={step.label} className="flex items-center gap-3">
-                <span
-                  className={`grid size-6 shrink-0 place-items-center rounded-full ${
-                    step.done ? "bg-forest text-on-forest" : "border-2 border-[#5b6842]/30 text-transparent"
-                  }`}
-                >
-                  <svg viewBox="0 0 16 16" className="size-3.5" fill="none" aria-hidden>
-                    <path d="M3.5 8.5l3 3 6-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
-                <span className={step.done ? "text-sm text-ink-soft line-through" : "text-sm font-bold text-ink"}>{step.label}</span>
-              </li>
-            ))}
-          </ul>
-        </article>
-      </section>
+            {row.coordinator_token ? (
+              <div className="mt-5 grid gap-3">
+                <CopyLink url={`${appOrigin}/coordenacao/${row.coordinator_token}`} label="Link da cerimonialista" openable />
+                {support ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <SupportBlockedButton className="btn btn-sm btn-secondary">Gerar novo link</SupportBlockedButton>
+                    <SupportBlockedButton className="btn btn-sm btn-ghost text-danger">Desativar acesso</SupportBlockedButton>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <form action={generateCoordinatorLinkAction}>
+                      <button type="submit" className="btn btn-sm btn-secondary">
+                        Gerar novo link
+                      </button>
+                    </form>
+                    <form action={revokeCoordinatorLinkAction}>
+                      <button type="submit" className="btn btn-sm btn-ghost text-danger">
+                        Desativar acesso
+                      </button>
+                    </form>
+                  </div>
+                )}
+                {support ? (
+                  <SupportBlockedNote />
+                ) : (
+                  <p className="text-[0.8125rem] text-ink-soft">Gerar um novo link desativa o anterior.</p>
+                )}
+              </div>
+            ) : support ? (
+              <div className="mt-5 grid gap-3">
+                <SupportBlockedButton className="btn btn-sm btn-primary justify-self-start">
+                  Gerar link da cerimonialista
+                </SupportBlockedButton>
+                <SupportBlockedNote />
+              </div>
+            ) : (
+              <form action={generateCoordinatorLinkAction} className="mt-5">
+                <button type="submit" className="btn btn-sm btn-primary">
+                  Gerar link da cerimonialista
+                </button>
+              </form>
+            )}
+          </section>
+        </div>
+      </div>
     </AppShell>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  suffix,
+  note,
+  href,
+  progress,
+  className = ""
+}: {
+  label: string;
+  value: string;
+  suffix?: string;
+  note?: string;
+  href: string;
+  progress?: number;
+  className?: string;
+}) {
+  return (
+    <Link href={href} className={`group grid content-start gap-1 p-4 transition-colors duration-150 hover:bg-forest/4 sm:p-5 ${className}`}>
+      <span className="flex items-center justify-between text-[0.8125rem] text-ink-soft">
+        {label}
+        <Icon name="chevronRight" size={14} className="opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
+      </span>
+      <span className="flex items-baseline gap-1.5">
+        <span className="font-serif text-[1.75rem] leading-none tabular-nums text-ink sm:text-[2rem]">{value}</span>
+        {suffix ? <span className="text-sm text-ink-soft">{suffix}</span> : null}
+      </span>
+      {progress !== undefined ? (
+        <span className="mt-2 h-1 overflow-hidden rounded-full bg-forest/10" aria-hidden>
+          <span className="block h-full rounded-full bg-forest" style={{ width: `${Math.round(progress * 100)}%` }} />
+        </span>
+      ) : null}
+      {note ? <span className="mt-1 text-[0.8125rem] font-medium text-warn">{note}</span> : null}
+    </Link>
   );
 }
