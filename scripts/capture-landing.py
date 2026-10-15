@@ -316,7 +316,7 @@ def capture_capa(browser, base: str) -> None:
         page.evaluate("""() => {
           const title = document.querySelector('#story-title');
           const target = title || document.querySelectorAll('section')[1];
-          const top = target.getBoundingClientRect().top + scrollY - (title ? 130 : 40);
+          const top = target.getBoundingClientRect().top + scrollY - (title ? 130 : 0);
           window.scrollTo({ top, behavior: 'instant' });
         }""")
         page.evaluate(SETTLE_JS)
