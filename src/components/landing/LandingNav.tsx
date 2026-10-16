@@ -3,6 +3,7 @@ import { SHOWCASE_IDS, type ShowcaseId } from "./showcase";
 
 const SECOES = [
   { label: "Modelos", href: "#modelos" },
+  { label: "Site feito pela IA", href: "#ia" },
   { label: "Presentes", href: "#presentes" },
   { label: "Preço", href: "#preco" },
   { label: "Dúvidas", href: "#duvidas" }

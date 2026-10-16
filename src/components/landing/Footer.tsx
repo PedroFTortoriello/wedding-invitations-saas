@@ -2,7 +2,7 @@ import { CookiePreferencesButton } from "@/components/analytics/Analytics";
 import { SHOWCASE_IDS, type ShowcaseId } from "@/components/landing/showcase";
 import { COMPANY, whatsappLink } from "@/lib/company";
 import { formatWhatsapp } from "@/lib/legal";
-import { PUBLISH_FEE_LABEL } from "@/lib/platform-data";
+import { AI_SITE_FEE_LABEL, PUBLISH_FEE_LABEL } from "@/lib/platform-data";
 
 const LINK = "inline-flex min-h-11 items-center hover:underline hover:underline-offset-4 lg:min-h-8";
 
@@ -36,6 +36,13 @@ export function Fechamento({ modelo = SHOWCASE_IDS[0] }: { modelo?: ShowcaseId }
             </span>
             <span>{PUBLISH_FEE_LABEL} uma vez, só para publicar</span>
           </p>
+          <a
+            data-cta="fechamento-ia"
+            href="/cadastro?ia=1"
+            className="mt-2 inline-flex min-h-11 items-center gap-1.5 font-semibold text-on-forest underline decoration-on-forest/50 underline-offset-4 transition-[text-decoration-color] duration-150 hover:decoration-on-forest focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-forest motion-reduce:transition-none"
+          >
+            Ou deixem a IA montar ({AI_SITE_FEE_LABEL}) <span aria-hidden="true">→</span>
+          </a>
         </div>
       </div>
     </section>

@@ -1,6 +1,6 @@
 import { Icon } from "@/components/app/icons";
 import { SHOWCASE_IDS, type ShowcaseId } from "@/components/landing/showcase";
-import { PUBLISH_FEE_BRL, PUBLISH_FEE_LABEL } from "@/lib/platform-data";
+import { AI_SITE_FEE_LABEL, MAX_AI_PHOTOS, PUBLISH_FEE_LABEL } from "@/lib/platform-data";
 
 const HOST = new URL(process.env.APP_URL || "http://localhost:3000").host;
 
@@ -30,10 +30,6 @@ const INCLUDED: readonly Item[] = [
 /** Linhas visíveis no celular antes do <details>. */
 const MOBILE_VISIBLE = 6;
 
-// "menos de R$ X por convidado" num casamento de 100: sobe para o próximo décimo,
-// então continua verdade se a taxa mudar.
-const PER_GUEST = ((Math.floor(PUBLISH_FEE_BRL / 10) + 1) / 10).toFixed(2).replace(".", ",");
-
 /** `reveal`: posição no stagger de 40ms (limitado às 8 primeiras); sem ele, a linha não anima. */
 function Row({ item, detail, reveal }: Item & { reveal?: number }) {
   return (
@@ -52,7 +48,8 @@ function Row({ item, detail, reveal }: Item & { reveal?: number }) {
 }
 
 /**
- * Preço — recibo itemizado + painel de total forest (o ponto de decisão).
+ * Preço — recibo itemizado + painel forest com os dois jeitos (o ponto de decisão): o site
+ * feito pela IA em destaque (recorte creme, botão cheio) e o editor logo abaixo.
  * Server component, sem JS: no celular as linhas 7–16 ficam num <details> nativo;
  * no desktop o recibo inteiro aparece em duas colunas (8+8) e o total fica sticky.
  * ponytail: o recibo é renderizado duas vezes (celular / desktop, uma delas em
@@ -69,7 +66,7 @@ export function Pricing({ modelo = SHOWCASE_IDS[0] }: { modelo?: ShowcaseId }) {
             Uma taxa. Uma vez. <em className="italic">Sem mensalidade.</em>
           </h2>
           <p data-reveal className="mt-4 t-h3">
-            Tudo incluso, em qualquer modelo
+            Tudo incluso nos dois jeitos, em qualquer modelo
           </p>
 
           {/* Celular: 6 linhas + <details> com o resto. */}
@@ -106,29 +103,57 @@ export function Pricing({ modelo = SHOWCASE_IDS[0] }: { modelo?: ShowcaseId }) {
         </div>
 
         <div className="lg:col-span-5">
+          {/* #preco-cta no painel inteiro: o CTA fixo do celular some enquanto qualquer parte dele
+              (inclusive o destaque da IA) está na tela. O LandingBehavior só observa o id. */}
           <div
+            id="preco-cta"
             data-reveal
             className="@container rounded-sm bg-forest p-6 text-on-forest sm:p-8 lg:sticky lg:top-22"
           >
-            <p className="text-[0.8125rem] text-on-forest/80">Total</p>
+            <p className="text-[0.8125rem] text-on-forest/80">Taxa única, via Pix, só na hora de publicar</p>
             <span aria-hidden className="mt-2 block h-px w-10 bg-on-forest/50" />
-            {/* Escala do brief, limitada pela largura do painel (a 1024px 7rem estouraria). */}
-            <p className="mt-4 whitespace-nowrap font-serif text-[clamp(3.5rem,min(2rem+8vw,28cqi),7rem)] leading-none">
-              {PUBLISH_FEE_LABEL}
-            </p>
-            <p className="mt-5 text-on-forest">pagos via Pix, uma única vez, só na hora de publicar.</p>
-            <p className="mt-1 text-on-forest/80">Montar, editar e ver o site pronto é grátis.</p>
-            <a
-              id="preco-cta"
-              data-cta="preco"
-              data-cta-modelo
-              href={`/cadastro?modelo=${modelo}`}
-              className="btn btn-inverse mt-6 min-h-14 w-full duration-150"
-            >
-              Montar nosso site grátis
-            </a>
-            <p className="mt-4 text-[0.8125rem] leading-5 text-on-forest/80">
-              Num casamento com 100 convidados, dá menos de R$ {PER_GUEST} por convidado.
+
+            {/* Site feito pela IA em destaque: recorte creme (texto --ink) com o botão cheio.
+                Os dois preços têm peso parecido: o destaque vem da ordem, do recorte e do botão. */}
+            <div className="mt-5 rounded-sm bg-bg p-5 text-ink sm:p-6">
+              <p className="flex items-baseline justify-between gap-4">
+                <span className="min-w-0 font-serif text-[1.375rem] leading-tight">Site feito pela IA</span>
+                <span className="shrink-0 whitespace-nowrap font-serif text-[clamp(1.75rem,11cqi,2.5rem)] leading-none">
+                  {AI_SITE_FEE_LABEL}
+                </span>
+              </p>
+              <p className="mt-3 text-[0.9375rem] leading-6">
+                Vocês mandam os dados e até {MAX_AI_PHOTOS} fotos; a IA escolhe o modelo, escreve os textos e monta o
+                site.
+              </p>
+              <a data-cta="preco-ia" href="/cadastro?ia=1" className="btn btn-primary mt-5 min-h-14 w-full duration-150">
+                Quero que a IA monte
+              </a>
+            </div>
+
+            <div className="mt-6">
+              <p className="flex items-baseline justify-between gap-4">
+                <span className="min-w-0 font-serif text-[1.375rem] leading-tight">Vocês montam no editor</span>
+                <span className="shrink-0 whitespace-nowrap font-serif text-[clamp(1.75rem,11cqi,2.5rem)] leading-none">
+                  {PUBLISH_FEE_LABEL}
+                </span>
+              </p>
+              <p className="mt-2 text-[0.9375rem] leading-6 text-on-forest/90">
+                Escolham o modelo e editem textos e fotos, vendo o site mudar.
+              </p>
+              <a
+                data-cta="preco"
+                data-cta-modelo
+                href={`/cadastro?modelo=${modelo}`}
+                className="btn mt-4 min-h-12 w-full border border-on-forest/50 text-on-forest duration-150 hover:border-on-forest hover:bg-on-forest/10 focus-visible:outline-on-forest motion-reduce:transition-none"
+              >
+                Montar nosso site grátis
+              </a>
+            </div>
+
+            <p className="mt-5 border-t border-on-forest/20 pt-4 text-[0.8125rem] leading-5 text-on-forest/80">
+              Nos dois jeitos, montar e ver o site pronto é grátis, o Pix é pago uma vez só e os presentes via Pix têm
+              0% de taxa.
             </p>
           </div>
         </div>

@@ -93,16 +93,18 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.25rem 1.25rem;
+  /* 1.625rem entre linhas = 2 × 13px de sobra do alvo: quando os links quebram (celular),
+     os alvos de 44px se encostam sem se sobrepor. */
+  gap: 1.625rem 1.25rem;
   margin: 0;
   font-size: 0.8125rem;
   line-height: 1.4;
   color: var(--ink-soft);
 }
 .micro a {
-  /* alvo de toque de 44px sem mexer na linha */
-  margin-block: -0.75rem;
-  padding-block: 0.75rem;
+  /* alvo de toque de 44px (18,2px de linha + 2 × 13px) sem mexer na linha */
+  margin-block: -0.8125rem;
+  padding-block: 0.8125rem;
   font-weight: 600;
   color: var(--ink);
   text-decoration: underline;

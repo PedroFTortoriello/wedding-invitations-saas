@@ -41,9 +41,11 @@ export function Presentes({ modelo = SHOWCASE_IDS[0] }: { modelo?: ShowcaseId })
           </p>
         </div>
 
-        {/* Recortes reais do Jardim Romântico: modal na frente, cotas atrás. No desktop o modal
-            encosta à direita da coluna e a cota sai 144px à esquerda (a 1024px avança 8px no gap da
-            grade): foto, título e valor legíveis; com só 32px aparecendo, sobravam letras cortadas. */}
+        {/* Recortes reais do Jardim Romântico: modal na frente, cota atrás. A pilha é a caixa do
+            modal (704×1070 → 320×486px no desktop); a cota (388×874) tira a altura da caixa, não da
+            própria largura: top 40px + (100% − 64px) termina 24px acima do modal, então nunca sai
+            da caixa nem alcança a linha 3 (cartão), em qualquer largura. Sai 144px à esquerda (a
+            1024px avança 8px no gap da grade) e mostra ~77% dos 187px: foto, título e valor. */}
         <div
           data-reveal
           className="mt-6 flex justify-center lg:col-span-6 lg:col-start-7 lg:row-span-2 lg:row-start-1 lg:mt-0 lg:items-center lg:justify-end"
@@ -52,16 +54,16 @@ export function Presentes({ modelo = SHOWCASE_IDS[0] }: { modelo?: ShowcaseId })
             <Image
               src="/assets/landing/presentes-cotas.webp"
               alt="Cota Lua de Mel em Portugal na lista de presentes do modelo Jardim Romântico, com valor livre e botão Presentear"
-              width={748}
-              height={1166}
-              sizes="280px"
-              className="absolute top-16 -left-36 hidden h-auto w-[88%] rounded-2xl lg:block"
+              width={388}
+              height={874}
+              sizes="190px"
+              className="absolute top-10 -left-36 hidden h-[calc(100%-4rem)] w-auto rounded-2xl lg:block"
             />
             <Image
               src="/assets/landing/presentes-pix.webp"
               alt="Janela de presente em dinheiro do modelo Jardim Romântico: cota Lua de Mel em Portugal, selo 0% de taxa · 100% para o casal, valor de R$ 150, campos opcionais de nome e mensagem e botão Gerar Pix"
               width={704}
-              height={1016}
+              height={1070}
               sizes="(min-width: 1024px) 320px, 280px"
               className="relative h-auto w-full rounded-[22px] shadow-[0_28px_56px_-28px_rgb(0_0_0/0.55)]"
             />

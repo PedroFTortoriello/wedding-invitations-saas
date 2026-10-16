@@ -4,7 +4,7 @@ import { PUBLISH_FEE_LABEL } from "@/lib/platform-data";
 /**
  * CTA fixo abaixo de 1024px. Nasce escondido e inerte (sem JS nunca aparece). O
  * LandingBehavior liga data-visible depois que #hero-cta sai da tela e desliga
- * perto de #preco-cta/#fechamento-cta, com o aviso de cookies aberto e no braço
+ * perto do painel de preço (#preco-cta) e de #fechamento-cta, com o aviso de cookies aberto e no braço
  * "off" do teste A/B.
  */
 export function StickyCta({ modelo = SHOWCASE_IDS[0] }: { modelo?: ShowcaseId }) {

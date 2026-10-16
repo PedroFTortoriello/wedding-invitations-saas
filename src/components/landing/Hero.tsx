@@ -104,6 +104,7 @@ export function Hero({ variant = "home" }: { variant?: keyof typeof VARIANTS }) 
           <p className={s.micro}>
             <span>Não pedimos cartão para começar.</span>
             <a href="#modelos">Ver os modelos</a>
+            <a href="#ia">Ou deixem a IA montar</a>
           </p>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { Hero } from "@/components/landing/Hero";
 import { Passos } from "@/components/landing/Passos";
 import { Modelos } from "@/components/landing/Modelos";
 import { Presentes } from "@/components/landing/Presentes";
+import { SiteIa } from "@/components/landing/SiteIa";
 import { Convidados } from "@/components/landing/Convidados";
 import { Pricing } from "@/components/landing/Pricing";
 import { Faq } from "@/components/landing/Faq";
@@ -47,6 +48,7 @@ export default function LandingPresentesPage() {
         <Hero variant="presentes" />
         <Passos modelo={MODELO} />
         <Modelos />
+        <SiteIa />
         <Presentes modelo={MODELO} />
         <Convidados />
         <Pricing modelo={MODELO} />

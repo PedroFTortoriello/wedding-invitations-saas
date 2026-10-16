@@ -2,17 +2,21 @@ import type { ReactNode } from "react";
 import { Icon } from "@/components/app/icons";
 import { SHOWCASE_IDS, type ShowcaseId } from "@/components/landing/showcase";
 import { COMPANY, whatsappLink } from "@/lib/company";
-import { PUBLISH_FEE_LABEL } from "@/lib/platform-data";
+import { AI_SITE_FEE_LABEL, MAX_AI_GENERATIONS, MAX_AI_PHOTOS, PUBLISH_FEE_LABEL } from "@/lib/platform-data";
 
 const WHATSAPP_URL = whatsappLink("Olá! Estou vendo a Noivar para o nosso casamento.");
 const INLINE_LINK = "font-semibold underline decoration-ink/40 underline-offset-4 hover:decoration-ink";
 
 // Respostas de 2–3 linhas, cada uma com evidência no código (brief 3.7).
-// 9 e 10 vêm da política aprovada (COMPANY). Identidade da empresa só em /termos e /privacidade.
+// 10 e 11 vêm da política aprovada (COMPANY). Identidade da empresa só em /termos e /privacidade.
 const FAQ: readonly { q: string; a: ReactNode }[] = [
   {
     q: "Quanto custa? Dá para montar antes de pagar?",
-    a: `Dá. Montar, editar e ver o site pronto é grátis. Para publicar, vocês pagam ${PUBLISH_FEE_LABEL} uma única vez, via Pix. Sem mensalidade e sem plano.`
+    a: `Dá. Montar, editar e ver o site pronto é grátis. Para publicar, vocês pagam ${PUBLISH_FEE_LABEL} uma única vez, via Pix. Se preferirem que a IA monte o site com os dados e as fotos de vocês, a publicação fica ${AI_SITE_FEE_LABEL} a partir da primeira geração. Sem mensalidade.`
+  },
+  {
+    q: "Como funciona o site feito pela IA? Ela vai inventar coisas sobre a gente?",
+    a: `Vocês preenchem o briefing e mandam até ${MAX_AI_PHOTOS} fotos. Em cerca de um minuto, a IA escolhe o modelo, escreve os textos e organiza as fotos, usando só o que vocês contaram. O site abre no editor para vocês revisarem, tudo continua editável e dá para gerar até ${MAX_AI_GENERATIONS} vezes. A IA é o Claude, da Anthropic.`
   },
   {
     q: "Os presentes via Pix vão mesmo 100% para nós?",

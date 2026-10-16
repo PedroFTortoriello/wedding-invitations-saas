@@ -1,104 +1,139 @@
 import Image from "next/image";
+import { IPhone } from "@/components/landing/Modelos";
+import { modeloAsset } from "@/components/landing/showcase";
 
-const BEATS = [
+// A página inteira do Editorial Luxury no celular (390×9556), a mesma que rola na vitrine de Modelos.
+const PAGE = modeloAsset("editorial-luxury", "mobile-full");
+// A tela do .iphone mostra 846px dessa captura (proporção 0,461 na largura de 390), em qualquer tamanho.
+const SCROLL = 9556 - 846;
+// ponytail: topos medidos à mão na captura; recapturou (scripts/capture-landing.py tour), meça de novo.
+const at = (top: number) => `50% ${((top / SCROLL) * 100).toFixed(2)}%`;
+
+// A contagem muda a cada captura: sem números no alt.
+const SCREENS = [
   {
-    title: "Só confirma quem foi convidado.",
-    text: "O convidado digita o nome, escolhe na lista de vocês e toca em Confirmar presença. Quem não está na lista não consegue confirmar.",
-    caption: "Modelo Editorial Luxury",
-    src: "/assets/landing/convidados-confirmacao.webp",
-    width: 780,
-    height: 932,
-    alt: "Seção Confirme sua presença do modelo Editorial Luxury, com o campo Nome completo (Digite para buscar seu nome), o botão Confirmar presença e o link Não poderei ir"
+    top: 7020,
+    label: "Confirmação de presença",
+    alt: "Seção Confirme sua presença do modelo Editorial Luxury no celular, com o prazo Responda até 5 de novembro, o campo Nome completo (Digite para buscar seu nome), o botão Confirmar presença e o link Não poderei ir"
   },
   {
-    title: "Data, programação e mapa.",
-    // O recorte mostra só a contagem; o texto diz o que mais vem no site.
-    text: "Contagem regressiva até o dia. No site também entram os horários do dia e o local com botão para abrir no mapa.",
-    caption: "Modelo Jardim Romântico",
-    src: "/assets/landing/convidados-agenda.webp",
-    width: 780,
-    height: 904,
-    alt: "Contagem regressiva do modelo Jardim Romântico: faltam 79 dias, 23 horas, 26 minutos e 57 segundos para 5 de dezembro de 2026, às 16:30"
+    top: 3506,
+    label: "Contagem e programação",
+    alt: "Contagem regressiva do modelo Editorial Luxury no celular, em dias, horas, minutos e segundos até 5 de dezembro de 2026, às 16:30, seguida da programação O dia, com a Recepção às 16:30 e a Cerimônia às 17:30"
   },
   {
-    title: "E deixa um recado.",
-    text: "Os recados ficam guardados no painel de vocês, para ler antes, durante e depois do dia.",
-    caption: "Modelo Cinema Noir",
-    src: "/assets/landing/convidados-recado.webp",
-    width: 764,
-    height: 888,
-    alt: "Formulário Deixe um recado do modelo Cinema Noir, com os campos Seu nome e Recado e o botão Enviar recado"
+    top: 4680,
+    label: "Local e mapa",
+    alt: "Seção O local do modelo Editorial Luxury no celular: Fazenda Três Ipês, em Itu, SP, com o botão Abrir no Google Maps e o mapa do lugar"
+  },
+  {
+    top: 8612,
+    label: "Recados",
+    alt: "Formulário Deixe um recado do modelo Editorial Luxury no celular, com os campos Seu nome e Recado e o botão Enviar recado, acima do rodapé com os nomes Helena Ribeiro e Lucas Moreira"
   }
 ];
 
-// Degraus do desktop (0/48/96px).
-const STEP_OFFSET = ["", "lg:mt-12", "lg:mt-24"];
+// wide: no desktop a frase cobre as duas telas do meio (contagem e mapa).
+const BEATS = [
+  {
+    title: "Só confirma quem foi convidado.",
+    text: "O convidado digita o nome, escolhe na lista de vocês e toca em Confirmar presença. Quem não está na lista não consegue confirmar."
+  },
+  {
+    title: "Data, programação e mapa.",
+    text: "Contagem regressiva até o dia, os horários da programação e o local, com um botão que abre o mapa.",
+    wide: true
+  },
+  {
+    title: "E deixa um recado.",
+    text: "Os recados ficam guardados no painel de vocês, para ler antes, durante e depois do dia."
+  }
+];
 
 /**
- * Convidados — "penetra", convidado mais velho e cerimonialista respondidos com
- * UI real dos modelos (nada de chips inventados). Server component.
- * Desktop: texto em 1–4 e os 3 recortes em escada em 5–12. Mobile: .snap-row de
- * 3 slides (a lista vira carrossel com o mesmo markup) e a linha da
- * cerimonialista depois.
+ * Convidados — o site do lado do convidado, em quatro celulares com a mesma captura do
+ * Editorial Luxury, cada um enquadrado num trecho (object-position). Server component, sem JS.
+ * Uma faixa forest decorativa (sem texto em cima) corre de ponta a ponta atrás dos aparelhos;
+ * abaixo, uma linha de frases alinhada às telas e o fecho da cerimonialista como régua (.ledger).
+ *   desktop  cabeçalho 7/5; celulares nas 4 colunas do .wrap, os das pontas 24px mais baixos
+ *            (arco simétrico, só translate: não mexe na altura da linha); frases na mesma grade,
+ *            a do meio em 2 colunas, e a régua encaixada sob as colunas 2–4.
+ *   mobile   .snap-row de celulares de min(56vw, 15rem) com legenda curta; frases e régua empilhadas.
  */
 export function Convidados() {
-  const closing = (
-    <>
-      <p className="m-0 leading-[1.55]">
-        E um link só de leitura para a cerimonialista acompanhar confirmados e recados, sem ver o Pix e sem editar nada.
-      </p>
-      <p className="mt-3 text-[13px] leading-normal text-ink-soft">Telas reais dos modelos, com dados de demonstração.</p>
-    </>
-  );
-
   return (
     <section id="convidados" aria-labelledby="convidados-titulo" className="bg-bg-2 py-12 text-ink lg:py-24">
-      {/* No desktop este bloco faz o papel do .wrap (1200px, 40px de respiro); no
-          celular o .snap-row precisa da largura total, então o .wrap fica só no texto. */}
-      <div className="lg:mx-auto lg:grid lg:max-w-300 lg:grid-cols-12 lg:gap-x-8 lg:px-10">
-        <div className="wrap lg:col-span-4 lg:flex lg:flex-col lg:px-0">
-          <div data-reveal>
-            <h2 id="convidados-titulo" className="t-h1 text-balance">
-              Do lado de lá <span className="italic">do link.</span>
-            </h2>
-            <p className="mt-4 t-lead">É assim que o site chega no celular dos convidados.</p>
-          </div>
-          <div data-reveal className="mt-10 hidden border-t border-ink/15 pt-6 lg:mt-auto lg:block">
-            {closing}
-          </div>
+      <div data-reveal className="wrap lg:grid lg:grid-cols-12 lg:items-end lg:gap-x-8">
+        <h2 id="convidados-titulo" className="t-h1 text-balance lg:col-span-7">
+          Do lado de lá <span className="italic">do link.</span>
+        </h2>
+        <div className="mt-4 lg:col-span-5 lg:mt-0">
+          <p className="m-0 t-lead">É assim que o site chega no celular dos convidados.</p>
+          <p id="convidados-legenda" className="mt-2 text-[13px] leading-normal text-ink-soft">
+            Telas reais do modelo Editorial Luxury, com dados de demonstração.
+          </p>
         </div>
+      </div>
 
-        {/* tabIndex + nome: no celular a lista rola de lado e não tem nada focável dentro. */}
-        <ol
+      <div className="relative mt-6 lg:mt-12">
+        <div aria-hidden="true" className="absolute inset-x-0 top-[17%] bottom-[17%] bg-forest" />
+        {/* tabIndex + nome: no celular a lista rola de lado e não tem nada focável dentro.
+            py-6: o overflow do .snap-row cortaria a sombra dos aparelhos. */}
+        <ul
           tabIndex={0}
-          aria-label="Telas que os convidados veem"
-          className="snap-row mt-6 list-none lg:col-span-8 lg:mt-0 lg:grid-flow-row lg:grid-cols-3 lg:items-start lg:gap-x-8 lg:overflow-visible lg:p-0"
+          aria-label="O site no celular do convidado"
+          aria-describedby="convidados-legenda"
+          className="snap-row relative auto-cols-[min(56vw,15rem)] py-6 lg:mx-auto lg:max-w-300 lg:grid-flow-row lg:grid-cols-4 lg:gap-x-8 lg:overflow-visible lg:px-10 lg:py-0"
         >
-          {BEATS.map((beat, i) => (
-            <li key={beat.title} data-reveal style={{ transitionDelay: `${i * 60}ms` }} className={STEP_OFFSET[i]}>
+          {SCREENS.map((screen, i) => (
+            <li
+              key={screen.label}
+              data-reveal
+              style={{ transitionDelay: `${i * 70}ms` }}
+              className={i === 0 || i === SCREENS.length - 1 ? "lg:translate-y-6" : undefined}
+            >
               <figure className="m-0">
-                {/* Recorte ≤ 360px de altura no slide de 76vw; no desktop, largura da coluna. */}
-                <div className="overflow-hidden rounded-md border border-ink/15 max-lg:max-h-90">
+                <IPhone>
                   <Image
-                    src={beat.src}
-                    alt={beat.alt}
-                    width={beat.width}
-                    height={beat.height}
-                    sizes="(min-width: 1024px) 240px, 384px"
-                    className="block h-auto w-full"
+                    src={PAGE}
+                    alt={screen.alt}
+                    fill
+                    sizes="(min-width: 1024px) 240px, 52vw"
+                    style={{ objectPosition: at(screen.top) }}
                   />
-                </div>
-                <figcaption className="mt-2 text-[13px] leading-normal text-ink-soft">{beat.caption}</figcaption>
+                </IPhone>
+                <figcaption className="mt-3 text-[13px] leading-normal text-ink-soft lg:sr-only">{screen.label}</figcaption>
               </figure>
-              <h3 className="mt-3 t-h3">{beat.title}</h3>
-              <p className="mt-1.5 text-[15px] leading-[1.55] lg:text-base">{beat.text}</p>
             </li>
           ))}
-        </ol>
+        </ul>
+      </div>
 
-        <div data-reveal className="wrap mt-6 lg:hidden">
-          {closing}
-        </div>
+      {/* Mesma grade dos celulares: o traço de cada frase mede as telas que ela explica. No desktop a
+          primeira frase, a mais longa, desce 2 linhas e a régua da cerimonialista encaixa ao lado dela,
+          sob as outras duas: nenhuma coluna fica com vão embaixo. */}
+      <div className="wrap mt-6 lg:mt-14 lg:grid lg:grid-cols-4 lg:gap-x-8">
+        {BEATS.map((beat, i) => (
+          <div
+            key={beat.title}
+            data-reveal
+            style={{ transitionDelay: `${i * 70}ms` }}
+            className={`border-t border-ink/30 py-4 lg:pb-0 lg:pt-5 ${i === 0 ? "lg:row-span-2" : ""} ${beat.wide ? "lg:col-span-2" : ""}`}
+          >
+            <h3 className="t-h3">{beat.title}</h3>
+            <p className="mt-1.5 text-[15px] leading-[1.55] lg:text-base">{beat.text}</p>
+          </div>
+        ))}
+
+        <dl data-reveal className="ledger mt-4 *:py-4 lg:col-span-3 lg:col-start-2 lg:mt-8 lg:self-end">
+          <div>
+            <dt>
+              <strong className="font-semibold">Para a cerimonialista,</strong> um link para acompanhar confirmados e
+              recados, sem ver o Pix e sem editar nada.
+            </dt>
+            <dd>Só leitura</dd>
+          </div>
+        </dl>
       </div>
     </section>
   );

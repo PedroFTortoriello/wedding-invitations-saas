@@ -43,7 +43,7 @@ function MacBook({ children }: { children: ReactNode }) {
   );
 }
 
-function IPhone({ children, className = "" }: { children: ReactNode; className?: string }) {
+export function IPhone({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
     <div className={`iphone ${className}`}>
       <div className="iphone-frame">
