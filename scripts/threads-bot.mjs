@@ -55,7 +55,7 @@ export function containsUrl(text) {
 }
 
 const LINK_HOST = "noivar.vercel.app";
-const LINK_FRAGMENTS = ["#presentes", "#preco", "#modelos", "#duvidas"];
+const LINK_FRAGMENTS = ["#presentes", "#preco", "#modelos", "#duvidas", "#ia"];
 const LINK_MODELS = ["jardim-romantico", "editorial-luxury", "garden-classico", "cinema-noir"];
 const UTM_VALUE = /^[a-z0-9-]+$/;
 
@@ -77,7 +77,7 @@ export function validateLink(url) {
     issues.push(`âncora só na home e só ${LINK_FRAGMENTS.join(", ")}`);
   }
   const allowed = ["utm_source", "utm_medium", "utm_campaign", "utm_content"];
-  if (parsed.pathname === "/cadastro") allowed.push("modelo");
+  if (parsed.pathname === "/cadastro") allowed.push("modelo", "ia");
   for (const key of new Set(params.keys())) {
     if (!allowed.includes(key)) issues.push(`parâmetro não permitido: ${key}`);
     else if (params.getAll(key).length > 1) issues.push(`parâmetro repetido: ${key}`);
@@ -89,6 +89,8 @@ export function validateLink(url) {
   if (params.has("modelo") && !LINK_MODELS.includes(params.get("modelo"))) {
     issues.push(`modelo precisa ser um destes: ${LINK_MODELS.join(", ")}`);
   }
+  if (params.has("ia") && params.get("ia") !== "1") issues.push("ia só com o valor 1");
+  if (params.has("ia") && params.has("modelo")) issues.push("ia=1 não vai junto com modelo: a IA escolhe o modelo");
   return issues;
 }
 
@@ -98,9 +100,9 @@ const BANNED = [
   "transforme", "descubra", "o dia mais importante da sua vida", "sem dor de cabeça", "o melhor", "o mais barato",
   "o único", "garantido", "garantia total", "todo mundo usa", "aprovado por noivas", "seguro 100%", "premium",
   "comenta aqui", "comente aqui", "marque uma amiga", "marca uma amiga", "sorteio", "só hoje", "promoção",
-  "imperdível", "corre que"
+  "imperdível", "corre que", "gerações ilimitadas", "edições ilimitadas", "4 modelos", "quatro modelos"
 ];
-const MONEY_OK = ["R$149,90", "R$0", "R$10.000", "R$389", "R$1,50"];
+const MONEY_OK = ["R$89,90", "R$149,90", "R$0", "R$10.000", "R$389"];
 const PERCENT_OK = ["0%", "3,89%", "100%"];
 // "Noivar" com N maiúsculo é a marca; "noivar" minúsculo é o verbo e passa.
 const MASCULINE_BRAND = /(?<![\p{L}\p{N}])(?:[Oo]|[AaDdNn][Oo]|[Pp]elo)\s+Noivar(?![\p{L}\p{N}])/u;
@@ -172,6 +174,9 @@ function contentIssues(text) {
   const percents = [...text.matchAll(/\d[\d.,]*\s*%/g)].map((m) => m[0].replace(/\s+/g, ""));
   for (const value of money) if (!MONEY_OK.includes(value)) issues.push(`valor fora da ficha de fatos: ${value}`);
   for (const value of percents) if (!PERCENT_OK.includes(value)) issues.push(`percentual fora da ficha de fatos: ${value}`);
+  if (money.includes("R$149,90") && !has("ia")) {
+    issues.push("R$ 149,90 é só o preço do site feito pela IA: diga IA no texto (publicar no editor custa R$ 89,90)");
+  }
   if ((percents.includes("0%") || / sem taxas? | taxa zero /.test(norm)) && !has("pix")) {
     issues.push('"0%", "sem taxa" e "taxa zero" valem só no Pix: diga Pix no texto');
   }

@@ -96,6 +96,15 @@ describe("validateLink", () => {
     expect(validateLink(`${HOME}#preco`)).toEqual([]);
     expect(validateLink(`https://noivar.vercel.app/cadastro?${UTM}`)).toEqual([]);
     expect(validateLink(`https://noivar.vercel.app/cadastro?modelo=cinema-noir&${UTM}`)).toEqual([]);
+    expect(validateLink(`${HOME}#ia`)).toEqual([]);
+    expect(validateLink(`https://noivar.vercel.app/cadastro?ia=1&${UTM}`)).toEqual([]);
+  });
+
+  it("ia=1 só no cadastro, só com 1 e sem modelo", () => {
+    expect(validateLink(`https://noivar.vercel.app/cadastro?ia=sim&${UTM}`).join()).toMatch(/valor 1/);
+    expect(validateLink(`https://noivar.vercel.app/cadastro?ia=1&modelo=cinema-noir&${UTM}`).join()).toMatch(/junto com modelo/);
+    expect(validateLink(`https://noivar.vercel.app/?ia=1&${UTM}`).join()).toMatch(/não permitido: ia/);
+    expect(validateLink(`https://noivar.vercel.app/cadastro?ia=1&${UTM}#ia`).join()).toMatch(/âncora/);
   });
 
   it("recusa domínio, protocolo ou porta errados", () => {
@@ -200,7 +209,11 @@ describe("validatePost — expressões proibidas (sem acento e caixa, palavra in
       ["Para o Dia Mais Importante da Sua Vida.", "o dia mais importante da sua vida"],
       ["Lista sem dor de cabeca.", "sem dor de cabeça"],
       ["Comenta aqui qual foi a sua.", "comenta aqui"],
-      ["Marque uma amiga que vai casar.", "marque uma amiga"]
+      ["Marque uma amiga que vai casar.", "marque uma amiga"],
+      ["A IA faz gerações ilimitadas.", "gerações ilimitadas"],
+      ["Edicoes ilimitadas depois de publicar.", "edições ilimitadas"],
+      ["Escolham entre 4 modelos.", "4 modelos"],
+      ["Escolham entre quatro modelos.", "quatro modelos"]
     ]) {
       expect(check(text).join(), text).toContain(`expressão proibida: "${phrase}"`);
     }
@@ -214,13 +227,20 @@ describe("validatePost — expressões proibidas (sem acento e caixa, palavra in
 
 describe("validatePost — valores, percentuais e ressalvas", () => {
   it("aceita os valores da ficha de fatos, com ou sem espaço", () => {
-    expect(check("Montar: R$ 0. Publicar: R$ 149,90, uma vez, via Pix.")).toEqual([]);
-    expect(check("Publicar custa R$149,90 uma vez.")).toEqual([]);
-    expect(check("Taxa de R$ 1,50 no cartão.")).toEqual([]);
+    expect(check("Montar: R$ 0. Publicar: R$ 89,90, uma vez, via Pix.")).toEqual([]);
+    expect(check("Publicar custa R$89,90 uma vez.")).toEqual([]);
+    expect(check("Se a IA montar o site, publicar custa R$ 149,90 uma vez.")).toEqual([]);
+    expect(check("No editor, R$ 89,90. Site feito pela IA: R$149,90.")).toEqual([]);
     expect(check("Presente via Pix: 0% de taxa, 100% para vocês.")).toEqual([]);
   });
 
+  it("R$ 149,90 é só o preço da IA", () => {
+    expect(check("Publicar, uma vez: R$ 149,90.").join()).toMatch(/site feito pela IA/);
+    expect(check("Publicar custa R$149,90 uma vez, via Pix.").join()).toMatch(/site feito pela IA/);
+  });
+
   it("recusa valor ou percentual inventado", () => {
+    expect(check("Dá menos de R$ 1,50 por convidado.").join()).toMatch(/valor fora da ficha de fatos: R\$1,50/);
     expect(check("Publicar custa R$ 99,90.").join()).toMatch(/valor fora da ficha de fatos: R\$99,90/);
     expect(check("Publicar custa R$ 150.").join()).toMatch(/R\$150/);
     expect(check("Publicar custa R$ 0,00.").join()).toMatch(/R\$0,00/);
