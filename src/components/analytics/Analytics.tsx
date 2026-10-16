@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useInsertionEffect, useRef, useSyncExternalStore } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import { usePathname } from "next/navigation";
@@ -29,6 +29,17 @@ const GUEST_DATA = /^\/(convidados|mensagens|presentes|checkout)(\/|$)/;
  * Vercel Web Analytics: contagem de visitas sem cookies (não pede aceite), só nas páginas da Noivar.
  * O componente nem monta fora delas; o filtro é a segunda trava para eventos de navegação.
  */
+/**
+ * Sinais do modo de consentimento v2. O aceite libera só os cookies do GA4 (distinguir visitas);
+ * os sinais de anúncio do Google ficam sempre negados: a Noivar não anuncia pelo Google.
+ */
+function gaConsent(granted: boolean) {
+  return { ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied", analytics_storage: granted ? "granted" : "denied" };
+}
+
+/** Identificadores de clique de anúncio: saem do endereço enviado ao GA4 enquanto não há aceite. */
+const CLICK_IDS = ["gclid", "gbraid", "wbraid", "dclid", "fbclid", "msclkid"];
+
 const onlyNoivarPages: BeforeSend = (event) => {
   const path = new URL(event.url).pathname;
   return UNTRACKED.some((re) => re.test(path)) || GUEST_DATA.test(path) ? null : event;
@@ -36,7 +47,8 @@ const onlyNoivarPages: BeforeSend = (event) => {
 
 /**
  * Montado uma vez no layout raiz. Captura a atribuição de campanha, pede o
- * consentimento (LGPD) e só então carrega Meta Pixel + GA4. Em navegação client-side
+ * consentimento (LGPD): o Meta Pixel só carrega depois do aceite; o GA4 carrega antes, em modo
+ * de consentimento avançado (sem cookies até o aceite). Em navegação client-side
  * (App Router) o PageView do Pixel sai daqui; o do GA4, da própria tag
  * (page_view no config + mudanças de histórico da medição otimizada).
  */
@@ -61,6 +73,24 @@ export function Analytics() {
     if (tagged) window.fbq?.("track", "PageView");
   }, [pathname, tagged, consent]);
 
+  // "Recusar" vale como oposição: o GA4 não carrega mais para quem recusou.
+  const objected = consent === "denied";
+  // A tag já carregada continua viva na navegação client-side. A flag ga-disable é lida a cada envio
+  // e cala o GA4 fora das páginas medidas (convidados, recados, presentes, checkout) e depois do
+  // "Recusar". Efeito de inserção: roda antes do pushState do roteador do Next (que fica num
+  // componente acima deste), então a page_view automática da troca de rota já sai com a flag certa.
+  const muted = !tagged || objected;
+  useInsertionEffect(() => {
+    if (GA_ID) (window as unknown as Record<string, boolean>)[`ga-disable-${GA_ID}`] = muted;
+  }, [muted]);
+
+  // Modo de consentimento avançado do GA4: a tag carrega com tudo negado (sem cookies) e só passa a
+  // gravar cookies depois do "Aceitar". Reabrir o aviso volta a negar.
+  useEffect(() => {
+    if (consent === undefined) return;
+    window.gtag?.("consent", "update", gaConsent(consent === "granted"));
+  }, [consent]);
+
   const visits = tagged ? <VercelAnalytics beforeSend={onlyNoivarPages} /> : null;
 
   if (!enabled || untracked) return visits;
@@ -75,11 +105,14 @@ export function Analytics() {
           {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq.disablePushState=true;fbq('set','autoConfig',false,'${META_PIXEL_ID}');fbq('init','${META_PIXEL_ID}');`}
         </Script>
       ) : null}
-      {consent === "granted" && tagged && GA_ID ? (
+      {/* GA4 em modo avançado: carrega antes da escolha (e para quem não responde ao aviso), com o
+          estado padrão vindo do cookie de consentimento. Sem aceite, não grava cookies e o endereço vai
+          sem identificadores de clique de anúncio; ads_data_redaction cobre as tags de anúncio do Google. */}
+      {consent !== undefined && !objected && tagged && GA_ID ? (
         <>
           <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
           <Script id="ga4" strategy="afterInteractive">
-            {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;gtag('js',new Date());gtag('config','${GA_ID}');`}
+            {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;gtag('consent','default',${JSON.stringify(gaConsent(consent === "granted"))});gtag('set','ads_data_redaction',true);gtag('js',new Date());var u=new URL(location.href);${consent === "granted" ? "" : `${JSON.stringify(CLICK_IDS)}.forEach(function(k){u.searchParams.delete(k)});`}gtag('config','${GA_ID}',{page_location:u.toString()});`}
           </Script>
         </>
       ) : null}
@@ -111,7 +144,7 @@ function ConsentBanner() {
       className="fixed inset-x-0 bottom-0 z-50 flex items-center gap-2.5 border-t border-line bg-surface px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] text-ink shadow-[0_-6px_24px_rgb(26_30_21/0.08)] transition-[opacity,translate] duration-200 starting:translate-y-3 starting:opacity-0 motion-reduce:transition-none sm:inset-x-4 sm:bottom-4 sm:mx-auto sm:max-w-xl sm:gap-4 sm:rounded-lg sm:border sm:p-3 sm:pl-4 sm:shadow-[0_12px_40px_rgb(26_30_21/0.16)]"
     >
       <p className="min-w-0 flex-1 text-[13px] leading-[1.35]">
-        Cookies de medição de anúncios, só com o seu aceite.{" "}
+        Contamos visitas sem cookies; anúncios, só com aceite.{" "}
         <Link href="/privacidade" className="rounded-sm font-semibold whitespace-nowrap underline decoration-ink/40 underline-offset-2 hover:decoration-ink">
           Política de privacidade
         </Link>

@@ -13,8 +13,9 @@ import {
 
 /**
  * Medição no navegador: consentimento (LGPD), atribuição de campanha e `track()`
- * para Meta Pixel + GA4. Os scripts só carregam depois do "Aceitar" (ver
- * components/analytics/Analytics.tsx); antes disso `track()` é no-op.
+ * para Meta Pixel + GA4. O Pixel só carrega depois do "Aceitar"; o GA4 carrega antes, em modo
+ * de consentimento avançado, só com a visita (ver components/analytics/Analytics.tsx). Eventos de
+ * `track()` (cadastro, pagamento...) só saem com aceite.
  */
 
 type Fbq = (...args: unknown[]) => void;
@@ -60,9 +61,12 @@ function clearAdCookies() {
 export function setConsent(value: Consent) {
   writeCookie(CONSENT_COOKIE, value, 180);
   if (value === "denied") {
+    // Antes de apagar os cookies: o GA4 já carregado para de gravá-los (o componente cala a tag em seguida).
+    window.gtag?.("consent", "update", { analytics_storage: "denied" });
     clearAdCookies();
-    // Pixel/GA já carregados não descarregam: recarrega para pararem de vez.
-    if (window.fbq || window.gtag) {
+    // O Pixel carregado não descarrega: recarrega para ele parar de vez. O GA4 não precisa:
+    // o componente manda o consentimento negado e ele para de gravar cookies.
+    if (window.fbq) {
       location.reload();
       return;
     }
@@ -138,7 +142,9 @@ export function track(
   } = {},
   options: { eventId?: string } = {}
 ) {
-  if (typeof window === "undefined") return;
+  // Sem aceite, nenhum evento sai: nem ao GA4 (que já carrega só para contar a visita), nem a um
+  // Pixel que tenha ficado carregado depois de "Preferências de cookies".
+  if (typeof window === "undefined" || getConsent() !== "granted") return;
   const meta = event in META_EVENT_NAME ? META_EVENT_NAME[event as TrackEvent] : null;
   const metaParams: Record<string, unknown> = {};
   if (params.value != null) {

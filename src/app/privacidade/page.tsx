@@ -165,8 +165,18 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
             site de origem, país, navegador e tipo de aparelho.
           </li>
           <li>
+            Pelo Google Analytics, enquanto você não recusa no aviso de cookies: sinais sem cookies, com data e hora,
+            navegador, site de origem, a página visitada (sem identificadores de clique de anúncio, como gclid e fbclid),
+            como você navega nela (rolagem e cliques em links) e a sua escolha no aviso. O endereço IP chega ao Google na
+            conexão; segundo o Google, o Google Analytics não o registra nem o guarda. Quando há volume suficiente, o
+            Google pode usar esses sinais para estimar visitas de forma agregada. Se você tocar em Recusar, o Google
+            Analytics deixa de carregar.
+          </li>
+          <li>
             Com o seu aceite: identificadores de anúncio (cookies _fbp e _fbc, fbclid e gclid), navegador (user agent) e
-            endereço IP, enviados à Meta, e estatísticas de visita no Google Analytics.
+            endereço IP, enviados à Meta, e os cookies do Google Analytics, que distinguem visitas. Só com o aceite as
+            ações no site (abrir um modelo, criar a conta, criar o site, iniciar e concluir o pagamento) são enviadas à
+            Meta e ao Google Analytics.
           </li>
           <li>
             Marcos de uso do produto, ligados à conta: cadastro, site criado, início do pagamento, pagamento e publicação,
@@ -196,8 +206,13 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
           (parâmetros utm e teste do botão fixo): legítimo interesse (art. 7º, IX).
         </li>
         <li>
-          Medir anúncios com Meta Pixel, API de Conversões da Meta e Google Analytics: consentimento (art. 7º, I), dado no
-          aviso de cookies e revogável a qualquer momento.
+          Medir anúncios com Meta Pixel e API de Conversões da Meta, e gravar os cookies do Google Analytics:
+          consentimento (art. 7º, I), dado no aviso de cookies e revogável a qualquer momento.
+        </li>
+        <li>
+          Medir a audiência das páginas da Noivar com os sinais sem cookies do Google Analytics: legítimo interesse (art.
+          7º, IX). Para se opor, toque em Recusar no aviso de cookies (ou em Preferências de cookies, se já tiver
+          escolhido): o Google Analytics deixa de carregar para você.
         </li>
       </ul>
     )
@@ -208,8 +223,13 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
     body: (
       <>
         <p>
-          Os cookies de medição (Meta e Google) só são gravados depois que você toca em Aceitar no aviso. Se você recusar,
-          eles não carregam, e os que existirem são apagados.
+          Os cookies de medição (Meta e Google) só são gravados depois que você toca em Aceitar no aviso. Antes da
+          escolha, a tag do Google Analytics carrega sem gravar cookies e envia só os sinais descritos em{" "}
+          <a href="#dados" className={LINK}>
+            Quais dados coletamos
+          </a>
+          . Se você recusar, nenhum cookie de medição é gravado, os que existirem são apagados e o Google Analytics deixa
+          de carregar.
         </p>
         <dl className="mt-6 border-t border-line">
           {COOKIES.map((cookie) => (
@@ -266,7 +286,8 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
             hash, nunca em texto.
           </li>
           <li>
-            <strong className="font-semibold">Google</strong>: estatísticas de visita no Google Analytics, só com aceite.
+            <strong className="font-semibold">Google</strong>: estatísticas de visita no Google Analytics. Nas páginas da
+            Noivar, sinais sem cookies enquanto você não recusa; cookies e ações no site, só com aceite.
           </li>
           <li>
             <strong className="font-semibold">Quem o casal escolher</strong>: por exemplo, a cerimonialista, pelo link só de
@@ -301,6 +322,7 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
           Identificadores de anúncio guardados nos nossos registros (_fbp, _fbc, navegador, fbclid e gclid): apagados
           depois de 30 dias.
         </li>
+        <li>Dados do Google Analytics: guardados pelo Google por 2 meses, prazo configurado na conta da Noivar.</li>
         <li>Código do IP usado para limitar a IA: apagado depois de 2 dias.</li>
         <li>Cookies: pelo prazo indicado na lista acima.</li>
       </ul>
@@ -409,7 +431,7 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
 
 const SUMMARY = [
   "A Noivar não vende dados pessoais.",
-  "Meta Pixel e Google Analytics só carregam depois do seu aceite, e nunca nos sites dos casais.",
+  "O Meta Pixel só carrega depois do seu aceite, e o Google Analytics só grava cookies depois dele. Nenhum dos dois roda nos sites dos casais.",
   "Os dados dos convidados servem só para o casal organizar o casamento.",
   "Você pode pedir acesso, correção ou exclusão dos seus dados a qualquer momento."
 ];

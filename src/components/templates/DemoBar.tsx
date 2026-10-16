@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useSyncExternalStore } from "react";
-import { track } from "@/lib/analytics";
+import { getConsent, track } from "@/lib/analytics";
 import { TEMPLATE_CHOICES } from "@/lib/template-options";
 import { TEMPLATE_NAMES, isTemplateId } from "@/lib/wedding";
 
@@ -22,14 +22,14 @@ export function DemoBar() {
   // false no servidor: a barra já vem no HTML; só some depois da hidratação se estiver num iframe.
   const inIframe = useSyncExternalStore(noSubscribe, () => window.self !== window.top, () => false);
 
-  // ViewContent uma vez por modelo aberto. Pixel/GA carregam depois da hidratação e só
-  // com consentimento, então espera os scripts por ~10s (mesmo padrão do PurchaseTracker).
+  // ViewContent uma vez por modelo aberto, só com aceite (track() não envia sem ele). Os scripts
+  // carregam depois da hidratação, então espera por ~10s (mesmo padrão do PurchaseTracker).
   // ponytail: aceite dos cookies depois de 10s na demo não conta a visita; ouvir CONSENT_EVENT se fizer falta.
   useEffect(() => {
     if (!templateId || inIframe) return;
     let tries = 0;
     const timer = window.setInterval(() => {
-      if (window.fbq || window.gtag) track("view_template", { template: templateId });
+      if (getConsent() === "granted" && (window.fbq || window.gtag)) track("view_template", { template: templateId });
       else if (++tries < MAX_TRIES) return;
       window.clearInterval(timer);
     }, POLL_MS);
