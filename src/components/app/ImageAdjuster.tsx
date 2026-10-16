@@ -2,7 +2,14 @@
 
 import { useId, useRef, type KeyboardEvent, type PointerEvent } from "react";
 import Image from "next/image";
-import { GIFT_ZOOM_MAX, GIFT_ZOOM_MIN, giftImageStyle, normalizeGiftImage, type GiftImageFraming } from "@/lib/gift-image";
+import {
+  GIFT_BACKDROP_STYLE,
+  GIFT_ZOOM_MAX,
+  GIFT_ZOOM_MIN,
+  giftImageStyle,
+  normalizeGiftImage,
+  type GiftImageFraming
+} from "@/lib/gift-image";
 
 type ImageAdjusterProps = {
   src: string;
@@ -81,6 +88,9 @@ export function ImageAdjuster({ src, aspect, value, onChange, className = "" }: 
           className="relative cursor-crosshair touch-none justify-self-center overflow-hidden rounded-lg border border-line-strong bg-field select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest @xl:justify-self-start"
           style={{ aspectRatio: aspect, width: `min(100%, calc(var(--frame-h) * ${aspect}))` }}
         >
+          {value.imageFit === "contain" ? (
+            <Image src={src} alt="" aria-hidden fill sizes="320px" draggable={false} style={GIFT_BACKDROP_STYLE} />
+          ) : null}
           <Image src={src} alt="" fill sizes="320px" draggable={false} style={giftImageStyle(value)} />
           <span
             aria-hidden

@@ -73,6 +73,18 @@ export function sanitizeGiftFraming(gift: WeddingGift): WeddingGift {
 }
 
 /**
+ * Fundo da "Foto inteira": a mesma foto, ampliada e desfocada, atrás da principal. Sem
+ * isso, foto horizontal num quadro vertical (Editorial, Cinema Noir…) deixava faixas
+ * vazias. Foto de produto em fundo branco continua com fundo branco.
+ */
+export const GIFT_BACKDROP_STYLE: CSSProperties = {
+  objectFit: "cover",
+  filter: "blur(16px)",
+  // Ampliada o bastante para a borda do desfoque (que fica transparente) sair do quadro.
+  transform: "scale(1.4)"
+};
+
+/**
  * Estilo do <Image fill> da foto da cota — o MESMO no cartão público e na prévia do
  * painel. Em "Foto inteira" a imagem ganha um respiro interno (padding em % da
  * largura do quadro) para logos não encostarem na borda.

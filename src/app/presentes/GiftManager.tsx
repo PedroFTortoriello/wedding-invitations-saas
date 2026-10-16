@@ -21,6 +21,7 @@ import { SupportBlockedButton } from "@/components/app/SupportBar";
 import {
   DEFAULT_GIFT_FRAMING,
   GIFT_ASPECT_BY_TEMPLATE,
+  GIFT_BACKDROP_STYLE,
   giftImageStyle,
   normalizeGiftImage,
   type GiftImageFraming
@@ -490,14 +491,27 @@ export function GiftRow({
       <div className="flex gap-4">
         <div className="relative size-16 shrink-0 overflow-hidden rounded-lg border border-line bg-field">
           {gift.image ? (
-            <Image
-              src={gift.image}
-              alt=""
-              fill
-              sizes="64px"
-              className={gift.active ? "" : "opacity-60"}
-              style={giftImageStyle(gift)}
-            />
+            <>
+              {normalizeGiftImage(gift).imageFit === "contain" ? (
+                <Image
+                  src={gift.image}
+                  alt=""
+                  aria-hidden
+                  fill
+                  sizes="64px"
+                  className={gift.active ? "" : "opacity-60"}
+                  style={GIFT_BACKDROP_STYLE}
+                />
+              ) : null}
+              <Image
+                src={gift.image}
+                alt=""
+                fill
+                sizes="64px"
+                className={gift.active ? "" : "opacity-60"}
+                style={giftImageStyle(gift)}
+              />
+            </>
           ) : (
             <span className="grid h-full place-items-center text-ink-soft">
               <Icon name="gift" size={22} />

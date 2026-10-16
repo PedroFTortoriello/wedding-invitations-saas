@@ -7,7 +7,7 @@ import type { PixChargeResponse } from "@/types/pix";
 import { formatBRL, parseGiftPrice } from "@/lib/gift-price";
 import { computeCardCharge, validateCardAmount } from "@/lib/card-pricing";
 import { isDemoWedding } from "@/lib/demo-id";
-import { GIFT_ASPECT_BY_TEMPLATE, giftImageStyle, normalizeGiftImage } from "@/lib/gift-image";
+import { GIFT_ASPECT_BY_TEMPLATE, GIFT_BACKDROP_STYLE, giftImageStyle, normalizeGiftImage } from "@/lib/gift-image";
 import { useCardGiftConfig } from "./CardGiftContext";
 import styles from "./gift-registry.module.css";
 
@@ -235,14 +235,28 @@ export function GiftRegistry({ wedding, variant, sectionId = "presentes" }: Gift
             >
               <div className={styles.media} data-fit={gift.image ? normalizeGiftImage(gift).imageFit : undefined}>
                 {gift.image ? (
-                  <Image
-                    src={gift.image}
-                    alt=""
-                    fill
-                    sizes="(min-width: 1024px) 380px, 50vw"
-                    loading="lazy"
-                    style={giftImageStyle(gift)}
-                  />
+                  <>
+                    {/* Mesmo src e sizes da foto principal: o navegador baixa uma vez só. */}
+                    {normalizeGiftImage(gift).imageFit === "contain" ? (
+                      <Image
+                        src={gift.image}
+                        alt=""
+                        aria-hidden
+                        fill
+                        sizes="(min-width: 1024px) 380px, 50vw"
+                        loading="lazy"
+                        style={GIFT_BACKDROP_STYLE}
+                      />
+                    ) : null}
+                    <Image
+                      src={gift.image}
+                      alt=""
+                      fill
+                      sizes="(min-width: 1024px) 380px, 50vw"
+                      loading="lazy"
+                      style={giftImageStyle(gift)}
+                    />
+                  </>
                 ) : (
                   <span className={styles.placeholder} aria-hidden>
                     {wedding.monogram}
