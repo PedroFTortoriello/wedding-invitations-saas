@@ -4,6 +4,7 @@ import { useEffect, useRef, useSyncExternalStore } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import { usePathname } from "next/navigation";
+import { Analytics as VercelAnalytics, type BeforeSend } from "@vercel/analytics/next";
 import { captureAttribution, CONSENT_EVENT, getConsent, resetConsent, setConsent, type Consent } from "@/lib/analytics";
 
 // Validados porque entram num <script> inline: um valor mal configurado não vira código.
@@ -23,6 +24,15 @@ const UNTRACKED = [/^\/casamento\//, /^\/coordenacao\//, /^\/admin(\/|$)/];
 
 /** Telas com dados de convidados (nomes, recados, presentes): aviso sim, mas sem carregar Pixel/GA nem PageView. */
 const GUEST_DATA = /^\/(convidados|mensagens|presentes|checkout)(\/|$)/;
+
+/**
+ * Vercel Web Analytics: contagem de visitas sem cookies (não pede aceite), só nas páginas da Noivar.
+ * O componente nem monta fora delas; o filtro é a segunda trava para eventos de navegação.
+ */
+const onlyNoivarPages: BeforeSend = (event) => {
+  const path = new URL(event.url).pathname;
+  return UNTRACKED.some((re) => re.test(path)) || GUEST_DATA.test(path) ? null : event;
+};
 
 /**
  * Montado uma vez no layout raiz. Captura a atribuição de campanha, pede o
@@ -51,10 +61,13 @@ export function Analytics() {
     if (tagged) window.fbq?.("track", "PageView");
   }, [pathname, tagged, consent]);
 
-  if (!enabled || untracked) return null;
+  const visits = tagged ? <VercelAnalytics beforeSend={onlyNoivarPages} /> : null;
+
+  if (!enabled || untracked) return visits;
 
   return (
     <>
+      {visits}
       {/* autoConfig false: sem eventos automáticos nem leitura de campos/botões (chave Pix, convidados).
           disablePushState: o PageView de rota sai só do efeito acima. */}
       {consent === "granted" && tagged && META_PIXEL_ID ? (

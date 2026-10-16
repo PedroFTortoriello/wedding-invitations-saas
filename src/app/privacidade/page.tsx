@@ -144,12 +144,17 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
           </li>
         </ul>
         <p>
-          Nos sites dos casais e no link da cerimonialista não há aviso de cookies, Meta Pixel nem Google Analytics.
+          Nos sites dos casais e no link da cerimonialista não há aviso de cookies, Meta Pixel, Google Analytics nem
+          estatísticas de visita.
         </p>
 
         <h3 className="t-h3 text-[1.375rem]">De quem navega nas páginas da Noivar</h3>
         <ul>
           <li>Campanha de origem, primeira página vista e site de origem, quando você chega por um link de campanha.</li>
+          <li>
+            Estatísticas agregadas de visita, sem cookies e sem precisar de aceite, pela Vercel Web Analytics: página vista,
+            site de origem, país, navegador e tipo de aparelho.
+          </li>
           <li>
             Com o seu aceite: identificadores de anúncio (cookies _fbp e _fbc, fbclid e gclid), navegador (user agent) e
             endereço IP, enviados à Meta, e estatísticas de visita no Google Analytics.
