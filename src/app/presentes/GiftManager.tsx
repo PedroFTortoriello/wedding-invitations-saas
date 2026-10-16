@@ -8,7 +8,8 @@ import {
   useState,
   useSyncExternalStore,
   useTransition,
-  type DragEvent
+  type DragEvent,
+  type FormEvent
 } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
@@ -29,6 +30,7 @@ import {
   addGiftAction,
   removeGiftAction,
   toggleGiftAction,
+  updateGiftDetailsAction,
   updateGiftImageAction,
   type GiftActionState
 } from "./actions";
@@ -471,13 +473,16 @@ export function GiftRow({
   /** Modo suporte: remover cota fica só com o casal (o servidor também recusa). */
   support?: boolean;
 }) {
-  const [editing, setEditing] = useState(false);
-  const toggleRef = useRef<HTMLButtonElement>(null);
+  // Um editor aberto por vez: dados (nome, valor, descrição) ou foto.
+  const [panel, setPanel] = useState<"details" | "photo" | null>(null);
+  const detailsRef = useRef<HTMLButtonElement>(null);
+  const photoRef = useRef<HTMLButtonElement>(null);
+  const detailsId = `gift-details-${gift.id}`;
   const editorId = `gift-photo-${gift.id}`;
 
   function close() {
-    setEditing(false);
-    toggleRef.current?.focus();
+    (panel === "details" ? detailsRef : photoRef).current?.focus();
+    setPanel(null);
   }
 
   return (
@@ -508,19 +513,32 @@ export function GiftRow({
           </div>
           <p className="mt-0.5 text-sm font-semibold tabular-nums text-forest">{gift.price}</p>
           {gift.description ? <p className="mt-1 line-clamp-2 text-sm leading-5 text-ink-soft">{gift.description}</p> : null}
-          {gift.image ? (
+          <div className="-ml-2 mt-1 flex flex-wrap gap-x-1">
             <button
-              ref={toggleRef}
+              ref={detailsRef}
               type="button"
-              onClick={() => (editing ? close() : setEditing(true))}
-              aria-expanded={editing}
-              aria-controls={editorId}
-              className="btn btn-sm btn-ghost -ml-2 mt-1 min-h-9 px-2 whitespace-nowrap text-forest"
+              onClick={() => (panel === "details" ? close() : setPanel("details"))}
+              aria-expanded={panel === "details"}
+              aria-controls={detailsId}
+              className="btn btn-sm btn-ghost min-h-9 px-2 whitespace-nowrap text-forest"
             >
-              <Icon name="image" size={16} />
-              Ajustar foto
+              <Icon name="edit" size={16} />
+              Editar
             </button>
-          ) : null}
+            {gift.image ? (
+              <button
+                ref={photoRef}
+                type="button"
+                onClick={() => (panel === "photo" ? close() : setPanel("photo"))}
+                aria-expanded={panel === "photo"}
+                aria-controls={editorId}
+                className="btn btn-sm btn-ghost min-h-9 px-2 whitespace-nowrap text-forest"
+              >
+                <Icon name="image" size={16} />
+                Ajustar foto
+              </button>
+            ) : null}
+          </div>
         </div>
         <div className="flex shrink-0 items-start gap-1">
           <form action={toggleGiftAction}>
@@ -544,10 +562,76 @@ export function GiftRow({
         </div>
       </div>
 
-      {editing && gift.image ? (
+      {panel === "details" ? <GiftDetailsEditor id={detailsId} gift={gift} onClose={close} /> : null}
+      {panel === "photo" && gift.image ? (
         <GiftPhotoEditor id={editorId} gift={gift} image={gift.image} templateId={templateId} onClose={close} />
       ) : null}
     </li>
+  );
+}
+
+/** Nome, valor e descrição de uma cota existente (inclusive as que vieram do catálogo). */
+function GiftDetailsEditor({ id, gift, onClose }: { id: string; gift: WeddingGift; onClose: () => void }) {
+  const [error, setError] = useState("");
+  const [saving, startSaving] = useTransition();
+
+  // onSubmit (não action): <form action> do React 19 limpa os campos depois do envio, e num
+  // erro o casal perderia o que digitou.
+  function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    setError("");
+    startSaving(async () => {
+      const result = await updateGiftDetailsAction(formData);
+      if (result.error) setError(result.error);
+      else onClose();
+    });
+  }
+
+  return (
+    <form
+      id={id}
+      onSubmit={save}
+      aria-label={`Editar ${gift.title}`}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && !saving) onClose();
+      }}
+      className="mt-4 grid gap-4 rounded-lg border border-line-strong bg-field p-4 transition-[opacity,translate] duration-200 starting:-translate-y-1 starting:opacity-0 motion-reduce:transition-none"
+    >
+      <input type="hidden" name="giftId" value={gift.id} />
+      <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_11rem]">
+        <label className="grid gap-1.5">
+          <span className={labelText}>Nome da cota</span>
+          <input name="title" type="text" required minLength={2} defaultValue={gift.title} autoFocus className="field" />
+        </label>
+        <label className="grid gap-1.5">
+          <span className={labelText}>Valor</span>
+          <input
+            name="price"
+            type="text"
+            inputMode="decimal"
+            defaultValue={gift.price === "Valor livre" ? "" : gift.price}
+            placeholder="Vazio = valor livre"
+            className="field tabular-nums"
+          />
+        </label>
+      </div>
+      <label className="grid gap-1.5">
+        <span className={labelText}>Descrição{optional}</span>
+        <textarea name="description" rows={2} defaultValue={gift.description} className="field" />
+      </label>
+
+      {error ? <Notice tone="error">{error}</Notice> : null}
+
+      <div className="flex items-center justify-end gap-2 border-t border-line pt-3">
+        <button type="button" onClick={onClose} disabled={saving} className="btn btn-sm btn-ghost px-3">
+          Cancelar
+        </button>
+        <button type="submit" disabled={saving} aria-busy={saving} className="btn btn-sm btn-primary">
+          {saving ? "Salvando…" : "Salvar"}
+        </button>
+      </div>
+    </form>
   );
 }
 

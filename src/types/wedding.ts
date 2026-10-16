@@ -28,6 +28,8 @@ export type WeddingGift = {
   imageFocus?: { x: number; y: number };
   /** Zoom de 1 a 3 (100–300%). */
   imageZoom?: number;
+  /** Item do catálogo (tabela gift_catalog) de onde a cota veio; só marca "Na lista" no painel. */
+  catalogId?: string;
   active: boolean;
 };
 

@@ -86,6 +86,7 @@ export const SUPPORT_WRITES = {
   autosave: "allowed",
   guests_add: "allowed",
   gifts_add: "allowed",
+  gifts_edit: "allowed",
   gifts_toggle: "allowed",
   gifts_image: "allowed",
   gifts_import: "allowed",

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getActingContext, guardSupportWrite, type ActingContext } from "@/lib/acting";
 import { logServerError } from "@/lib/funnel";
 import { normalizeGiftImage, type GiftImageFraming } from "@/lib/gift-image";
+import { formatBRL } from "@/lib/gift-price";
 import { contentToJson, extractContent, isOwnerPhotoUrl, rowToWeddingSite, type WeddingRow } from "@/lib/wedding";
 import type { WeddingGift } from "@/types/wedding";
 
@@ -85,6 +86,72 @@ export async function addGiftAction(_prev: GiftActionState, formData: FormData):
   if (!guard.ok) return { error: guard.message };
 
   const error = await saveGifts(supabase, row, [...rowToWeddingSite(row).gifts, gift]);
+  if (error) return { error: "Não foi possível salvar a cota." };
+  return { ok: true };
+}
+
+/** "Adicionar" no catálogo: o item vem do banco pelo id — nome, valor e foto nunca vêm do navegador. */
+export async function addCatalogGiftAction(_prev: GiftActionState, formData: FormData): Promise<GiftActionState> {
+  const { ctx, supabase, row } = await loadOwnedRow();
+  if (!row) return { error: "Casamento não encontrado." };
+  if (formData.get("weddingId") !== row.id) return { error: "A conta aberta mudou. Recarregue a página." };
+
+  const { data: item, error: loadError } = await supabase
+    .from("gift_catalog")
+    .select("id, title, description, price, image")
+    .eq("id", String(formData.get("catalogId") ?? ""))
+    .eq("active", true) // modo suporte usa service role, que ignora a RLS
+    .maybeSingle();
+  if (loadError) await logServerError("presentes.catalog", loadError, { userId: row.owner_id, path: "/presentes" });
+  if (!item) return { error: "Esse presente saiu do catálogo. Recarregue a página." };
+
+  const gifts = rowToWeddingSite(row).gifts;
+  // Clique duplo ou outra aba: já está na lista, nada a fazer.
+  if (gifts.some((gift) => gift.catalogId === item.id)) return { ok: true };
+
+  const guard = await guardSupportWrite(ctx, "gifts_add", row.id);
+  if (!guard.ok) return { error: guard.message };
+
+  const gift: WeddingGift = {
+    id: randomUUID(),
+    title: item.title,
+    description: item.description,
+    // formatBRL usa espaço não separável; as cotas digitadas usam espaço comum.
+    price: item.price ? formatBRL(Number(item.price)).replace(/\s/g, " ") : "Valor livre",
+    link: "#presentes",
+    image: item.image,
+    // Fotos do catálogo são de ambiente, não de produto: preenchem o quadro do modelo.
+    ...normalizeGiftImage({ imageFit: "cover" }),
+    catalogId: item.id,
+    active: true
+  };
+  const error = await saveGifts(supabase, row, [...gifts, gift]);
+  if (error) return { error: "Não foi possível adicionar o presente." };
+  return { ok: true };
+}
+
+/** "Editar" de uma cota existente: nome, valor e descrição. */
+export async function updateGiftDetailsAction(formData: FormData): Promise<GiftActionState> {
+  const { ctx, supabase, row } = await loadOwnedRow();
+  if (!row) return { error: "Casamento não encontrado." };
+
+  const giftId = String(formData.get("giftId") ?? "");
+  const gifts = rowToWeddingSite(row).gifts;
+  if (!gifts.some((gift) => gift.id === giftId)) return { error: "Cota não encontrada. Recarregue a página." };
+
+  const title = String(formData.get("title") ?? "").trim();
+  const price = String(formData.get("price") ?? "").trim() || "Valor livre";
+  const description = String(formData.get("description") ?? "").trim();
+  if (title.length < 2) return { error: "Dê um nome à cota de presente." };
+
+  const guard = await guardSupportWrite(ctx, "gifts_edit", row.id);
+  if (!guard.ok) return { error: guard.message };
+
+  const error = await saveGifts(
+    supabase,
+    row,
+    gifts.map((gift) => (gift.id === giftId ? { ...gift, title, price, description } : gift))
+  );
   if (error) return { error: "Não foi possível salvar a cota." };
   return { ok: true };
 }

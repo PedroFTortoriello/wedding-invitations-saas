@@ -315,6 +315,22 @@ export type Database = {
         };
         Relationships: [];
       };
+      gift_catalog: {
+        Row: {
+          id: string;
+          category: string;
+          title: string;
+          description: string;
+          price: number | null;
+          image: string;
+          image_source: string;
+          sort: number;
+          active: boolean;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       ai_attempts: {
         Row: { id: number; ip_hash: string; created_at: string };
         Insert: { id?: number; ip_hash: string; created_at?: string };

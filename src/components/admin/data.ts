@@ -199,6 +199,7 @@ const SUPPORT_WRITE_LABELS: Record<SupportWrite, string> = {
   autosave: "salvou o editor",
   guests_add: "adicionou convidado",
   gifts_add: "adicionou presente",
+  gifts_edit: "editou presente",
   gifts_toggle: "ativou/desativou presente",
   gifts_image: "trocou foto de presente",
   gifts_import: "importou presente",
