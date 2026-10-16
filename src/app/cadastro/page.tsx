@@ -6,10 +6,15 @@ import { useRouter } from "next/navigation";
 import { Icon, type IconName } from "@/components/app/icons";
 import { Notice } from "@/components/app/Notice";
 import { newEventId, track } from "@/lib/analytics";
-import { platformName, PUBLISH_FEE_LABEL } from "@/lib/platform-data";
+import { AI_SITE_FEE_LABEL, platformName, PUBLISH_FEE_LABEL } from "@/lib/platform-data";
 import { createClient } from "@/lib/supabase/client";
 import { TEMPLATE_CHOICES } from "@/lib/template-options";
 import { reportSignupFailureAction } from "./actions";
+
+/** Veio do "Site feito pela IA" da landing (?ia=1): depois do cadastro, vai para o briefing. */
+function wantsAi() {
+  return new URLSearchParams(window.location.search).get("ia") === "1";
+}
 
 /** Modelo escolhido na landing (?modelo=<id>). Só vale id oferecido no seletor. */
 function chosenTemplate() {
@@ -40,10 +45,14 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [preparing, setPreparing] = useState(false);
   const [template, setTemplate] = useState<(typeof TEMPLATE_CHOICES)[number]>();
+  const [ai, setAi] = useState(false);
 
   // Lido no navegador (sem useSearchParams): a página segue estática, sem Suspense.
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => setTemplate(chosenTemplate()), []);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setTemplate(chosenTemplate());
+    setAi(wantsAi());
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -105,7 +114,7 @@ export default function RegisterPage() {
     setPreparing(true);
     const eventId = newEventId("signup");
     track("sign_up", { method: "email" }, { eventId });
-    router.replace(`/onboarding?cadastro=${encodeURIComponent(eventId)}`);
+    router.replace(`/onboarding?cadastro=${encodeURIComponent(eventId)}${wantsAi() ? "&ia=1" : ""}`);
   }
 
   return (
@@ -133,8 +142,8 @@ export default function RegisterPage() {
           </h1>
           <p className="mt-3 max-w-md text-base leading-7 text-ink-soft">
             Grátis para montar e ver o site pronto. Vocês só pagam{" "}
-            <strong className="font-semibold whitespace-nowrap text-ink">{PUBLISH_FEE_LABEL}</strong> se decidirem
-            publicar.
+            <strong className="font-semibold whitespace-nowrap text-ink">{ai ? AI_SITE_FEE_LABEL : PUBLISH_FEE_LABEL}</strong>{" "}
+            se decidirem publicar{ai ? ", com o site montado pela IA" : ""}.
           </p>
         </div>
 

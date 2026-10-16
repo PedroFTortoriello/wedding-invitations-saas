@@ -11,10 +11,10 @@ import { Avatar, EmptyState, PanelHeader } from "@/components/app/Panel";
 import { StatusBadge } from "@/components/app/StatusBadge";
 import { SupportBlockedButton, SupportBlockedNote } from "@/components/app/SupportBar";
 import { getActingContext } from "@/lib/acting";
-import { getOwnedWeddingRow } from "@/lib/wedding-server";
+import { getOwnedWeddingRow, isAiMade } from "@/lib/wedding-server";
 import { getMercadoPagoConnectionSummary } from "@/lib/mercadopago-server";
 import { rowToWeddingSite } from "@/lib/wedding";
-import { formatCurrency, PUBLISH_FEE_LABEL } from "@/lib/platform-data";
+import { formatCurrency, publishFee } from "@/lib/platform-data";
 import { hasRecentPurchase } from "../publicar/recent-purchase";
 import { CardGiftsPanel } from "./CardGiftsPanel";
 import { generateCoordinatorLinkAction, revokeCoordinatorLinkAction } from "./coordinator-actions";
@@ -68,14 +68,16 @@ export default async function DashboardPage({
   const mercadoPagoConfigured = Boolean(process.env.MERCADOPAGO_CLIENT_ID && process.env.MERCADOPAGO_CLIENT_SECRET);
 
   // Tudo em paralelo: cada consulta é uma ida ao Supabase — em série, somariam.
-  const [{ data: guests }, { data: messages }, { data: gifts }, mpConnection, recentPurchase] = await Promise.all([
+  const [{ data: guests }, { data: messages }, { data: gifts }, mpConnection, recentPurchase, aiMade] = await Promise.all([
     supabase.from("guests").select("*").eq("wedding_id", row.id).order("created_at", { ascending: false }),
     supabase.from("messages").select("*").eq("wedding_id", row.id).order("created_at", { ascending: false }),
     supabase.from("cash_gifts").select("*").eq("wedding_id", row.id).order("created_at", { ascending: false }),
     mercadoPagoConfigured ? getMercadoPagoConnectionSummary(row.id) : Promise.resolve(null),
     // Modo suporte: nunca dispara o Purchase da campanha no navegador do admin.
-    support ? false : hasRecentPurchase(row.id, row.publish_paid_at)
+    support ? false : hasRecentPurchase(row.id, row.publish_paid_at),
+    isAiMade(supabase, row.id).catch(() => false)
   ]);
+  const fee = publishFee(aiMade);
   const cardConnected = mpConnection?.status === "active";
   const mpFlash = mp ? MP_FLASH[mp] : undefined;
 
@@ -127,7 +129,7 @@ export default async function DashboardPage({
     {
       done: isPublished,
       label: "Publicar o site",
-      hint: `Taxa única de ${PUBLISH_FEE_LABEL}`,
+      hint: `Taxa única de ${fee.label}`,
       href: "/publicar",
       icon: "flag"
     },
@@ -156,7 +158,7 @@ export default async function DashboardPage({
       support={support}
     >
       <div className="grid gap-5">
-        {recentPurchase ? <PurchaseTracker weddingId={row.id} /> : null}
+        {recentPurchase ? <PurchaseTracker weddingId={row.id} value={fee.brl} /> : null}
         {mpFlash ? <Notice tone={mpFlash.ok ? "success" : "error"}>{mpFlash.text}</Notice> : null}
 
         {/* Site */}
@@ -231,8 +233,16 @@ export default async function DashboardPage({
               <p className="mt-2 max-w-xl text-[0.9375rem] leading-6 text-on-forest/90">
                 {paid
                   ? "Publique quando quiser: o link passa a funcionar para os convidados na hora."
-                  : `Só vocês veem a prévia. Publique com uma taxa única de ${PUBLISH_FEE_LABEL}, sem mensalidade, e os presentes via Pix vão 100% para vocês.`}
+                  : `Só vocês veem a prévia. Publique com uma taxa única de ${fee.label}, sem mensalidade, e os presentes via Pix vão 100% para vocês.`}
               </p>
+              {!paid && !aiMade ? (
+                <p className="mt-3 text-[0.9375rem] leading-6">
+                  Sem tempo para montar?{" "}
+                  <Link href="/ia" className="font-semibold text-on-forest underline underline-offset-4">
+                    A IA monta o site por vocês
+                  </Link>
+                </p>
+              ) : null}
             </div>
             {/* Pagar acontece em /publicar; taxa já paga (cortesia/legado) publica daqui mesmo. */}
             {paid ? (

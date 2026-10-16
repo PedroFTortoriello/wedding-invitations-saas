@@ -100,7 +100,8 @@ describe("SUPPORT_WRITES", () => {
         "publish",
         "publish_checkout",
         "slug_change",
-        "wedding_create"
+        "wedding_create",
+        "ai_generate"
       ].sort()
     );
   });

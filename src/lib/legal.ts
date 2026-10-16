@@ -8,7 +8,7 @@ import { whatsappLink } from "@/lib/company";
  * Ao trocar qualquer regra do texto, atualize LEGAL_UPDATED_AT.
  */
 export const LEGAL_DRAFT = true;
-export const LEGAL_UPDATED_AT = "16/09/2026";
+export const LEGAL_UPDATED_AT = "16/10/2026";
 
 /** 5511942716215 → (11) 94271-6215 */
 export function formatWhatsapp(e164: string): string {

@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  AI_SITE_FEE_CENTS,
   PUBLISH_FEE_CENTS,
   isWebhookSecretValid,
   isWebhookSignatureValid,
@@ -9,9 +10,13 @@ import {
 } from "@/lib/abacatepay";
 
 describe("PUBLISH_FEE_CENTS", () => {
-  it("is the R$149,90 fee as integer centavos (14990) — AbacatePay expects cents", () => {
-    expect(PUBLISH_FEE_CENTS).toBe(14990);
+  it("is the R$89,90 fee as integer centavos (8990) — AbacatePay expects cents", () => {
+    expect(PUBLISH_FEE_CENTS).toBe(8990);
     expect(Number.isInteger(PUBLISH_FEE_CENTS)).toBe(true);
+  });
+
+  it("charges R$149,90 (14990) for the site made by the AI", () => {
+    expect(AI_SITE_FEE_CENTS).toBe(14990);
   });
 });
 
@@ -115,6 +120,14 @@ describe("parseAbacatePayWebhook", () => {
         data: { checkout: { id: "c5", externalId: "w5", status: "EXPIRED" } }
       }).paid
     ).toBe(false);
+  });
+
+  it("strips the ia- prefix of the AI checkout externalId", () => {
+    const r = parseAbacatePayWebhook({
+      event: "checkout.completed",
+      data: { checkout: { id: "c7", externalId: "ia-2b0c6f1e-0000-4000-8000-000000000000", amount: 14990 } }
+    });
+    expect(r.weddingId).toBe("2b0c6f1e-0000-4000-8000-000000000000");
   });
 
   it("falls back to metadata.weddingId when externalId is absent (v2)", () => {

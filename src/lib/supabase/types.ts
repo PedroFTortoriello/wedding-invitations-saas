@@ -285,6 +285,36 @@ export type Database = {
         };
         Relationships: [];
       };
+      ai_generations: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          model: string;
+          briefing: Json;
+          input_tokens: number | null;
+          output_tokens: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          model: string;
+          briefing?: Json;
+          input_tokens?: number | null;
+          output_tokens?: number | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          wedding_id?: string;
+          model?: string;
+          briefing?: Json;
+          input_tokens?: number | null;
+          output_tokens?: number | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       funnel_events: {
         Row: {
           id: number;

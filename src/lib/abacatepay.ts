@@ -1,10 +1,12 @@
 import crypto from "node:crypto";
-import { PUBLISH_FEE_BRL } from "@/lib/platform-data";
+import { AI_SITE_FEE_BRL, PUBLISH_FEE_BRL } from "@/lib/platform-data";
 
 const ABACATEPAY_BASE_URL = process.env.ABACATEPAY_BASE_URL || "https://api.abacatepay.com/v2";
 
-/** The single publishing fee in centavos — AbacatePay expects integer cents (R$149,90 -> 14990). */
+/** The publishing fee in centavos — AbacatePay expects integer cents (R$89,90 -> 8990). */
 export const PUBLISH_FEE_CENTS = Math.round(PUBLISH_FEE_BRL * 100);
+/** The "Site feito pela IA" publishing fee in centavos. */
+export const AI_SITE_FEE_CENTS = Math.round(AI_SITE_FEE_BRL * 100);
 
 /** AbacatePay events that mean "the customer paid" (v1 + v2 hosted/transparent). */
 const PAID_EVENTS = new Set(["billing.paid", "checkout.completed", "transparent.completed"]);
@@ -30,6 +32,8 @@ const UNPAID_STATUSES = new Set([
 export type CreatePublishChargeInput = {
   weddingId: string;
   appUrl: string;
+  /** Site gerado pela IA: cobra a taxa do plano com IA (outro produto e preço). */
+  ai?: boolean;
 };
 
 export type PublishCharge = {
@@ -60,10 +64,25 @@ type V2ProductResponse = {
   data?: { id?: string; externalId?: string };
 };
 
-const PUBLISH_PRODUCT_EXTERNAL_ID = "publish-fee";
+/** Os dois produtos da taxa. O externalId leva o preço: mudar o preço cria um produto novo. */
+const PRODUCTS = {
+  standard: {
+    env: "ABACATEPAY_PUBLISH_PRODUCT_ID",
+    cents: PUBLISH_FEE_CENTS,
+    name: "Publicação do site de casamento",
+    description: "Taxa única para publicar o site de casamento."
+  },
+  ai: {
+    env: "ABACATEPAY_AI_PRODUCT_ID",
+    cents: AI_SITE_FEE_CENTS,
+    name: "Site de casamento feito pela IA",
+    description: "Taxa única para publicar o site de casamento montado pela IA."
+  }
+} as const;
+type ProductKind = keyof typeof PRODUCTS;
 
-// Cache do id do produto da taxa por instância — evita recriar a cada checkout.
-let cachedPublishProductId: string | null = null;
+// Cache do id de cada produto por instância — evita recriar a cada checkout.
+const cachedProductIds: Partial<Record<ProductKind, string>> = {};
 
 /** Mensagem de erro que a AbacatePay devolve em `error` (string ou objeto). */
 function abacatePayError(json: unknown): string {
@@ -73,27 +92,29 @@ function abacatePayError(json: unknown): string {
 }
 
 /**
- * Resolve o id do produto da taxa de publicação. Ordem:
- *  1) ABACATEPAY_PUBLISH_PRODUCT_ID (recomendado — zero chamadas extras);
+ * Resolve o id do produto da taxa (padrão ou IA). Ordem:
+ *  1) env (ABACATEPAY_PUBLISH_PRODUCT_ID / ABACATEPAY_AI_PRODUCT_ID) — recomendado;
  *  2) cache em memória da instância;
  *  3) cria o produto na v2 e cacheia (fallback de conveniência).
  * Obs.: sem endpoint público de "buscar produto", o fallback pode criar um
  * produto novo a cada cold start se a AbacatePay não deduplicar por externalId;
  * por isso logamos o id para você fixar em env.
  */
-async function resolvePublishProductId(apiKey: string): Promise<string> {
-  const envId = process.env.ABACATEPAY_PUBLISH_PRODUCT_ID;
+async function resolveProductId(apiKey: string, kind: ProductKind): Promise<string> {
+  const product = PRODUCTS[kind];
+  const envId = process.env[product.env];
   if (envId) return envId;
-  if (cachedPublishProductId) return cachedPublishProductId;
+  const cached = cachedProductIds[kind];
+  if (cached) return cached;
 
   const response = await fetch(`${ABACATEPAY_BASE_URL}/products/create`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
     body: JSON.stringify({
-      externalId: PUBLISH_PRODUCT_EXTERNAL_ID,
-      name: "Publicação do site de casamento",
-      description: "Taxa única para publicar o site de casamento.",
-      price: PUBLISH_FEE_CENTS,
+      externalId: `${kind === "ai" ? "ai-site-fee" : "publish-fee"}-${product.cents}`,
+      name: product.name,
+      description: product.description,
+      price: product.cents,
       currency: "BRL"
     })
   });
@@ -108,17 +129,17 @@ async function resolvePublishProductId(apiKey: string): Promise<string> {
     );
   }
 
-  cachedPublishProductId = id;
-  console.warn(
-    `AbacatePay: produto da taxa criado automaticamente (${id}). Fixe ABACATEPAY_PUBLISH_PRODUCT_ID=${id} no .env para evitar recriação.`
-  );
+  cachedProductIds[kind] = id;
+  console.warn(`AbacatePay: produto da taxa criado automaticamente (${id}). Fixe ${product.env}=${id} no .env para evitar recriação.`);
   return id;
 }
 
 /**
  * Cria o checkout hospedado (somente PIX) da taxa única de publicação na API v2
- * (POST /v2/checkouts/create). Os itens da v2 referenciam um PRODUTO; o id vem de
- * ABACATEPAY_PUBLISH_PRODUCT_ID (recomendado) ou é criado automaticamente.
+ * (POST /v2/checkouts/create). Os itens da v2 referenciam um PRODUTO; o id vem do
+ * env do produto (recomendado) ou é criado automaticamente. O site feito pela IA
+ * usa outro produto e outro externalId: a AbacatePay deduplica por externalId e
+ * devolveria o checkout do preço padrão aberto antes da geração.
  */
 export async function createPublishCharge(input: CreatePublishChargeInput): Promise<PublishCharge> {
   const apiKey = process.env.ABACATEPAY_API_KEY;
@@ -126,7 +147,9 @@ export async function createPublishCharge(input: CreatePublishChargeInput): Prom
     throw new Error("AbacatePay não configurado: defina ABACATEPAY_API_KEY no .env.");
   }
 
-  const productId = await resolvePublishProductId(apiKey);
+  const kind: ProductKind = input.ai ? "ai" : "standard";
+  const expectedCents = PRODUCTS[kind].cents;
+  const productId = await resolveProductId(apiKey, kind);
 
   const response = await fetch(`${ABACATEPAY_BASE_URL}/checkouts/create`, {
     method: "POST",
@@ -140,7 +163,7 @@ export async function createPublishCharge(input: CreatePublishChargeInput): Prom
       // Volta para /publicar, que acompanha a confirmação do Pix e mostra o site no ar.
       returnUrl: `${input.appUrl}/publicar`,
       completionUrl: `${input.appUrl}/publicar?pagamento=concluido`,
-      externalId: input.weddingId,
+      externalId: input.ai ? `ia-${input.weddingId}` : input.weddingId,
       metadata: { weddingId: input.weddingId }
     })
   });
@@ -158,10 +181,10 @@ export async function createPublishCharge(input: CreatePublishChargeInput): Prom
 
   // Recusa um checkout com valor diferente da taxa canônica (produto mal-precificado
   // no painel do provedor publicaria o site pelo valor errado).
-  const amountCents = typeof data.amount === "number" ? data.amount : PUBLISH_FEE_CENTS;
-  if (amountCents !== PUBLISH_FEE_CENTS) {
+  const amountCents = typeof data.amount === "number" ? data.amount : expectedCents;
+  if (amountCents !== expectedCents) {
     console.error(
-      `AbacatePay: valor do checkout (${amountCents}) difere da taxa esperada (${PUBLISH_FEE_CENTS}). Corrija o preço do produto.`
+      `AbacatePay: valor do checkout (${amountCents}) difere da taxa esperada (${expectedCents}). Corrija o preço do produto em ${PRODUCTS[kind].env}.`
     );
     throw new Error("A taxa de publicação está com valor incorreto no provedor. Contate o suporte.");
   }
@@ -216,9 +239,9 @@ export function parseAbacatePayWebhook(payload: unknown): AbacatePayWebhookResul
 
   const chargeMeta = asRecord(charge.metadata) ?? asRecord(data.metadata) ?? {};
   const status = typeof charge.status === "string" ? charge.status.toUpperCase() : "";
-  // externalId é o principal; a v2 pode carregar o id só em metadata.weddingId.
+  // externalId é o principal ("<uuid>" ou "ia-<uuid>"); a v2 pode carregar o id só em metadata.weddingId.
   const weddingId =
-    (typeof charge.externalId === "string" && charge.externalId) ||
+    (typeof charge.externalId === "string" && charge.externalId.replace(/^ia-/, "")) ||
     (typeof chargeMeta.weddingId === "string" ? chargeMeta.weddingId : undefined) ||
     undefined;
   const chargeId = typeof charge.id === "string" ? charge.id : undefined;

@@ -22,7 +22,8 @@ export default async function EditorPage({
   }
 
   // ?bemvindo=1: acabou de criar o site (cadastro, onboarding automático ou formulário).
-  const welcome = bemvindo === "1";
+  // ?bemvindo=ia: a IA acabou de montar o site (/ia).
+  const welcome = bemvindo === "ia" ? "ia" : bemvindo === "1" ? "new" : null;
   // O autosave (revalidatePath) re-renderiza esta página na resposta da server action:
   // isso não é abrir o editor. Redirect de action chega sem o header, e conta.
   const hdrs = await headers();
@@ -33,7 +34,7 @@ export default async function EditorPage({
       userId: row.owner_id,
       weddingId: row.id,
       path: "/editor",
-      detail: { welcome, section: secao ?? null }
+      detail: { welcome: welcome !== null, ai: welcome === "ia", section: secao ?? null }
     });
   }
 

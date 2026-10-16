@@ -175,8 +175,8 @@ type LiveEditorProps = {
   hasWhatsapp: boolean;
   /** ?secao= — abre direto numa seção (links do painel, ex.: "Cadastrar a chave Pix"). */
   initialSection?: string;
-  /** ?bemvindo=1 — site recém-criado: mostra o aviso de boas-vindas na lista de seções. */
-  welcome?: boolean;
+  /** ?bemvindo=1 (site recém-criado) ou ?bemvindo=ia (montado pela IA): aviso de boas-vindas na lista de seções. */
+  welcome?: "new" | "ia" | null;
   /**
    * Barra do modo suporte, renderizada no servidor (<SupportBar>). Presente = modo suporte:
    * publicar, trocar o endereço e o WhatsApp da conta ficam bloqueados (o servidor também recusa).
@@ -189,7 +189,7 @@ export function LiveEditor({
   appOrigin,
   hasWhatsapp,
   initialSection,
-  welcome = false,
+  welcome = null,
   supportBar
 }: LiveEditorProps) {
   const inSupport = Boolean(supportBar);
@@ -201,7 +201,7 @@ export function LiveEditor({
   const [panelOpen, setPanelOpen] = useState(true);
   const [view, setView] = useState<"edit" | "preview">("edit");
   const [justAdded, setJustAdded] = useState<string | null>(null);
-  const [showWelcome, setShowWelcome] = useState(welcome);
+  const [showWelcome, setShowWelcome] = useState(Boolean(welcome));
   // Congelado no mount: o autosave re-renderiza a página e o "salvo" não pode sumir com o cartão.
   const [askWhatsapp] = useState(!hasWhatsapp && !inSupport);
 
@@ -472,8 +472,18 @@ export function LiveEditor({
             {showWelcome && !section ? (
               <div className="relative mx-3 mt-3">
                 <Notice tone="success" className="pr-11">
-                  O site de vocês já está criado. Tudo salva sozinho e só vocês veem até publicar. Comece pela data e
-                  pelas fotos.
+                  {welcome === "ia" ? (
+                    "A IA montou o site de vocês. Revisem os textos e as fotos: tudo salva sozinho e só vocês veem até publicar."
+                  ) : (
+                    <>
+                      O site de vocês já está criado. Tudo salva sozinho e só vocês veem até publicar. Comece pela data e
+                      pelas fotos, ou{" "}
+                      <Link href="/ia" className="font-semibold underline underline-offset-2">
+                        deixe a IA montar tudo
+                      </Link>
+                      .
+                    </>
+                  )}
                 </Notice>
                 <button
                   type="button"

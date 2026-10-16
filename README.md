@@ -5,7 +5,7 @@ A premium, editorial wedding-website platform for Brazilian couples. Built as **
 ## Overview
 
 - **What it does:** Renders polished, mobile-first wedding websites from a structured content model, across four distinct editorial templates. Couples get a marketing landing page, a guided onboarding flow, a site editor, guest/RSVP and message views, and a cash-gift registry. Platform operators get a read-only admin area for weddings, users, templates, and Pix revenue.
-- **Business objective:** Monetize by charging couples a single **R$ 149,90** publishing fee per site. Cash gifts go **100% to the couple** via their own Pix key (0% platform fee) — the platform never touches gift money.
+- **Business objective:** Monetize by charging couples a single publishing fee per site — **R$ 89,90**, or **R$ 149,90** when the AI builds the site from the couple's briefing and photos (`/ia`). Cash gifts go **100% to the couple** via their own Pix key (0% platform fee) — the platform never touches gift money.
 - **Target audience:** Brazilian couples planning a wedding (Pix payments, Portuguese pt-BR copy), plus the SaaS operator running the platform.
 - **Core benefits:**
   - Premium, editorial template designs ready out of the box.

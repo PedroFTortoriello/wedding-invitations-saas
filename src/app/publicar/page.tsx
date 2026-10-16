@@ -8,10 +8,10 @@ import { SupportBar } from "@/components/app/SupportBar";
 import { getActingContext } from "@/lib/acting";
 import { COMPANY, whatsappLink } from "@/lib/company";
 import { recordFunnelEventAfter } from "@/lib/funnel";
-import { platformName, PUBLISH_FEE_LABEL } from "@/lib/platform-data";
+import { platformName, publishFee } from "@/lib/platform-data";
 import { getPublishReadiness } from "@/lib/publish-readiness";
 import { rowToWeddingSite } from "@/lib/wedding";
-import { getOwnedWeddingRow } from "@/lib/wedding-server";
+import { getOwnedWeddingRow, isAiMade } from "@/lib/wedding-server";
 import { PurchaseTracker } from "../dashboard/PurchaseTracker";
 import { PublishStatus } from "./PublishStatus";
 import { hasRecentPurchase } from "./recent-purchase";
@@ -41,6 +41,7 @@ export default async function PublishPage({ searchParams }: { searchParams: Prom
 
   const site = rowToWeddingSite(row);
   const paid = Boolean(row.publish_paid_at);
+  const fee = publishFee(await isAiMade(ctx.db, row.id).catch(() => false));
 
   // Origem absoluta para os links (APP_URL em prod, host da requisição em dev).
   const hdrs = await headers();
@@ -106,7 +107,9 @@ export default async function PublishPage({ searchParams }: { searchParams: Prom
         detail: { paid, ready: readiness.ready, doneCount: readiness.doneCount }
       });
     }
-    content = <Decision weddingId={row.id} card={card} paid={paid} readiness={readiness} blocked={Boolean(support)} />;
+    content = (
+      <Decision weddingId={row.id} card={card} paid={paid} fee={fee} readiness={readiness} blocked={Boolean(support)} />
+    );
   }
 
   return (
@@ -121,7 +124,7 @@ export default async function PublishPage({ searchParams }: { searchParams: Prom
           Voltar ao editor
         </Link>
       </header>
-      {recentPurchase ? <PurchaseTracker weddingId={row.id} /> : null}
+      {recentPurchase ? <PurchaseTracker weddingId={row.id} value={fee.brl} /> : null}
       {content}
     </div>
   );
@@ -131,12 +134,14 @@ function Decision({
   weddingId,
   card,
   paid,
+  fee,
   readiness,
   blocked
 }: {
   weddingId: string;
   card: SiteCardData;
   paid: boolean;
+  fee: ReturnType<typeof publishFee>;
   readiness: ReturnType<typeof getPublishReadiness>;
   /** Modo suporte: pagar e publicar ficam só com o casal. */
   blocked: boolean;
@@ -247,10 +252,10 @@ function Decision({
         ) : (
           <>
             <p className="t-eyebrow text-on-forest/80">Taxa única de publicação</p>
-            <p className="mt-4 font-serif text-[3.25rem] leading-none tracking-[-0.02em]">{PUBLISH_FEE_LABEL}</p>
+            <p className="mt-4 font-serif text-[3.25rem] leading-none tracking-[-0.02em]">{fee.label}</p>
             <p className="mt-2 text-[0.9375rem] text-on-forest/90">pagamento único via Pix · sem mensalidade</p>
             <div className="mt-6">
-              <PublishButton weddingId={weddingId} paid={false} onDark block blocked={blocked} />
+              <PublishButton weddingId={weddingId} paid={false} fee={fee} onDark block blocked={blocked} />
             </div>
             <p className="mt-3 text-sm leading-5 text-on-forest/90">O site entra no ar assim que o Pix é confirmado.</p>
             <ul className="mt-5 grid gap-2 text-sm font-medium">

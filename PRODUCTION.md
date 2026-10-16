@@ -19,18 +19,31 @@ infraestrutura (Fase 0), que depende das suas contas.
 4. Em **Project Settings → API**, copie `Project URL`, `anon public key` e
    `service_role key`.
 
-### 0.2 AbacatePay (taxa de publicação — R$ 149,90, API v2)
+### 0.2 AbacatePay (taxa de publicação — R$ 89,90 padrão / R$ 149,90 site feito pela IA, API v2)
 1. **Rotacione** a chave que esteve no `.env` local (trate-a como comprometida).
 2. Pegue a `API key` de produção (v2).
-3. **Produto da taxa** (a v2 cobra a partir de um produto). Se deixar
-   `ABACATEPAY_PUBLISH_PRODUCT_ID` em branco, o app cria o produto automaticamente
-   no 1º pagamento e loga o id. Recomendado, porém, criá-lo uma vez e fixar o id
-   (com `ABACATEPAY_API_KEY` no `.env`): `node scripts/abacatepay-create-product.mjs`.
+3. **Produtos da taxa** (a v2 cobra a partir de um produto; são dois). Se deixar
+   `ABACATEPAY_PUBLISH_PRODUCT_ID` / `ABACATEPAY_AI_PRODUCT_ID` em branco, o app cria o
+   produto automaticamente no 1º pagamento e loga o id. Recomendado, porém, criá-los uma
+   vez e fixar os ids (com `ABACATEPAY_API_KEY` no `.env`):
+   `node scripts/abacatepay-create-product.mjs padrao` (R$ 89,90) e
+   `node scripts/abacatepay-create-product.mjs ia` (R$ 149,90).
+   O preço do produto tem que bater com `src/lib/platform-data.ts`, senão o checkout recusa.
+   > Migração de preço (out/2026): o produto antigo de R$ 149,90 que estava em
+   > `ABACATEPAY_PUBLISH_PRODUCT_ID` pode virar o `ABACATEPAY_AI_PRODUCT_ID`; crie um
+   > novo de R$ 89,90 para o padrão.
 4. Configure a URL do webhook no painel:
    `https://SEU-DOMINIO/api/webhooks/abacatepay?webhookSecret=SEGREDO`
    (o `SEGREDO` precisa bater com `ABACATEPAY_WEBHOOK_SECRET`).
 5. Opcional: ative o HMAC `X-Webhook-Signature` setando
    `ABACATEPAY_WEBHOOK_SIGNING_SECRET` (deixe vazio até confirmar o digest na doc).
+
+### 0.2.1 Site feito pela IA (Claude)
+1. Rode a migration `0016_ai_generations.sql` no SQL Editor.
+2. Crie uma chave em https://platform.claude.com/settings/keys → `ANTHROPIC_API_KEY`.
+   Cada geração usa o Claude Opus 5.5 (até 12 fotos + briefing), limitada a 3 por casamento.
+3. A geração roda numa server action com `maxDuration = 300` (precisa do Fluid Compute,
+   padrão em projetos novos da Vercel).
 
 ### 0.3 Mercado Pago (presentes no cartão — opcional, sem custódia)
 O casal conecta a **própria** conta Mercado Pago por OAuth; a cobrança do cartão é
@@ -92,7 +105,7 @@ Gates locais antes do merge: `npm run typecheck && npm run lint && npm run test 
 1. **Cadastro** → cria conta e cai no onboarding.
 2. **Onboarding** → cria o casamento (slug único) e vai ao editor.
 3. **Editor** → edita nomes/mensagem/cor/chave Pix e **salva**.
-4. **Publicar** → dashboard → "Publicar site — R$ 149,90" → paga no AbacatePay →
+4. **Publicar** → dashboard → "Publicar site — R$ 89,90" (R$ 149,90 se gerou pela IA em `/ia`) → paga no AbacatePay →
    volta com `?publicacao=paga` → "Publicar agora" → status `published`.
 5. **Site público** → `/casamento/SEU-SLUG` renderiza os dados reais.
 6. **RSVP** → confirmar presença no site → aparece em `/convidados`.

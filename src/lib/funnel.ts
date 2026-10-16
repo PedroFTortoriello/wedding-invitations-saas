@@ -24,6 +24,7 @@ export type FunnelEventName =
   | "publish_paid"
   | "site_published"
   | "publish_failed"
+  | "ai_site_generated"
   | "action_failed"
   // Admin: modo suporte ("Ver conta") e exclusão de conta. Sempre com detail.adminId.
   | "support_session_started"

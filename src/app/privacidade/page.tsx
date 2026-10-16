@@ -125,6 +125,10 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
             endereço exato de uma imagem consegue abri-la, mesmo antes da publicação.
           </li>
           <li>
+            Site feito pela IA, se vocês usarem: o que escreveram no briefing e as fotos escolhidas, guardados para
+            preencher uma nova geração.
+          </li>
+          <li>
             Pagamento da taxa: identificador da cobrança, valor, situação e data. Os dados pedidos na página de pagamento
             são tratados pela AbacatePay; a Noivar não recebe dados bancários.
           </li>
@@ -245,6 +249,10 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
           </li>
           <li>
             <strong className="font-semibold">Mercado Pago</strong>: presentes no cartão, só quando o casal conecta a conta.
+          </li>
+          <li>
+            <strong className="font-semibold">Anthropic</strong>: o modelo de IA (Claude) que monta o site, só quando o
+            casal usa o Site feito pela IA. Recebe o briefing e as fotos escolhidas para gerar os textos.
           </li>
           <li>
             <strong className="font-semibold">Meta</strong> (Facebook e Instagram): medição de anúncios, só com aceite. No

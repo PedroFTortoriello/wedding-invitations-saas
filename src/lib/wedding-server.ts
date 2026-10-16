@@ -55,3 +55,19 @@ export async function getWeddingStatusBySlug(
   if (!data) return null;
   return { status: data.status as WeddingSiteStatus, coupleNames: data.couple_names ?? "" };
 }
+
+/**
+ * O site foi gerado pela IA (há ao menos uma geração): publica pela taxa do plano com IA.
+ * Lança no erro de consulta — o checkout não pode cobrar o preço errado; telas usam .catch(() => false).
+ */
+export async function isAiMade(db: ActingContext["db"], weddingId: string): Promise<boolean> {
+  const { count, error } = await db
+    .from("ai_generations")
+    .select("id", { count: "exact", head: true })
+    .eq("wedding_id", weddingId);
+  // Tabela ainda não criada (migration 0016 pendente): sem ela nenhuma geração existe, então
+  // não é site da IA. Qualquer outro erro lança: o checkout não pode cobrar o preço errado.
+  if (error && (error.code === "42P01" || error.code === "PGRST205")) return false;
+  if (error) throw error;
+  return Boolean(count);
+}

@@ -12,6 +12,7 @@ const PROTECTED_PREFIXES = [
   "/mensagens",
   "/checkout",
   "/publicar",
+  "/ia",
   "/admin"
 ];
 

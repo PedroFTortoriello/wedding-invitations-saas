@@ -14,7 +14,8 @@ WhatsApp e no convite. Comparam com geradores genéricos e com "fazer no Canva".
 ## Product Purpose
 
 Noivar é um SaaS premium de sites de casamento. O casal escolhe um dos modelos
-editoriais, edita os dados, paga uma **taxa única de R$149,90** para publicar e ganha
+editoriais, edita os dados, paga uma **taxa única de R$89,90** para publicar (ou **R$149,90** no "Site feito pela
+IA", em que o casal só manda dados e fotos e a IA monta o site) e ganha
 um site com RSVP, recados, contagem regressiva e **presentes via Pix que vão 100% para
 o casal (0% de taxa)**. A landing existe para converter noivos em cadastro, provando
 duas coisas: o design dos sites é de outro nível, e o preço é honesto.

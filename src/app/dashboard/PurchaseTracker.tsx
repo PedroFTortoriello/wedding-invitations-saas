@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { track } from "@/lib/analytics";
-import { PUBLISH_FEE_BRL } from "@/lib/platform-data";
 import { purchaseEventId } from "@/lib/tracking-shared";
 
 const POLL_MS = 500;
@@ -14,7 +13,7 @@ const MAX_TRIES = 20;
  * depois da hidratação e só com consentimento, então espera os scripts por ~10s;
  * sem eles não marca como enviado (tenta de novo na próxima visita).
  */
-export function PurchaseTracker({ weddingId }: { weddingId: string }) {
+export function PurchaseTracker({ weddingId, value }: { weddingId: string; /** Taxa paga, em reais. */ value: number }) {
   useEffect(() => {
     const key = `noivar_purchase_${weddingId}`;
     try {
@@ -26,7 +25,7 @@ export function PurchaseTracker({ weddingId }: { weddingId: string }) {
     let tries = 0;
     const timer = window.setInterval(() => {
       if (window.fbq || window.gtag) {
-        track("purchase", { value: PUBLISH_FEE_BRL }, { eventId: purchaseEventId(weddingId) });
+        track("purchase", { value }, { eventId: purchaseEventId(weddingId) });
         try {
           localStorage.setItem(key, "1");
         } catch {
@@ -38,7 +37,7 @@ export function PurchaseTracker({ weddingId }: { weddingId: string }) {
       window.clearInterval(timer);
     }, POLL_MS);
     return () => window.clearInterval(timer);
-  }, [weddingId]);
+  }, [weddingId, value]);
 
   return null;
 }

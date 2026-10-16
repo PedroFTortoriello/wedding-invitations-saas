@@ -10,7 +10,7 @@ import {
   LEGAL_WHATSAPP_URL,
   formatWhatsapp
 } from "@/lib/legal";
-import { PUBLISH_FEE_LABEL } from "@/lib/platform-data";
+import { AI_SITE_FEE_LABEL, PUBLISH_FEE_LABEL } from "@/lib/platform-data";
 
 export const metadata: Metadata = {
   title: "Termos de uso",
@@ -75,6 +75,11 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
         <p>
           Para publicar, vocês pagam uma taxa única de {PUBLISH_FEE_LABEL}, via Pix, na página de pagamento da AbacatePay,
           empresa que processa a cobrança. Não existe mensalidade, plano ou renovação.
+        </p>
+        <p>
+          Se vocês pedirem para a IA montar o site (Site feito pela IA), a taxa única de publicação passa a ser{" "}
+          {AI_SITE_FEE_LABEL}. A IA escolhe o modelo, escreve os textos e organiza as fotos a partir do que vocês enviam;
+          ela pode errar, então revisem tudo no editor antes de publicar. Montar e ver o site continua grátis.
         </p>
         <p>
           Assim que a AbacatePay confirma o pagamento, o site é publicado automaticamente. Depois de publicado, vocês
@@ -341,7 +346,7 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
 
 const SUMMARY = [
   "Montar, editar e ver o site pronto é grátis.",
-  `Publicar custa ${PUBLISH_FEE_LABEL}, uma única vez, via Pix. Sem mensalidade.`,
+  `Publicar custa ${PUBLISH_FEE_LABEL}, uma única vez, via Pix (${AI_SITE_FEE_LABEL} se a IA montar o site). Sem mensalidade.`,
   "Os presentes via Pix vão direto para a chave do casal. A Noivar nunca recebe esse dinheiro.",
   `Reembolso integral se pedido em até ${REFUND} depois do pagamento.`,
   `O site fica no ar por pelo menos ${MONTHS} depois da data do casamento.`

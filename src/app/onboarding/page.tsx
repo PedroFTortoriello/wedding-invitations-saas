@@ -11,8 +11,14 @@ import { StarterWedding } from "./StarterWedding";
 
 export const dynamic = "force-dynamic";
 
-export default async function OnboardingPage({ searchParams }: { searchParams: Promise<{ cadastro?: string }> }) {
-  const { cadastro } = await searchParams;
+export default async function OnboardingPage({
+  searchParams
+}: {
+  searchParams: Promise<{ cadastro?: string; ia?: string }>;
+}) {
+  const { cadastro, ia } = await searchParams;
+  // ?ia=1: veio do "Site feito pela IA" — depois de criar o casamento, vai para o briefing.
+  const next = ia === "1" ? "/ia" : "/editor?bemvindo=1";
   const ctx = await getActingContext();
   const { sessionUser: user, support } = ctx;
   const supabase = ctx.db;
@@ -27,7 +33,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
     .maybeSingle();
 
   if (existing) {
-    redirect("/editor");
+    redirect(ia === "1" ? "/ia" : "/editor");
   }
 
   // Modo suporte: o casamento é do casal criar; nada de criação automática pelo admin.
@@ -109,7 +115,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
 
       {/* Com o nome do casal, cria o site sozinho e abre o editor; o formulário é o plano B.
           Admin (vem do login ou do "Painel do casal") só cria casamento se quiser, pelo formulário. */}
-      {names.length >= 3 && profile?.role !== "admin" ? <StarterWedding signupEventId={cadastro} form={form} /> : form}
+      {names.length >= 3 && profile?.role !== "admin" ? <StarterWedding signupEventId={cadastro} next={next} form={form} /> : form}
     </div>
   );
 }

@@ -184,6 +184,7 @@ const FUNNEL_EVENT_LABELS: Record<FunnelEventName, string> = {
   publish_paid: "Taxa paga",
   site_published: "Site publicado",
   publish_failed: "Falha ao publicar",
+  ai_site_generated: "Gerou o site com a IA",
   action_failed: "Erro em uma ação",
   support_session_started: "Admin abriu a conta (suporte)",
   support_session_ended: "Admin saiu da conta (suporte)",
@@ -211,7 +212,8 @@ const SUPPORT_WRITE_LABELS: Record<SupportWrite, string> = {
   mercadopago: "mexer no Mercado Pago",
   publish: "publicar o site",
   publish_checkout: "pagar a taxa",
-  wedding_create: "criar casamento"
+  wedding_create: "criar casamento",
+  ai_generate: "gerar o site com a IA"
 };
 
 /**

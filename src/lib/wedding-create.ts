@@ -33,7 +33,7 @@ export type CreateWeddingResult =
 export const DEFAULT_TEMPLATE: WeddingSite["templateId"] = "jardim-romantico";
 
 /** Monta data ISO (-03:00) e rótulo pt-BR a partir do <input type=date/time>. */
-function buildDate(date: string, time: string): { iso?: string; label?: string } {
+export function buildDate(date: string, time: string): { iso?: string; label?: string } {
   if (!date) return {};
   const parsed = new Date(`${date}T${time || "16:00"}:00-03:00`);
   if (Number.isNaN(parsed.getTime())) return {};

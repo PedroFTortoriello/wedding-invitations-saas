@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Icon } from "@/components/app/icons";
 import { SUPPORT_BLOCKED_HINT, SupportBlockedNote } from "@/components/app/SupportBar";
 import { newEventId, track } from "@/lib/analytics";
-import { PUBLISH_FEE_BRL, PUBLISH_FEE_LABEL } from "@/lib/platform-data";
+import { publishFee } from "@/lib/platform-data";
 
 type PublishButtonProps = {
   weddingId: string;
@@ -18,6 +18,8 @@ type PublishButtonProps = {
   block?: boolean;
   /** Modo suporte: publicar e pagar ficam só com o casal (o servidor também recusa). */
   blocked?: boolean;
+  /** Taxa deste casamento (padrão ou site feito pela IA). O servidor cobra a certa de qualquer jeito. */
+  fee?: ReturnType<typeof publishFee>;
 };
 
 export function PublishButton({
@@ -26,7 +28,8 @@ export function PublishButton({
   onDark = false,
   compact = false,
   block = false,
-  blocked = false
+  blocked = false,
+  fee = publishFee(false)
 }: PublishButtonProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -40,7 +43,7 @@ export function PublishButton({
     let eventId: string | undefined;
     if (!paid) {
       eventId = newEventId("checkout");
-      track("begin_checkout", { value: PUBLISH_FEE_BRL }, { eventId });
+      track("begin_checkout", { value: fee.brl }, { eventId });
     }
     try {
       const response = await fetch(paid ? "/api/publish" : "/api/publish/checkout", {
@@ -74,7 +77,7 @@ export function PublishButton({
       ? "Abrindo pagamento…"
       : compact
         ? "Publicar"
-        : `Publicar por ${PUBLISH_FEE_LABEL}`;
+        : `Publicar por ${fee.label}`;
 
   return (
     <div className={`relative grid gap-2 ${block ? "" : "justify-items-start"}`}>

@@ -100,7 +100,9 @@ export const SUPPORT_WRITES = {
   mercadopago: "blocked",
   publish: "blocked",
   publish_checkout: "blocked",
-  wedding_create: "blocked"
+  wedding_create: "blocked",
+  // Gerar com a IA muda o preço da publicação: só o casal decide.
+  ai_generate: "blocked"
 } as const;
 
 export type SupportWrite = keyof typeof SUPPORT_WRITES;

@@ -15,6 +15,8 @@ type StarterWeddingProps = {
   signupEventId?: string;
   /** Página com o formulário manual (plano B se a criação automática falhar). */
   form: ReactNode;
+  /** Para onde ir depois de criar (editor, ou o briefing da IA). */
+  next: string;
 };
 
 /**
@@ -22,7 +24,7 @@ type StarterWeddingProps = {
  * cadastro (ou no padrão) e abre o editor, sem formulário. Se falhar, mostra o
  * formulário com o motivo.
  */
-export function StarterWedding({ signupEventId, form }: StarterWeddingProps) {
+export function StarterWedding({ signupEventId, form, next }: StarterWeddingProps) {
   const router = useRouter();
   const started = useRef(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,12 +50,12 @@ export function StarterWedding({ signupEventId, form }: StarterWeddingProps) {
       if (result.ok) {
         // Modelo real devolvido pelo servidor (o da landing ou DEFAULT_TEMPLATE).
         if (!result.alreadyExisted) track("wedding_created", { template: result.template });
-        router.replace("/editor?bemvindo=1");
+        router.replace(next);
         return;
       }
       setError(result.message ?? FALLBACK_ERROR);
     })();
-  }, [signupEventId, router]);
+  }, [signupEventId, router, next]);
 
   if (error) {
     return (

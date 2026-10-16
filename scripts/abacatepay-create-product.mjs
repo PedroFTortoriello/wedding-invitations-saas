@@ -1,7 +1,8 @@
-// Cria (uma vez) o produto da taxa de publicação na AbacatePay v2 e imprime o id
-// para colar em ABACATEPAY_PUBLISH_PRODUCT_ID no .env.
+// Cria (uma vez) um produto da taxa de publicação na AbacatePay v2 e imprime o id
+// para colar no .env. Os preços têm que bater com src/lib/platform-data.ts.
 //
-// Uso: node scripts/abacatepay-create-product.mjs
+// Uso: node scripts/abacatepay-create-product.mjs padrao   (R$89,90 → ABACATEPAY_PUBLISH_PRODUCT_ID)
+//      node scripts/abacatepay-create-product.mjs ia       (R$149,90 → ABACATEPAY_AI_PRODUCT_ID)
 // (lê ABACATEPAY_API_KEY do .env ou do ambiente)
 
 import { readFileSync } from "node:fs";
@@ -26,16 +27,37 @@ if (!apiKey) {
 }
 
 const base = process.env.ABACATEPAY_BASE_URL || "https://api.abacatepay.com/v2";
-const priceCents = Number(process.env.ABACATEPAY_PUBLISH_PRICE_CENTS || 14990);
+const PRODUCTS = {
+  padrao: {
+    env: "ABACATEPAY_PUBLISH_PRODUCT_ID",
+    externalId: "publish-fee",
+    cents: 8990,
+    name: "Publicação do site de casamento",
+    description: "Taxa única para publicar o site de casamento."
+  },
+  ia: {
+    env: "ABACATEPAY_AI_PRODUCT_ID",
+    externalId: "ai-site-fee",
+    cents: 14990,
+    name: "Site de casamento feito pela IA",
+    description: "Taxa única para publicar o site de casamento montado pela IA."
+  }
+};
+const product = PRODUCTS[process.argv[2]];
+if (!product) {
+  console.error("Uso: node scripts/abacatepay-create-product.mjs padrao|ia");
+  process.exit(1);
+}
 
 const response = await fetch(`${base}/products/create`, {
   method: "POST",
   headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
   body: JSON.stringify({
-    externalId: "publish-fee",
-    name: "Publicação do site de casamento",
-    description: "Taxa única para publicar o site de casamento.",
-    price: priceCents,
+    // O preço vai no externalId (igual ao app): mudar o preço cria um produto novo.
+    externalId: `${product.externalId}-${product.cents}`,
+    name: product.name,
+    description: product.description,
+    price: product.cents,
     currency: "BRL"
   })
 });
@@ -49,4 +71,4 @@ if (!response.ok || !id) {
 }
 
 console.log("Produto criado com sucesso. Adicione ao .env:\n");
-console.log(`ABACATEPAY_PUBLISH_PRODUCT_ID=${id}`);
+console.log(`${product.env}=${id}`);

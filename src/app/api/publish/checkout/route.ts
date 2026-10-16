@@ -5,6 +5,7 @@ import { logServerError, recordFunnelEvent } from "@/lib/funnel";
 import { getTrackingContext, sendMetaServerEvent } from "@/lib/meta-capi";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { isAiMade } from "@/lib/wedding-server";
 
 export const runtime = "nodejs";
 
@@ -69,7 +70,11 @@ export async function POST(request: Request) {
     }
 
     const appUrl = process.env.APP_URL || new URL(request.url).origin;
-    const charge = await createPublishCharge({ weddingId, appUrl });
+    // Gerou com a IA: cobra a taxa do plano com IA.
+    // ponytail: um Pix padrão aberto ANTES de gerar ainda publica pela taxa padrão se for pago;
+    // fechar isso marcando as cobranças pendentes como canceladas na geração, se virar abuso.
+    const ai = await isAiMade(admin, weddingId);
+    const charge = await createPublishCharge({ weddingId, appUrl, ai });
 
     // A AbacatePay deduplica por externalId (= weddingId): reabrir o checkout do
     // mesmo casamento devolve o MESMO bill_id. Um insert puro estoura a unique
