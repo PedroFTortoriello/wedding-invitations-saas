@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Icon, type IconName } from "@/components/app/icons";
 import { Notice } from "@/components/app/Notice";
 import { newEventId, track } from "@/lib/analytics";
+import { toBrazilE164 } from "@/lib/phone";
 import { AI_SITE_FEE_LABEL, platformName, PUBLISH_FEE_LABEL } from "@/lib/platform-data";
 import { createClient } from "@/lib/supabase/client";
 import { TEMPLATE_CHOICES } from "@/lib/template-options";
@@ -39,6 +40,8 @@ export default function RegisterPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [whatsappInvalid, setWhatsappInvalid] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -65,6 +68,15 @@ export default function RegisterPage() {
       return;
     }
 
+    // Vai para a conta (profiles.whatsapp), nunca para o site: o /onboarding grava.
+    const whatsappE164 = toBrazilE164(whatsapp);
+    if (!whatsappE164) {
+      setWhatsappInvalid(true);
+      setError("Confira o WhatsApp: DDD + número, como (11) 91234-5678.");
+      document.getElementById("cadastro-whatsapp")?.focus();
+      return;
+    }
+
     if (password.length < 8) {
       setError("A senha precisa ter ao menos 8 caracteres.");
       return;
@@ -77,7 +89,9 @@ export default function RegisterPage() {
     const { data, error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: { data: templateId ? { name: name.trim(), template: templateId } : { name: name.trim() } }
+      options: {
+        data: { name: name.trim(), whatsapp: whatsappE164, ...(templateId ? { template: templateId } : {}) }
+      }
     });
 
     if (signUpError) {
@@ -202,6 +216,31 @@ export default function RegisterPage() {
               onChange={(event) => setEmail(event.target.value)}
               className={inputClass}
             />
+          </div>
+
+          <div className="grid gap-1.5">
+            <label htmlFor="cadastro-whatsapp" className={labelText}>
+              WhatsApp com DDD
+            </label>
+            <input
+              id="cadastro-whatsapp"
+              type="tel"
+              inputMode="tel"
+              required
+              autoComplete="tel-national"
+              placeholder="(11) 91234-5678"
+              aria-describedby="cadastro-whatsapp-dica"
+              aria-invalid={whatsappInvalid || undefined}
+              value={whatsapp}
+              onChange={(event) => {
+                setWhatsapp(event.target.value);
+                setWhatsappInvalid(false);
+              }}
+              className={inputClass}
+            />
+            <p id="cadastro-whatsapp-dica" className={hintText}>
+              Só para falarmos com vocês sobre o site e o pagamento. Não aparece no site.
+            </p>
           </div>
 
           <div className="grid gap-1.5">

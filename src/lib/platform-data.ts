@@ -29,6 +29,15 @@ export const AI_SITE_FEE_LABEL = "R$ 149,90";
 export const MAX_AI_GENERATIONS = 3;
 export const MAX_AI_PHOTOS = 12;
 
+/**
+ * Teto de tentativas de geração pela IA em 24 h (migration 0017): por rede (IP) e na
+ * plataforma toda. Seguram quem cria várias contas grátis para gerar sites; a casa de um
+ * casal usa no máximo MAX_AI_GENERATIONS. O teto diário protege o custo se o abuso vier de
+ * muitos IPs. ponytail: valores fixos; se o volume legítimo crescer, subam aqui.
+ */
+export const AI_ATTEMPTS_PER_IP_PER_DAY = 5;
+export const AI_ATTEMPTS_PER_DAY = 300;
+
 /** Taxa que este casamento paga para publicar. */
 export function publishFee(aiMade: boolean) {
   return aiMade ? { brl: AI_SITE_FEE_BRL, label: AI_SITE_FEE_LABEL } : { brl: PUBLISH_FEE_BRL, label: PUBLISH_FEE_LABEL };

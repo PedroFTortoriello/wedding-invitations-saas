@@ -113,7 +113,7 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
         <ul>
           <li>Conta: nome do casal, e-mail e senha. A senha fica guardada de forma cifrada (hash), nunca em texto.</li>
           <li>
-            WhatsApp, se vocês informarem: usado só para falar sobre o site e o pagamento. Ele nunca aparece no site
+            WhatsApp, pedido no cadastro: usado só para falar sobre o site e o pagamento. Ele nunca aparece no site
             publicado.
           </li>
           <li>
@@ -127,6 +127,11 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
           <li>
             Site feito pela IA, se vocês usarem: o que escreveram no briefing e as fotos escolhidas, guardados para
             preencher uma nova geração.
+          </li>
+          <li>
+            Para limitar quantas vezes a IA pode ser usada por dia: um código calculado a partir do endereço IP de quem
+            pede a geração, com uma chave secreta do servidor e sem ligação com a conta. O IP em si não é guardado, e
+            sem essa chave o código não permite descobrir o endereço.
           </li>
           <li>
             Pagamento da taxa: identificador da cobrança, valor, situação e data. Os dados pedidos na página de pagamento
@@ -180,6 +185,7 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
           Criar a conta, montar, publicar e manter o site no ar, cobrar a taxa e publicar o site quando o pagamento é
           confirmado: execução do contrato (LGPD, art. 7º, V).
         </li>
+        <li>Falar com o casal pelo WhatsApp sobre o site e o pagamento: execução do contrato (art. 7º, V).</li>
         <li>Guardar registros de pagamento: cumprimento de obrigação legal (art. 7º, II).</li>
         <li>
           Mostrar ao casal as confirmações, os recados e os presentes dos convidados: em nome do casal, que responde pela
@@ -295,6 +301,7 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
           Identificadores de anúncio guardados nos nossos registros (_fbp, _fbc, navegador, fbclid e gclid): apagados
           depois de 30 dias.
         </li>
+        <li>Código do IP usado para limitar a IA: apagado depois de 2 dias.</li>
         <li>Cookies: pelo prazo indicado na lista acima.</li>
       </ul>
     )

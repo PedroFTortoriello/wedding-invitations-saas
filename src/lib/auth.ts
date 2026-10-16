@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
+import { logServerError } from "@/lib/funnel";
+import { toBrazilE164 } from "@/lib/phone";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -63,4 +65,20 @@ export async function ensureProfile(): Promise<void> {
     },
     { onConflict: "id", ignoreDuplicates: true }
   );
+
+  // WhatsApp pedido no cadastro: chega no user_metadata (signUp roda no navegador), vai para
+  // a CONTA (profiles.whatsapp, 0012) sem sobrescrever um número já salvo no editor, e sai do
+  // metadata para não ficar duplicado no Auth. Validado de novo aqui: o metadata vem do navegador.
+  // Só limpa o metadata depois de gravar: se falhar, tenta de novo no próximo /onboarding.
+  const whatsapp = toBrazilE164(String(user.user_metadata?.whatsapp ?? ""));
+  if (user.user_metadata?.whatsapp !== undefined && user.user_metadata?.whatsapp !== null) {
+    if (whatsapp) {
+      const { error } = await supabase.from("profiles").update({ whatsapp }).eq("id", user.id).is("whatsapp", null);
+      if (error) {
+        await logServerError("profile.whatsappFromSignup", error, { userId: user.id, path: "/onboarding" });
+        return;
+      }
+    }
+    await supabase.auth.updateUser({ data: { whatsapp: null } });
+  }
 }

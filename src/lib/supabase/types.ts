@@ -315,6 +315,12 @@ export type Database = {
         };
         Relationships: [];
       };
+      ai_attempts: {
+        Row: { id: number; ip_hash: string; created_at: string };
+        Insert: { id?: number; ip_hash: string; created_at?: string };
+        Update: { id?: number; ip_hash?: string; created_at?: string };
+        Relationships: [];
+      };
       funnel_events: {
         Row: {
           id: number;
@@ -354,6 +360,10 @@ export type Database = {
       mark_publish_paid: {
         Args: { p_charge_id: string; p_wedding_id: string; p_amount_cents?: number | null };
         Returns: boolean;
+      };
+      ai_claim_attempt: {
+        Args: { p_ip_hash: string; p_per_ip: number; p_per_day: number };
+        Returns: string;
       };
     };
     Enums: Record<string, never>;

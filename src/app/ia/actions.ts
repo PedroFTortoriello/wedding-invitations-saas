@@ -10,6 +10,7 @@ import {
   type AiBriefing
 } from "@/lib/ai-site";
 import { getActingContext, guardSupportWrite } from "@/lib/acting";
+import { claimAiAttempt } from "@/lib/ai-rate-limit";
 import { logServerError, recordFunnelEvent } from "@/lib/funnel";
 import { MAX_AI_GENERATIONS, MAX_AI_PHOTOS } from "@/lib/platform-data";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -82,6 +83,18 @@ export async function generateAiSiteAction(_prev: AiGenerateState, formData: For
   }
   if ((count ?? 0) >= MAX_AI_GENERATIONS) {
     return { error: `Vocês já usaram as ${MAX_AI_GENERATIONS} gerações. Ajustem o site no editor.` };
+  }
+
+  // Por IP e por dia (migration 0017): conta a tentativa antes da IA, porque falha também custa.
+  const claim = await claimAiAttempt(admin, ctx.ownerId);
+  if (claim === "ip") {
+    return {
+      error:
+        "Muitas gerações foram pedidas desta rede nas últimas 24 horas (contando as que falharam). Tentem mais tarde, em outra rede, ou ajustem o site no editor."
+    };
+  }
+  if (claim === "daily") {
+    return { error: "A IA chegou ao limite de gerações das últimas 24 horas. Tentem mais tarde ou montem o site no editor." };
   }
 
   let result: Awaited<ReturnType<typeof generateAiDraft>>;
