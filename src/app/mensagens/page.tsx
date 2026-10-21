@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
-import { AppShell } from "@/components/app/AppShell";
+import { AppShell, shellWedding } from "@/components/app/AppShell";
 import { Avatar, EmptyState } from "@/components/app/Panel";
 import { getActingContext } from "@/lib/acting";
 import { getOwnedWeddingRow } from "@/lib/wedding-server";
+import { rowToWeddingSite } from "@/lib/wedding";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,7 @@ export default async function MessagesPage() {
           : "O que os convidados escreveram para vocês no site."
       }
       active="messages"
-      wedding={{ coupleNames: row.couple_names, slug: row.slug, status: row.status }}
+      wedding={shellWedding(rowToWeddingSite(row))}
       support={ctx.support}
     >
       {messageList.length === 0 ? (

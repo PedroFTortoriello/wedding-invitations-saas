@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AppShell } from "@/components/app/AppShell";
+import { AppShell, shellWedding } from "@/components/app/AppShell";
 import { Icon } from "@/components/app/icons";
 import { Avatar, EmptyState } from "@/components/app/Panel";
 import { StatusBadge } from "@/components/app/StatusBadge";
@@ -8,6 +8,7 @@ import { SubmitButton } from "@/components/app/SubmitButton";
 import { SupportBlockedButton } from "@/components/app/SupportBar";
 import { getActingContext } from "@/lib/acting";
 import { getOwnedWeddingRow } from "@/lib/wedding-server";
+import { rowToWeddingSite } from "@/lib/wedding";
 import { addGuestsAction, removeGuestAction } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -48,7 +49,7 @@ export default async function GuestsPage({ searchParams }: { searchParams: Promi
       title="Convidados"
       subtitle="Quem está na lista confirma presença no site digitando o próprio nome."
       active="guests"
-      wedding={{ coupleNames: row.couple_names, slug: row.slug, status: row.status }}
+      wedding={shellWedding(rowToWeddingSite(row))}
       support={ctx.support}
     >
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">

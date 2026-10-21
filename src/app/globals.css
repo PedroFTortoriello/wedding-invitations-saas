@@ -597,7 +597,56 @@
     border-radius: 0.875rem;
     background: var(--color-surface);
     border: 1px solid var(--color-line);
-    box-shadow: 0 1px 2px rgb(26 30 21 / 0.04);
+    box-shadow:
+      0 1px 2px rgb(26 30 21 / 0.04),
+      0 12px 32px -24px rgb(26 30 21 / 0.22);
+  }
+
+  /*
+   * Entrada das telas do painel: cada bloco direto do <main> sobe e aparece, em
+   * cascata curta. Termina em transform: none (sem containing block residual).
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    .app-enter > * {
+      animation: app-enter 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .app-enter > :nth-child(2) {
+      animation-delay: 60ms;
+    }
+    .app-enter > :nth-child(3) {
+      animation-delay: 120ms;
+    }
+    .app-enter > :nth-child(4) {
+      animation-delay: 180ms;
+    }
+    .app-enter > :nth-child(5) {
+      animation-delay: 240ms;
+    }
+    .app-enter > :nth-child(n + 6) {
+      animation-delay: 300ms;
+    }
+  }
+
+  /* Linha de chips: rola na horizontal no celular, quebra linha a partir do sm. */
+  .chip-row {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    padding-bottom: 0.25rem;
+  }
+  .chip-row::-webkit-scrollbar {
+    display: none;
+  }
+  .chip-row > * {
+    flex-shrink: 0;
+  }
+  @media (min-width: 40rem) {
+    .chip-row {
+      flex-wrap: wrap;
+      overflow: visible;
+    }
   }
 
   .btn-sm {
@@ -734,6 +783,16 @@
   }
 }
 
+@keyframes app-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
 @keyframes slide-in {
   from {
     opacity: 0;

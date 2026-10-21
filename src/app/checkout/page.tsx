@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AppShell } from "@/components/app/AppShell";
+import { AppShell, shellWedding } from "@/components/app/AppShell";
 import { Icon } from "@/components/app/icons";
 import { Avatar, EmptyState, PanelHeader } from "@/components/app/Panel";
 import { SubmitButton } from "@/components/app/SubmitButton";
@@ -41,10 +41,10 @@ export default async function CheckoutPage() {
       title="Recebimentos"
       subtitle="Presentes em dinheiro enviados pelos convidados. Confirme aqui os Pix que já caíram na sua conta."
       active="cash-gifts"
-      wedding={{ coupleNames: site.coupleNames, slug: site.slug, status: site.status }}
+      wedding={shellWedding(site)}
       support={ctx.support}
     >
-      <div className="grid gap-5">
+      <>
         <section aria-label="Resumo" className="panel grid sm:grid-cols-3">
           <div className="grid content-start gap-1 border-b border-line p-5 sm:border-b-0 sm:border-r">
             <span className="text-[0.8125rem] text-ink-soft">Recebido</span>
@@ -161,7 +161,7 @@ export default async function CheckoutPage() {
             </ul>
           )}
         </section>
-      </div>
+      </>
     </AppShell>
   );
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AppShell } from "@/components/app/AppShell";
+import { AppShell, shellWedding } from "@/components/app/AppShell";
 import { Notice } from "@/components/app/Notice";
 import { EmptyState } from "@/components/app/Panel";
 import { getActingContext } from "@/lib/acting";
@@ -38,11 +38,11 @@ export default async function GiftsPage() {
       title="Cotas de presente"
       subtitle="O que aparece na lista de presentes do site. No Pix, 100% do valor vai para vocês."
       active="gifts"
-      wedding={{ coupleNames: site.coupleNames, slug: site.slug, status: site.status }}
+      wedding={shellWedding(site)}
       support={ctx.support}
     >
       {site.pixKey ? null : (
-        <Notice tone="warn" className="mb-5">
+        <Notice tone="warn">
           Sem chave Pix, os convidados não conseguem presentear.{" "}
           <Link href="/editor?secao=pix" className="font-semibold underline underline-offset-2">
             Cadastrar a chave Pix
@@ -51,9 +51,7 @@ export default async function GiftsPage() {
       )}
 
       {ctx.support ? (
-        <Notice tone="info" className="mb-5">
-          Modo suporte: dá para criar e editar cotas, mas remover uma cota fica bloqueado.
-        </Notice>
+        <Notice tone="info">Modo suporte: dá para criar e editar cotas, mas remover uma cota fica bloqueado.</Notice>
       ) : null}
 
       {hasCatalog ? (

@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { AppShell } from "@/components/app/AppShell";
+import { AppShell, daysUntil, shellWedding } from "@/components/app/AppShell";
 import { CopyLink } from "@/components/app/CopyLink";
 import { Icon, type IconName } from "@/components/app/icons";
 import { Notice } from "@/components/app/Notice";
@@ -32,10 +32,15 @@ const MP_FLASH: Record<string, { ok: boolean; text: string } | undefined> = {
   erro: { ok: false, text: "Não foi possível conectar o Mercado Pago. Tente de novo." }
 };
 
-function daysUntil(iso: string): number {
-  const target = new Date(iso).getTime();
-  if (Number.isNaN(target)) return 0;
-  return Math.max(0, Math.ceil((target - Date.now()) / 86400000));
+/** "Terça-feira, 21 de outubro" — hoje, em São Paulo. */
+function todayLabel(): string {
+  const label = new Intl.DateTimeFormat("pt-BR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    timeZone: "America/Sao_Paulo"
+  }).format(new Date());
+  return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
 export default async function DashboardPage({
@@ -153,16 +158,37 @@ export default async function DashboardPage({
   return (
     <AppShell
       title="Visão geral"
+      subtitle={
+        daysLeft > 0
+          ? `${todayLabel()} · faltam ${daysLeft} ${daysLeft === 1 ? "dia" : "dias"} para o casamento`
+          : todayLabel()
+      }
       active="dashboard"
-      wedding={{ coupleNames: site.coupleNames, slug: site.slug, status: site.status }}
+      wedding={shellWedding(site)}
       support={support}
     >
-      <div className="grid gap-5">
+      <>
         {recentPurchase ? <PurchaseTracker weddingId={row.id} value={fee.brl} /> : null}
         {mpFlash ? <Notice tone={mpFlash.ok ? "success" : "error"}>{mpFlash.text}</Notice> : null}
 
-        {/* Site */}
-        <section className="panel grid overflow-hidden md:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]" aria-labelledby="site-title">
+        {/* Site: a foto de capa carrega o cartão (faixa no celular, coluna no desktop). */}
+        <section className="panel grid overflow-hidden md:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]" aria-labelledby="site-title">
+          <div className="relative aspect-[2/1] bg-forest md:order-last md:aspect-auto md:min-h-72">
+            {site.heroImage ? (
+              <Image src={site.heroImage} alt="Foto de capa do site" fill sizes="(min-width: 768px) 352px, 100vw" className="object-cover" priority />
+            ) : (
+              <span className="grid h-full place-items-center font-serif text-[3.5rem] italic text-on-forest">{site.monogram}</span>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/35 via-transparent to-transparent" aria-hidden />
+            {daysLeft > 0 ? (
+              <p className="absolute bottom-4 left-4 rounded-xl bg-bg/92 px-3.5 py-2.5 text-ink shadow-[0_10px_30px_-12px_rgb(26_30_21/0.5)] backdrop-blur-sm">
+                <span className="block font-serif text-[2rem] leading-none tabular-nums">{daysLeft}</span>
+                <span className="mt-1 block text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-ink-soft">
+                  {daysLeft === 1 ? "dia" : "dias"} para o sim
+                </span>
+              </p>
+            ) : null}
+          </div>
           <div className="p-5 sm:p-7">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
               <StatusBadge status={site.status} />
@@ -212,11 +238,6 @@ export default async function DashboardPage({
                 </a>
               ) : null}
             </div>
-          </div>
-          <div className="relative hidden min-h-64 bg-bg-2 md:block">
-            {site.heroImage ? (
-              <Image src={site.heroImage} alt="Foto de capa do site" fill sizes="320px" className="object-cover" priority />
-            ) : null}
           </div>
         </section>
 
@@ -482,7 +503,7 @@ export default async function DashboardPage({
             )}
           </section>
         </div>
-      </div>
+      </>
     </AppShell>
   );
 }
@@ -505,13 +526,13 @@ function Stat({
   className?: string;
 }) {
   return (
-    <Link href={href} className={`group grid content-start gap-1 p-4 transition-colors duration-150 hover:bg-forest/4 sm:p-5 ${className}`}>
-      <span className="flex items-center justify-between text-[0.8125rem] text-ink-soft">
+    <Link href={href} className={`group grid content-start gap-1.5 p-4 transition-colors duration-150 hover:bg-forest/4 sm:p-5 ${className}`}>
+      <span className="flex items-center justify-between text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-ink-soft">
         {label}
         <Icon name="chevronRight" size={14} className="opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
       </span>
       <span className="flex items-baseline gap-1.5">
-        <span className="font-serif text-[1.75rem] leading-none tabular-nums text-ink sm:text-[2rem]">{value}</span>
+        <span className="font-serif text-[2rem] leading-none tabular-nums text-ink sm:text-[2.5rem]">{value}</span>
         {suffix ? <span className="text-sm text-ink-soft">{suffix}</span> : null}
       </span>
       {progress !== undefined ? (

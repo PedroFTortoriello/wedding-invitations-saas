@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { platformName, supportWhatsApp } from "@/lib/platform-data";
@@ -6,8 +7,19 @@ import { SignOutButton } from "@/components/app/SignOutButton";
 import { Icon, type IconName } from "@/components/app/icons";
 import { SupportBar } from "@/components/app/SupportBar";
 import type { SupportInfo } from "@/lib/acting";
+import type { WeddingSite } from "@/types/wedding";
 
 export type NavKey = "dashboard" | "editor" | "guests" | "messages" | "gifts" | "cash-gifts";
+
+/** O que a lateral mostra do casamento: nome, status, foto de capa e contagem regressiva. */
+export type ShellWedding = {
+  coupleNames: string;
+  slug: string;
+  status: string;
+  heroImage?: string | null;
+  weddingDate?: string;
+  monogram?: string;
+};
 
 type AppShellProps = {
   children: ReactNode;
@@ -17,7 +29,7 @@ type AppShellProps = {
   /** Ações à direita do título (ex.: "Ver site"). */
   actions?: ReactNode;
   /** Casamento do usuário — mostra nome, status e atalho para o site na lateral. */
-  wedding?: { coupleNames: string; slug: string; status: string } | null;
+  wedding?: ShellWedding | null;
   /** Modo suporte (admin vendo a conta de um cliente): mostra a barra no topo. */
   support?: SupportInfo | null;
 };
@@ -58,6 +70,32 @@ const MOBILE_TABS: { keys: NavKey[]; href: string; label: string; icon: IconName
 
 const SUPPORT_URL = `https://wa.me/${supportWhatsApp}?text=${encodeURIComponent("Olá! Preciso de ajuda com o Noivar.")}`;
 
+/** Item da lateral (fundo forest): texto claro, ativo vira pílula creme. */
+const SIDE_ITEM =
+  "flex min-h-10 w-full items-center gap-3 rounded-lg px-3 text-left text-[0.9375rem] text-on-forest/80 transition-colors duration-150 hover:bg-on-forest/10 hover:text-on-forest focus-visible:outline-2 focus-visible:outline-on-forest";
+
+/** Dias inteiros até a data (0 se já passou ou se não há data). */
+export function daysUntil(iso: string | undefined): number {
+  if (!iso) return 0;
+  const target = new Date(iso).getTime();
+  if (Number.isNaN(target)) return 0;
+  return Math.max(0, Math.ceil((target - Date.now()) / 86400000));
+}
+
+/** O que as páginas passam para a lateral a partir do site do casal. */
+export function shellWedding(
+  site: Pick<WeddingSite, "coupleNames" | "slug" | "status" | "heroImage" | "weddingDate" | "monogram">
+): ShellWedding {
+  return {
+    coupleNames: site.coupleNames,
+    slug: site.slug,
+    status: site.status,
+    heroImage: site.heroImage,
+    weddingDate: site.weddingDate,
+    monogram: site.monogram
+  };
+}
+
 export function AppShell({ children, title, subtitle, active, actions, wedding, support }: AppShellProps) {
   const giftsArea = active === "gifts" || active === "cash-gifts";
   // A barra do suporte (h-12) fica no fluxo; lateral fixa e topo sticky começam abaixo dela.
@@ -67,21 +105,21 @@ export function AppShell({ children, title, subtitle, active, actions, wedding, 
     <div className="min-h-dvh bg-bg text-ink">
       {support ? <SupportBar support={support} /> : null}
 
-      {/* Lateral (desktop) */}
-      <aside className={`fixed bottom-0 left-0 ${top} z-30 hidden w-64 flex-col border-r border-line bg-bg-2 lg:flex`}>
-        <div className="px-5 pb-4 pt-6">
-          <Link href="/dashboard" className="font-serif text-[1.75rem] italic leading-none">
+      {/* Lateral (desktop) — faixa forest: o painel ganha contraste e o conteúdo creme respira. */}
+      <aside className={`fixed bottom-0 left-0 ${top} z-30 hidden w-64 flex-col bg-forest text-on-forest lg:flex`}>
+        <div className="px-6 pb-5 pt-7">
+          <Link href="/dashboard" className="font-serif text-[1.875rem] italic leading-none">
             {platformName}
           </Link>
         </div>
 
         {wedding ? <WeddingCard wedding={wedding} /> : null}
 
-        <nav aria-label="Painel" className="mt-2 grid content-start gap-5 overflow-y-auto px-3 pb-4">
+        <nav aria-label="Painel" className="mt-4 grid content-start gap-6 overflow-y-auto px-3 pb-4">
           {NAV.map((group, index) => (
             <div key={group.label ?? index} className="grid gap-0.5">
               {group.label ? (
-                <p className="px-3 pb-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-ink-soft">
+                <p className="px-3 pb-2 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-on-forest/70">
                   {group.label}
                 </p>
               ) : null}
@@ -92,13 +130,13 @@ export function AppShell({ children, title, subtitle, active, actions, wedding, 
                     key={item.key}
                     href={item.href}
                     aria-current={current ? "page" : undefined}
-                    className={`flex min-h-10 items-center gap-3 rounded-lg px-3 text-[0.9375rem] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-forest ${
+                    className={
                       current
-                        ? "bg-surface font-semibold text-ink shadow-[0_0_0_1px_var(--color-line)]"
-                        : "text-ink-soft hover:bg-forest/6 hover:text-ink"
-                    }`}
+                        ? "flex min-h-10 items-center gap-3 rounded-lg bg-on-forest px-3 text-[0.9375rem] font-semibold text-forest shadow-[0_8px_20px_-12px_rgb(0_0_0/0.6)]"
+                        : SIDE_ITEM
+                    }
                   >
-                    <Icon name={item.icon} className={current ? "text-forest" : undefined} />
+                    <Icon name={item.icon} />
                     {item.label}
                   </Link>
                 );
@@ -107,18 +145,13 @@ export function AppShell({ children, title, subtitle, active, actions, wedding, 
           ))}
         </nav>
 
-        <div className="mt-auto grid gap-0.5 border-t border-line px-3 py-3">
-          <a
-            href={SUPPORT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex min-h-10 items-center gap-3 rounded-lg px-3 text-[0.9375rem] text-ink-soft transition-colors duration-150 hover:bg-forest/6 hover:text-ink"
-          >
+        <div className="mt-auto grid gap-0.5 border-t border-on-forest/12 px-3 py-3">
+          <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer" className={SIDE_ITEM}>
             <Icon name="help" />
             Ajuda no WhatsApp
           </a>
-          <SignOutButton />
-          <CookiePreferencesButton className="min-h-8 rounded-lg px-3 text-left focus-visible:outline-2 focus-visible:outline-forest text-[0.8125rem] text-ink-soft transition-colors duration-150 hover:bg-forest/6 hover:text-ink" />
+          <SignOutButton className={SIDE_ITEM} />
+          <CookiePreferencesButton className="min-h-8 rounded-lg px-3 text-left text-[0.8125rem] text-on-forest/70 transition-colors duration-150 hover:bg-on-forest/10 hover:text-on-forest focus-visible:outline-2 focus-visible:outline-on-forest" />
         </div>
       </aside>
 
@@ -178,7 +211,8 @@ export function AppShell({ children, title, subtitle, active, actions, wedding, 
           </nav>
         ) : null}
 
-        <main className="mx-auto max-w-6xl px-4 pb-12 md:px-8">{children}</main>
+        {/* grid gap-5: ritmo vertical único entre os blocos; app-enter: entrada em cascata. */}
+        <main className="app-enter mx-auto grid max-w-6xl gap-5 px-4 pb-12 md:px-8">{children}</main>
         <div className="mx-auto -mt-6 max-w-6xl px-4 md:px-8 lg:hidden">
           <CookiePreferencesButton className="min-h-11 rounded text-[0.8125rem] text-ink-soft underline focus-visible:outline-2 focus-visible:outline-forest underline-offset-4 hover:text-ink" />
         </div>
@@ -216,25 +250,36 @@ export function AppShell({ children, title, subtitle, active, actions, wedding, 
   );
 }
 
-function WeddingCard({ wedding }: { wedding: NonNullable<AppShellProps["wedding"]> }) {
+function WeddingCard({ wedding }: { wedding: ShellWedding }) {
   const published = wedding.status === "published";
+  const days = daysUntil(wedding.weddingDate);
   return (
-    <div className="mx-3 mb-3 rounded-xl border border-line bg-surface px-3 py-3">
-      <p className="truncate font-serif text-[1.25rem] italic leading-tight">{wedding.coupleNames}</p>
-      <div className="mt-1.5 flex items-center justify-between gap-2">
-        <span className="inline-flex items-center gap-1.5 text-[0.8125rem] text-ink-soft">
-          <span className={`size-2 rounded-full ${published ? "bg-forest" : "bg-[#b8892f]"}`} aria-hidden />
-          {published ? "Publicado" : "Rascunho"}
+    <div className="mx-3 rounded-xl bg-on-forest/8 p-3 ring-1 ring-on-forest/12">
+      <div className="flex items-center gap-3">
+        <span className="relative size-11 shrink-0 overflow-hidden rounded-lg bg-on-forest/10">
+          {wedding.heroImage ? (
+            <Image src={wedding.heroImage} alt="" fill sizes="44px" className="object-cover" />
+          ) : (
+            <span className="grid h-full place-items-center font-serif text-[1.125rem] italic">{wedding.monogram || "♥"}</span>
+          )}
         </span>
-        <Link
-          href={`/casamento/${wedding.slug}`}
-          target="_blank"
-          className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[0.8125rem] font-semibold text-forest hover:bg-forest/6"
-        >
-          Ver site
-          <Icon name="external" size={14} />
-        </Link>
+        <div className="min-w-0">
+          <p className="truncate font-serif text-[1.125rem] italic leading-tight">{wedding.coupleNames}</p>
+          <p className="mt-1 flex items-center gap-1.5 text-[0.75rem] text-on-forest/75">
+            <span className={`size-1.5 rounded-full ${published ? "bg-on-forest" : "bg-gold"}`} aria-hidden />
+            {published ? "Publicado" : "Rascunho"}
+            {days > 0 ? ` · faltam ${days} ${days === 1 ? "dia" : "dias"}` : ""}
+          </p>
+        </div>
       </div>
+      <Link
+        href={`/casamento/${wedding.slug}`}
+        target="_blank"
+        className="mt-3 flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-on-forest/10 text-[0.8125rem] font-semibold text-on-forest transition-colors duration-150 hover:bg-on-forest/18"
+      >
+        {published ? "Ver site" : "Ver prévia"}
+        <Icon name="external" size={14} />
+      </Link>
     </div>
   );
 }

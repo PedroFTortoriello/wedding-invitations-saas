@@ -49,11 +49,13 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="grid justify-items-center gap-2 px-6 py-10 text-center">
-      <span className="grid size-11 place-items-center rounded-full bg-forest/8 text-forest">
-        <Icon name={icon} size={20} />
+    <div className="grid justify-items-center gap-2 px-6 py-12 text-center">
+      <span className="grid size-16 place-items-center rounded-full border border-gold/40 p-1.5">
+        <span className="grid size-full place-items-center rounded-full bg-forest/8 text-forest">
+          <Icon name={icon} size={22} />
+        </span>
       </span>
-      <p className="mt-1 text-[0.9375rem] font-semibold text-ink">{title}</p>
+      <p className="mt-2 font-serif text-[1.375rem] leading-tight text-ink text-balance">{title}</p>
       {children ? <p className="max-w-sm text-sm leading-5 text-ink-soft">{children}</p> : null}
       {action ? <div className="mt-2">{action}</div> : null}
     </div>
