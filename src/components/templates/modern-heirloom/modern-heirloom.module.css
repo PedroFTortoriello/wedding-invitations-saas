@@ -1,0 +1,1115 @@
+/*
+ * Heirloom — papelaria de família refeita hoje.
+ * Papel, tinta, um fio de vinho. Libre Caslon Text (display e corpo) + Karla
+ * (versaletes, dados, UI). Escopado em .template.
+ *
+ * Contraste (WCAG) dos pares usados:
+ *   ink #241f1c sobre paper #f7f3ec 14,7:1 · sobre paper-2 #efe8dc 13,4:1 · sobre card #fcfaf6 15,6:1
+ *   gray #5d5651 sobre paper 6,5:1 · sobre paper-2 5,9:1 · sobre card 6,9:1 (muted/eyebrow)
+ *   wine #5a2a2a sobre paper 10,6:1 · sobre paper-2 9,6:1 (fios, selo, botão ghost)
+ *   paper sobre wine 10,6:1 (botão sólido) · error #8d3d33 sobre card 7,1:1
+ */
+
+.template {
+  --mh-paper: #f7f3ec;
+  --mh-paper-2: #efe8dc;
+  --mh-card: #fcfaf6;
+  --mh-ink: #241f1c;
+  --mh-wine: #5a2a2a;
+  --mh-gray: #5d5651;
+  --mh-line: rgba(36, 31, 28, 0.2);
+  --mh-line-soft: rgba(36, 31, 28, 0.1);
+  --mh-gutter: clamp(1.25rem, 5vw, 3rem);
+
+  /* widgets (GiftRegistry, GuestForms) */
+  --font-serif: var(--mh-display), Georgia, serif;
+  --font-sans: var(--mh-sans), "Segoe UI", sans-serif;
+  --widget-card-radius: 2px;
+  --widget-btn-radius: 2px;
+  --widget-btn-case: uppercase;
+  --widget-btn-tracking: 0.16em;
+
+  --g-card: var(--mh-card);
+  --g-dialog-bg: var(--mh-card);
+  --g-border: var(--mh-line);
+  --g-ink: var(--mh-ink);
+  --g-muted: var(--mh-gray);
+  --g-accent: var(--mh-wine);
+  --g-on-accent: var(--mh-paper);
+  --g-price: var(--mh-ink);
+  --g-radius: 2px;
+  --g-img-radius: 0px;
+  --g-img-filter: saturate(0.92) contrast(1.02);
+  --g-scrim: rgba(36, 31, 28, 0.55);
+  --g-error: #8d3d33;
+
+  --gf-bg: var(--mh-paper-2);
+  --gf-card: var(--mh-card);
+  --gf-ink: var(--mh-ink);
+  --gf-muted: var(--mh-gray);
+  --gf-border: var(--mh-line);
+  --gf-field: #fff;
+  --gf-accent: var(--mh-wine);
+  --gf-on-accent: var(--mh-paper);
+  --gf-radius: 2px;
+  --gf-eyebrow: var(--mh-gray);
+  --gf-error: #8d3d33;
+
+  position: relative;
+  font-family: var(--mh-display), Georgia, serif;
+  color: var(--mh-ink);
+  background: var(--mh-paper);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+/* Fibra de papel sobre tudo, bem leve (textures.ts: PAPER, 0,12–0,2). */
+.paper {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-size: 320px 320px;
+  opacity: 0.07;
+  pointer-events: none;
+}
+
+:where(.template) :where(a, button):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 76rem;
+  margin-inline: auto;
+  padding-inline: var(--mh-gutter);
+}
+
+/* ------------------------------------------------------------ type roles */
+
+.eyebrow,
+.kicker {
+  margin: 0;
+  font-family: var(--mh-sans), "Segoe UI", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--mh-gray);
+}
+.kicker {
+  letter-spacing: 0.22em;
+}
+
+.h2 {
+  margin: 0.6rem 0 0;
+  font-family: var(--mh-display), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.9rem, 4.2vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.lead {
+  margin: 1rem 0 0;
+  max-width: 36rem;
+  font-size: clamp(1rem, 1.2vw, 1.1rem);
+  line-height: 1.65;
+  color: var(--mh-gray);
+}
+
+.body {
+  margin: 0.85rem 0 0;
+  max-width: 36rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--mh-ink);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  margin-top: 1.5rem;
+  padding-inline: 1.75rem;
+  font-family: var(--mh-sans), "Segoe UI", sans-serif;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mh-paper);
+  background: var(--mh-wine);
+  border: 1px solid var(--mh-wine);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.btn:hover {
+  background: transparent;
+  color: var(--mh-wine);
+}
+
+/* ------------------------------------------------------------------- nav */
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in oklab, var(--mh-paper) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--mh-line-soft);
+}
+.navInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: 3.5rem;
+}
+.navMono {
+  font-family: var(--mh-display), Georgia, serif;
+  font-size: 1.05rem;
+  letter-spacing: 0.12em;
+  color: var(--mh-ink);
+}
+.navLinks {
+  display: none;
+  gap: clamp(1rem, 2.5vw, 2rem);
+}
+.navLink,
+.navToggle,
+.navMobileLink {
+  font-family: var(--mh-sans), "Segoe UI", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--mh-ink);
+}
+.navLink {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+.navLink:hover {
+  border-color: var(--mh-wine);
+}
+.navToggle {
+  min-height: 2.75rem;
+  padding: 0 0.25rem;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.navMobile {
+  display: flex;
+  flex-direction: column;
+  padding: 0.25rem var(--mh-gutter) 1rem;
+  border-top: 1px solid var(--mh-line-soft);
+}
+.navMobileLink {
+  padding: 0.9rem 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  border-bottom: 1px solid var(--mh-line-soft);
+}
+@media (min-width: 880px) {
+  .navLinks {
+    display: flex;
+  }
+  .navToggle {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------ hero */
+
+.hero {
+  position: relative;
+  min-height: calc(100svh - var(--demo-bar-h, 0px) - 3.5rem);
+  display: flex;
+  justify-content: center;
+  padding: clamp(2.25rem, 6vw, 3.5rem) var(--mh-gutter);
+  text-align: center;
+}
+/* Fio duplo nas bordas, como a margem gravada de um cartão. */
+.heroFrame {
+  position: absolute;
+  inset: clamp(0.75rem, 2vw, 1.25rem);
+  border: 1px solid var(--mh-line);
+  pointer-events: none;
+}
+.heroFrame::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid var(--mh-line-soft);
+}
+.heroInner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between; /* selo no alto, nomes no meio, data embaixo: o cartão inteiro */
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 60rem;
+}
+.heroMid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  margin-block: auto;
+}
+/* Desktop: selo, chamada, nomes e data formam um bloco único no centro da
+   moldura, em vez de se espalharem pelos cantos. */
+@media (min-width: 1024px) {
+  .hero {
+    min-height: calc(88svh - var(--demo-bar-h, 0px));
+  }
+  .heroInner {
+    justify-content: center;
+    gap: 2rem;
+  }
+  .heroMid {
+    margin-block: 0;
+  }
+}
+
+.seal {
+  --seal: clamp(7.5rem, 30vw, 8.75rem);
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: var(--seal);
+  height: var(--seal);
+  color: var(--mh-wine);
+}
+.sealRing {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.sealText {
+  display: inline-flex;
+  align-items: baseline;
+  font-family: var(--mh-display), Georgia, serif;
+  font-size: calc(var(--seal) * 0.3);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--mh-ink);
+}
+.sealText em {
+  margin-inline: 0.14em;
+  font-style: italic;
+  font-size: 0.55em;
+  color: var(--mh-wine);
+}
+
+.heroEyebrow {
+  margin: 0;
+  font-family: var(--mh-sans), "Segoe UI", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--mh-gray);
+}
+
+.names {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.12em;
+  margin: 0;
+  font-family: var(--mh-display), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2.6rem, 9vw, 5.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.names[data-scale="medium"] {
+  font-size: clamp(2.2rem, 7.4vw, 4.6rem);
+}
+.names[data-scale="long"] {
+  font-size: clamp(1.8rem, 6vw, 3.6rem);
+}
+.name {
+  display: block;
+}
+.amp {
+  font-style: italic;
+  font-size: 0.55em;
+  line-height: 1;
+  color: var(--mh-gray);
+}
+
+.heroLine {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem 0.9rem;
+  margin: 0.5rem 0 0;
+  font-family: var(--mh-sans), "Segoe UI", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--mh-ink);
+}
+.heroItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9rem;
+  text-wrap: balance;
+}
+.dia {
+  flex: none;
+  width: 0.45rem;
+  height: 0.75rem;
+  color: var(--mh-wine);
+}
+.dia path {
+  fill: currentColor;
+}
+.heroRule {
+  display: block;
+  width: min(18rem, 70%);
+  height: auto;
+  margin-top: 0.75rem;
+  color: var(--mh-wine);
+}
+
+/* ---------------------------------------------------------------- álbum */
+
+.album {
+  display: flex;
+  justify-content: center;
+  padding: clamp(3rem, 7vw, 5.5rem) var(--mh-gutter) clamp(3.5rem, 7vw, 6rem);
+  background: var(--mh-paper-2);
+}
+.albumCard {
+  width: min(100%, 34rem);
+  margin: 0;
+  transform: rotate(-1.5deg);
+}
+/* Foto presa no álbum: passe-partout de papel com borda dupla (as linhas do
+   FrameDouble ficariam tortas num 4:5 por causa do preserveAspectRatio="none"). */
+.albumMat {
+  position: relative;
+  display: block;
+  padding: clamp(0.8rem, 2.4vw, 1.25rem);
+  background: var(--mh-paper);
+  border: 1px solid var(--mh-ink);
+  box-shadow: 0 1px 0 rgba(36, 31, 28, 0.08), 0 24px 48px -28px rgba(36, 31, 28, 0.45);
+}
+.albumMat::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid var(--mh-line);
+  pointer-events: none;
+}
+.albumPhoto {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+}
+.albumImg {
+  object-fit: cover;
+  filter: saturate(0.9) contrast(1.02);
+}
+.albumCaption {
+  margin: 1.2rem 0 0;
+  text-align: center;
+  font-family: var(--mh-sans), "Segoe UI", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--mh-gray); /* 5,9:1 sobre paper-2 */
+}
+/* Desktop: cartão maior e menos papel em volta. */
+@media (min-width: 1024px) {
+  .album {
+    padding-block: 2.5rem 3rem;
+  }
+  .albumCard {
+    width: min(70%, 54rem);
+  }
+}
+
+/* --------------------------------------------------------------- convite */
+
+.invite {
+  display: flex;
+  justify-content: center;
+  padding: clamp(3.5rem, 8vw, 6.5rem) var(--mh-gutter);
+}
+.inviteBox {
+  --c: clamp(3rem, 9vw, 4.5rem);
+  position: relative;
+  width: min(100%, 34rem);
+  padding: clamp(2.75rem, 8vw, 4rem) clamp(1.5rem, 6vw, 3.25rem);
+  border: 1px solid var(--mh-line);
+  text-align: center;
+}
+/* O florão desenha seu próprio fio a 7% da borda do SVG: encaixa no fio do retângulo. */
+.corner {
+  position: absolute;
+  width: var(--c);
+  height: var(--c);
+  color: var(--mh-wine);
+  pointer-events: none;
+}
+.corner path,
+.corner circle {
+  vector-effect: non-scaling-stroke;
+}
+.corner[data-pos="tl"] {
+  top: calc(var(--c) * -0.07);
+  left: calc(var(--c) * -0.07);
+}
+.corner[data-pos="tr"] {
+  top: calc(var(--c) * -0.07);
+  right: calc(var(--c) * -0.07);
+  transform: scaleX(-1);
+}
+.corner[data-pos="bl"] {
+  bottom: calc(var(--c) * -0.07);
+  left: calc(var(--c) * -0.07);
+  transform: scaleY(-1);
+}
+.corner[data-pos="br"] {
+  bottom: calc(var(--c) * -0.07);
+  right: calc(var(--c) * -0.07);
+  transform: scale(-1);
+}
+.inviteWords {
+  margin: 1rem 0 0;
+  font-family: var(--mh-display), Georgia, serif;
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(1.5rem, 4.6vw, 2.3rem);
+  line-height: 1.25;
+  text-wrap: balance;
+}
+.inviteText {
+  margin-inline: auto;
+}
+
+/* -------------------------------------------------------------- história */
+
+.story {
+  padding-block: clamp(3rem, 7vw, 5.5rem);
+}
+.storyHead {
+  max-width: 40rem;
+  margin-bottom: clamp(2rem, 5vw, 3.5rem);
+}
+.timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2rem, 5vw, 3.5rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.timeline::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(1.25rem - 0.5px);
+  width: 1px;
+  background: var(--mh-line);
+}
+.chapter {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  gap: 1rem clamp(1rem, 3vw, 1.5rem);
+}
+.chapterNum {
+  grid-column: 1;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--mh-wine);
+  border-radius: 50%;
+  background: var(--mh-paper);
+  font-family: var(--mh-sans), "Segoe UI", sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--mh-ink);
+}
+.chapterBody {
+  grid-column: 2;
+  max-width: 30rem;
+}
+.chapterHead {
+  margin: 0.5rem 0 0;
+  font-family: var(--mh-display), Georgia, serif;
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(1.35rem, 2.6vw, 1.8rem);
+  line-height: 1.2;
+}
+.chapterHead span {
+  display: block;
+}
+.chapterPhoto {
+  grid-column: 2;
+  width: min(13rem, 60%);
+  margin: 0;
+  padding: 0.35rem;
+  background: var(--mh-paper);
+  border: 1px solid var(--mh-line);
+}
+.chapterImg {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  filter: saturate(0.9);
+}
+@media (min-width: 860px) {
+  .timeline::before {
+    left: calc(50% - 0.5px);
+  }
+  .chapter {
+    grid-template-columns: minmax(0, 1fr) 3rem minmax(0, 1fr);
+    column-gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: start;
+  }
+  .chapterNum {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: center;
+    width: 3rem;
+    height: 3rem;
+  }
+  .chapterBody {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: end;
+  }
+  .chapterPhoto {
+    grid-column: 3;
+    grid-row: 1;
+    width: min(15rem, 80%);
+    justify-self: start;
+  }
+  .chapter:nth-child(even) .chapterBody {
+    grid-column: 3;
+    justify-self: start;
+  }
+  .chapter:nth-child(even) .chapterPhoto {
+    grid-column: 1;
+    justify-self: end;
+  }
+}
+
+/* ------------------------------------------------------------ calendário */
+
+.count {
+  padding-block: clamp(3rem, 7vw, 5rem);
+  background: var(--mh-paper-2);
+}
+.countGrid {
+  display: grid;
+  gap: clamp(1.75rem, 4vw, 3rem);
+  align-items: center;
+  justify-items: center;
+  text-align: center;
+}
+.calendar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 15rem);
+  padding: 1.1rem 1.5rem 1.4rem;
+  background: var(--mh-paper);
+  border: 1px solid var(--mh-ink);
+  box-shadow: 0 0 0 4px var(--mh-paper), 0 0 0 5px var(--mh-line);
+}
+.calMonth,
+.calYear {
+  font-family: var(--mh-sans), "Segoe UI", sans-serif;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+.calMonth {
+  width: 100%;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--mh-line);
+  color: var(--mh-ink);
+}
+.calDay {
+  margin-top: 0.35rem;
+  font-family: var(--mh-display), Georgia, serif;
+  font-size: clamp(5.5rem, 16vw, 7.5rem);
+  line-height: 1;
+  color: var(--mh-ink);
+}
+.calYear {
+  margin-top: 0.2rem;
+  color: var(--mh-gray); /* 6,5:1 sobre paper */
+}
+.countText {
+  max-width: 34rem;
+}
+.countLead {
+  margin: 0.75rem 0 0;
+  font-family: var(--mh-display), Georgia, serif;
+  font-style: italic;
+  font-size: clamp(1.5rem, 3.6vw, 2.3rem);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+.countMeta {
+  margin: 1rem 0 0;
+  font-family: var(--mh-sans), "Segoe UI", sans-serif;
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mh-gray); /* 5,9:1 sobre paper-2 */
+}
+@media (min-width: 760px) {
+  .countGrid {
+    grid-template-columns: auto minmax(0, 1fr);
+    justify-items: start;
+    text-align: left;
+  }
+}
+
+/* ----------------------------------------------------------- programação */
+
+.menu {
+  padding-block: clamp(3rem, 7vw, 5.5rem);
+}
+.menuGrid {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3rem);
+  align-items: start;
+}
+.menuHead {
+  max-width: 30rem;
+}
+.menuList {
+  display: grid;
+  gap: 0 clamp(1.5rem, 4vw, 3rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--mh-ink);
+}
+.menuItem {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: 0.3rem 0.5rem;
+  padding-block: 1.1rem;
+  border-bottom: 1px solid var(--mh-line);
+}
+.menuTime {
+  grid-column: 1;
+  padding-top: 0.35em;
+  font-family: var(--mh-sans), "Segoe UI", sans-serif;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--mh-ink);
+}
+.menuTitle {
+  grid-column: 2;
+  font-family: var(--mh-display), Georgia, serif;
+  font-style: italic;
+  font-size: clamp(1.2rem, 2.2vw, 1.5rem);
+  line-height: 1.2;
+}
+.menuNote {
+  grid-column: 2;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--mh-gray);
+}
+@media (min-width: 760px) {
+  .menuList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1024px) {
+  .menuGrid {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  }
+}
+
+/* ----------------------------------------------------------------- local */
+
+.place {
+  padding-block: clamp(3rem, 7vw, 5.5rem);
+  background: var(--mh-paper-2);
+}
+.placeCard {
+  position: relative;
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  padding: clamp(1.5rem, 4vw, 2.75rem);
+  background: var(--mh-paper);
+  border: 1px solid var(--mh-ink);
+}
+.placeCard::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid var(--mh-line);
+  pointer-events: none;
+}
+.placeCity {
+  margin: 0.6rem 0 0;
+  font-family: var(--mh-sans), "Segoe UI", sans-serif;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--mh-ink);
+}
+.placeAddr {
+  margin: 0.85rem 0 0;
+  max-width: 32rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--mh-gray);
+}
+.placeMap {
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--mh-line);
+  background: var(--mh-paper-2);
+}
+.map {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  filter: grayscale(0.35) sepia(0.12) contrast(0.95);
+}
+@media (min-width: 900px) {
+  .placeCard {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: center;
+  }
+  .placeMap {
+    aspect-ratio: 5 / 4;
+  }
+}
+
+/* ------------------------------------------------------------ informações */
+
+.sheet {
+  padding-block: clamp(3rem, 7vw, 5.5rem);
+}
+.sheetList {
+  margin: clamp(1.5rem, 4vw, 2.5rem) 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--mh-ink);
+}
+.sheetRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem clamp(1.25rem, 4vw, 3rem);
+  padding-block: 1.4rem;
+  border-bottom: 1px solid var(--mh-line);
+}
+.sheetTitle {
+  grid-column: 1;
+  margin: 0;
+  font-family: var(--mh-sans), "Segoe UI", sans-serif;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--mh-ink);
+}
+.sheetText {
+  grid-column: 1;
+}
+.sheetSub {
+  margin: 0;
+  font-family: var(--mh-display), Georgia, serif;
+  font-style: italic;
+  font-size: 1.2rem;
+  line-height: 1.3;
+}
+.sheetThumb {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  width: 4.5rem;
+  height: 4.5rem;
+  padding: 0.25rem;
+  object-fit: cover;
+  background: var(--mh-paper);
+  border: 1px solid var(--mh-line);
+  filter: saturate(0.9);
+}
+@media (min-width: 860px) {
+  .sheetRow {
+    grid-template-columns: 14rem minmax(0, 1fr) auto;
+    column-gap: clamp(1.5rem, 4vw, 3rem);
+  }
+  .sheetTitle {
+    padding-top: 0.3rem;
+  }
+  .sheetText {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .sheetThumb {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}
+
+/* -------------------------------------------------------------- presentes */
+
+.gifts {
+  padding-block: clamp(3rem, 7vw, 5.5rem);
+  background: var(--mh-paper-2);
+}
+.giftsHead {
+  max-width: 36rem;
+  margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+/* ---------------------------------------------------------------- galeria */
+
+.gallery {
+  padding-block: clamp(3rem, 7vw, 5.5rem);
+}
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(0.75rem, 2.5vw, 1.5rem);
+  margin: clamp(1.5rem, 4vw, 2.5rem) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.galleryBtn {
+  display: block;
+  width: 100%;
+  padding: 0.4rem;
+  background: var(--mh-paper);
+  border: 1px solid var(--mh-line);
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.galleryBtn:hover {
+  border-color: var(--mh-ink);
+  transform: translateY(-2px);
+}
+.galleryImg {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  filter: saturate(0.9);
+}
+@media (min-width: 860px) {
+  .galleryGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.lightbox {
+  width: min(92vw, 760px);
+  max-height: 92vh;
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--mh-ink);
+  background: var(--mh-paper);
+  box-shadow: 0 40px 120px rgba(36, 31, 28, 0.5);
+  overflow: hidden;
+}
+.lightbox::backdrop {
+  background: rgba(36, 31, 28, 0.86);
+}
+.lightboxClose,
+.lightboxNav {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  font-family: var(--mh-display), Georgia, serif;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--mh-ink);
+  background: color-mix(in oklab, var(--mh-paper) 85%, transparent);
+  border: 1px solid var(--mh-line);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.lightboxClose {
+  top: 0.6rem;
+  right: 0.6rem;
+}
+.lightboxNav {
+  top: 50%;
+  transform: translateY(-50%);
+}
+.lightboxNav[data-dir="prev"] {
+  left: 0.6rem;
+}
+.lightboxNav[data-dir="next"] {
+  right: 0.6rem;
+}
+.lightboxFig {
+  margin: 0;
+}
+.lightboxImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 84vh;
+  object-fit: contain;
+}
+.lightboxCaption {
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+  font-style: italic;
+  text-align: center;
+  color: var(--mh-gray);
+}
+
+/* ----------------------------------------------------------- encerramento */
+
+.closing {
+  padding-block: clamp(3.5rem, 8vw, 6.5rem);
+}
+.closingGrid {
+  display: grid;
+  gap: clamp(2rem, 5vw, 3.5rem);
+  justify-items: center;
+  text-align: center;
+}
+.ovalRing {
+  width: min(70%, 17rem);
+  margin: 0;
+  padding: 0.5rem;
+  border: 1px solid var(--mh-wine);
+  border-radius: 50%;
+}
+.oval {
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  clip-path: ellipse(50% 50% at 50% 50%);
+}
+.ovalImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.9);
+}
+.closingText {
+  max-width: 34rem;
+}
+.closingLead {
+  margin: 1rem 0 0;
+  font-family: var(--mh-display), Georgia, serif;
+  font-style: italic;
+  font-size: clamp(1.3rem, 2.8vw, 1.8rem);
+  line-height: 1.4;
+  text-wrap: balance;
+}
+.rule {
+  display: block;
+  width: min(16rem, 70%);
+  height: auto;
+  margin: 1.5rem auto 0;
+  color: var(--mh-wine);
+}
+.signature {
+  margin: 1.5rem 0 0;
+  font-family: var(--mh-sans), "Segoe UI", sans-serif;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--mh-ink);
+}
+@media (min-width: 860px) {
+  .closingGrid[data-photo] {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    justify-items: start;
+    text-align: left;
+  }
+  .closingGrid[data-photo] .ovalRing {
+    width: 19rem;
+  }
+  .closingGrid[data-photo] .rule {
+    margin-inline: 0;
+  }
+}
+
+/* ---------------------------------------------------------------- rodapé */
+
+.footer {
+  padding-block: clamp(2.5rem, 6vw, 4rem);
+  background: var(--mh-paper-2);
+  border-top: 1px solid var(--mh-line);
+  text-align: center;
+}
+.footerSeal {
+  --seal: 4rem;
+}
+.footerLove {
+  margin: 0.75rem 0 0;
+  font-family: var(--mh-display), Georgia, serif;
+  font-style: italic;
+  font-size: 1.25rem;
+}
+.footerText {
+  max-width: 34rem;
+  margin: 0.75rem auto 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--mh-gray); /* 5,9:1 sobre paper-2 */
+}
+.footerMeta,
+.footerBrand {
+  margin: 1.25rem 0 0;
+  font-family: var(--mh-sans), "Segoe UI", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--mh-ink);
+}
+.footerBrand {
+  margin-top: 0.75rem;
+  font-size: 0.66rem;
+  color: var(--mh-gray);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .template * {
+    transition-duration: 0s !important;
+  }
+}

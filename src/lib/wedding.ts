@@ -1,6 +1,7 @@
-import { romanticImages } from "@/lib/demo-wedding";
+import { romanticImages } from "@/lib/demo-photos";
 import { sanitizeGiftFraming } from "@/lib/gift-image";
 import type { Database, Json } from "@/lib/supabase/types";
+import { TEMPLATE_NAMES } from "@/lib/templates/catalog";
 import type { PixKeyType, WeddingSite } from "@/types/wedding";
 
 export type WeddingRow = Database["public"]["Tables"]["weddings"]["Row"];
@@ -40,18 +41,9 @@ type WeddingColumnKey = (typeof COLUMN_KEYS)[number];
 
 export type WeddingContent = Omit<WeddingSite, WeddingColumnKey>;
 
-export const TEMPLATE_NAMES: Record<WeddingSite["templateId"], string> = {
-  "classico-romantico": "Clássico Romântico",
-  "civil-minimalista": "Civil Minimalista",
-  "garden-classico": "Jardim Clássico",
-  "olive-burgundy": "Olive Burgundy — Save the Date",
-  "editorial-luxury": "Editorial Luxury",
-  "jardim-romantico": "Jardim Romântico",
-  "pe-na-areia": "Pé na Areia",
-  "cinema-noir": "Cinema Noir"
-};
-
-export const TEMPLATE_IDS = Object.keys(TEMPLATE_NAMES) as WeddingSite["templateId"][];
+// O catálogo (lib/templates/catalog) é a fonte dos ids e nomes; re-exportados aqui
+// porque o resto do app sempre os importou deste módulo.
+export { TEMPLATE_IDS, TEMPLATE_NAMES, isTemplateId } from "@/lib/templates/catalog";
 
 /**
  * Foto pública do bucket wedding-photos dentro da pasta do dono. Compara a URL já
@@ -72,10 +64,6 @@ export function isOwnerPhotoUrl(value: string, ownerId: string, base = process.e
   } catch {
     return false;
   }
-}
-
-export function isTemplateId(value: string): value is WeddingSite["templateId"] {
-  return (TEMPLATE_IDS as string[]).includes(value);
 }
 
 /**

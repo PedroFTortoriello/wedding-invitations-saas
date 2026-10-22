@@ -13,6 +13,7 @@ import { romanticImages } from "@/lib/demo-wedding";
 import { getPublishReadiness } from "@/lib/publish-readiness";
 import { isValidSlug, slugify } from "@/lib/slug";
 import { TEMPLATE_CHOICES } from "@/lib/template-options";
+import { getTemplate } from "@/lib/templates/catalog";
 import { PhotoManager } from "./PhotoManager";
 import { autosaveWeddingAction } from "./autosave-action";
 import { saveWhatsappAction } from "./profile-action";
@@ -32,14 +33,6 @@ const DETAIL_CARD_TYPES: { id: WeddingSite["detailCards"][number]["type"]; label
   { id: "menu", label: "Menu" },
   { id: "custom", label: "Personalizado" }
 ];
-
-/** Modelos que renderizam a programação do dia (nos demais a seção não aparece). */
-const TEMPLATES_WITH_SCHEDULE = new Set<WeddingSite["templateId"]>([
-  "cinema-noir",
-  "editorial-luxury",
-  "jardim-romantico",
-  "garden-classico"
-]);
 
 const SECTIONS = {
   modelo: { title: "Modelo", icon: "palette", description: "Troca na hora: textos e fotos continuam iguais." },
@@ -214,7 +207,7 @@ export function LiveEditor({
   const savingRef = useRef(false);
   const savedRef = useRef<WeddingSite>(initial);
 
-  const hasSchedule = TEMPLATES_WITH_SCHEDULE.has(site.templateId);
+  const hasSchedule = getTemplate(site.templateId).shows.schedule;
   const orderedSections = SECTION_GROUPS.flatMap((g) => g.ids).filter((id) => id !== "programacao" || hasSchedule);
 
   // Mantém a referência da versão mais nova para o auto-save (sem mutar ref no render).

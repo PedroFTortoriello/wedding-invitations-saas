@@ -98,10 +98,19 @@ export function Modelos() {
           <h2 id="modelos-titulo" className="t-h1 text-balance lg:col-span-7">
             Escolham o modelo. <span className="italic">Troquem quando quiserem.</span>
           </h2>
-          <p className="mt-4 t-lead lg:col-span-5 lg:mt-0">
-            Todos pelo mesmo preço. Na troca, textos e fotos continuam, por isso vocês veem aqui o mesmo casamento em
-            cada modelo.
-          </p>
+          <div className="mt-4 lg:col-span-5 lg:mt-0">
+            <p className="t-lead">
+              Todos pelo mesmo preço. Na troca, textos e fotos continuam, por isso vocês veem aqui o mesmo casamento em
+              cada modelo.
+            </p>
+            <Link
+              href="/modelos"
+              prefetch={false}
+              className="mt-3 inline-flex min-h-11 items-center gap-1.5 font-semibold text-ink underline decoration-ink/40 underline-offset-[6px] transition-colors duration-150 hover:decoration-ink motion-reduce:transition-none"
+            >
+              Ver a biblioteca completa de modelos <span aria-hidden="true">→</span>
+            </Link>
+          </div>
         </div>
 
         {/* Desktop: rádios (1–4), aparelhos e ações (5–12). */}

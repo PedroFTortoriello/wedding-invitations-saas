@@ -1,0 +1,1242 @@
+/*
+ * Jardim Brasileiro — creme, ipê-amarelo, verde-mata e rosa-manacá; Gloock (display)
+ * + Onest (texto). Flora brasileira do kit em traço e silhueta (bromélia, costela-de-adão,
+ * flor de laranjeira, palmeira, samambaia) e "pingos" de ipê. Tudo escopado em .template.
+ *
+ * Contraste (WCAG, calculado):
+ *   ink #22302a / creme #f8f3e6 12,4:1 · / creme-2 #f1eadb 11,5:1 · / ipê #f0c74d 8,5:1
+ *   gray #4f5b53 / creme 6,4:1 · / creme-2 5,9:1 · / branco 7,1:1
+ *   mata #2c5a3c / creme 7,2:1 (eyebrows, links) · / branco 8,0:1 · / ipê 4,9:1
+ *   creme #f8f3e6 / mata 7,2:1 (faixa do convite, botões, rodapé)
+ *   #c9d3c3 / mata 5,2:1 (eyebrow e meta sobre o verde)
+ *   manacá-texto #9a6a8c / creme 3,9:1: SÓ no "&" e nos números grandes (>= 40px, 3:1 ok)
+ *   manacá #b784a7 / creme 2,8:1: só ornamento (traço das plantas), nunca texto
+ *   erro #8d3d33 / branco 7,4:1
+ */
+
+.template {
+  --jb-cream: #f8f3e6;
+  --jb-cream-2: #f1eadb;
+  --jb-ipe: #f0c74d;
+  --jb-mata: #2c5a3c;
+  --jb-mata-deep: #203f2b;
+  --jb-manaca: #b784a7;
+  --jb-manaca-text: #9a6a8c;
+  --jb-ink: #22302a;
+  --jb-gray: #4f5b53;
+  --jb-on-forest: #f8f3e6;
+  --jb-on-forest-soft: #c9d3c3;
+  --jb-white: #fff;
+  --jb-line: rgba(44, 90, 60, 0.28);
+  --jb-gutter: clamp(1.25rem, 5vw, 3rem);
+
+  /* widgets */
+  --font-serif: var(--jb-display), Georgia, serif;
+  --font-sans: var(--jb-sans), "Segoe UI", sans-serif;
+  --widget-card-radius: 20px;
+  --widget-btn-radius: 999px;
+  --widget-btn-case: none;
+  --widget-btn-tracking: 0.02em;
+  --g-card: #fff;
+  --g-dialog-bg: #f8f3e6;
+  --g-border: rgba(44, 90, 60, 0.28);
+  --g-ink: #22302a;
+  --g-muted: #4f5b53; /* 7,1:1 sobre #fff */
+  --g-accent: #2c5a3c;
+  --g-on-accent: #f8f3e6;
+  --g-price: #2c5a3c;
+  --g-radius: 20px;
+  --g-img-radius: 0 20px 0 20px;
+  --g-img-filter: none;
+  --g-scrim: rgba(34, 48, 42, 0.55);
+  --g-error: #8d3d33;
+  --gf-bg: #f1eadb;
+  --gf-card: #fff;
+  --gf-ink: #22302a;
+  --gf-muted: #4f5b53;
+  --gf-border: rgba(44, 90, 60, 0.28);
+  --gf-field: #f8f3e6;
+  --gf-accent: #2c5a3c;
+  --gf-on-accent: #f8f3e6;
+  --gf-radius: 20px;
+  --gf-eyebrow: #2c5a3c;
+  --gf-error: #8d3d33;
+
+  font-family: var(--jb-sans), "Segoe UI", system-ui, sans-serif;
+  color: var(--jb-ink);
+  background: var(--jb-cream);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+:where(.template) :where(a, button):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+/* "Não poderei ir" do GuestForms (botão sem classe, estilo inline): alvo de toque >= 44px */
+.template :where(button:not([class])) {
+  min-height: 44px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 74rem;
+  margin-inline: auto;
+  padding-inline: var(--jb-gutter);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------ tipografia */
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--jb-mata);
+}
+.eyebrowOnForest {
+  color: var(--jb-on-forest-soft);
+}
+
+.h2 {
+  margin: 0.7rem 0 0;
+  font-family: var(--jb-display), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  line-height: 1.1;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.lead {
+  margin: 1rem 0 0;
+  max-width: 40rem;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--jb-gray);
+}
+
+.body {
+  margin: 0.9rem 0 0;
+  max-width: 36rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--jb-ink);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding-inline: 1.7rem;
+  border-radius: 999px;
+  background: var(--jb-mata);
+  color: var(--jb-on-forest);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 180ms ease, transform 180ms ease;
+}
+.btn:hover {
+  background: var(--jb-mata-deep);
+  transform: translateY(-1px);
+}
+
+/* ----------------------------------------------------------- ornamentos */
+
+.plant {
+  position: absolute;
+  pointer-events: none;
+}
+
+.drops {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.drop {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  background: var(--jb-ipe);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .plant {
+    animation: jb-sway 7s ease-in-out infinite alternate;
+    transform-origin: 50% 100%;
+  }
+  .plant:nth-child(2n) {
+    animation-duration: 9s;
+    animation-delay: -3s;
+  }
+  .plant:nth-child(3n) {
+    animation-duration: 11s;
+    animation-delay: -5s;
+  }
+}
+@keyframes jb-sway {
+  from {
+    rotate: -1.5deg;
+  }
+  to {
+    rotate: 1.5deg;
+  }
+}
+
+/* ------------------------------------------------------------------ nav */
+
+.nav {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 20;
+  transition: background 200ms ease, box-shadow 200ms ease;
+}
+.navSolid {
+  background: rgba(248, 243, 230, 0.94);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 1px 0 var(--jb-line);
+}
+.navInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.75rem;
+}
+.navMono {
+  font-family: var(--jb-display), Georgia, serif;
+  font-size: 1.2rem;
+  color: var(--jb-mata);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+}
+.navLinks {
+  display: none;
+  gap: 1.6rem;
+}
+.navLink {
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--jb-ink);
+  text-decoration: none;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid transparent;
+  transition: border-color 180ms ease, color 180ms ease;
+}
+.navLink:hover {
+  color: var(--jb-mata);
+  border-color: var(--jb-mata);
+}
+.navToggle {
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border: 1px solid var(--jb-line);
+  border-radius: 999px;
+  background: var(--jb-cream);
+  color: var(--jb-ink);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.navMobile {
+  display: grid;
+  padding: 0.5rem var(--jb-gutter) 1.25rem;
+  background: var(--jb-cream);
+  box-shadow: 0 1px 0 var(--jb-line);
+}
+.navMobileLink {
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--jb-line);
+  font-family: var(--jb-display), Georgia, serif;
+  font-size: 1.25rem;
+  color: var(--jb-ink);
+  text-decoration: none;
+}
+@media (min-width: 900px) {
+  .navLinks {
+    display: flex;
+  }
+  .navToggle {
+    display: none;
+  }
+}
+
+/* ----------------------------------------------------------------- capa */
+
+.hero {
+  position: relative;
+  min-height: calc(100svh - var(--demo-bar-h, 0px));
+  display: grid;
+  align-items: center;
+  padding: calc(4.5rem + var(--demo-bar-h, 0px)) var(--jb-gutter) 2.5rem;
+  background: var(--jb-cream);
+}
+.heroInner {
+  position: relative;
+  width: 100%;
+  max-width: 64rem;
+  margin-inline: auto;
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+.heroText {
+  position: relative;
+  z-index: 2;
+}
+
+.names {
+  position: relative;
+  margin: 0.9rem 0 0;
+  font-family: var(--jb-display), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2.6rem, 11vw, 5.4rem);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  display: grid;
+  gap: 0.15em;
+}
+.names[data-scale="medium"] {
+  font-size: clamp(2.2rem, 8.5vw, 4.4rem);
+}
+.names[data-scale="long"] {
+  font-size: clamp(1.75rem, 6.5vw, 3.3rem);
+}
+.name {
+  display: block;
+}
+.amp {
+  display: block;
+  font-size: 0.72em;
+  line-height: 1;
+  color: var(--jb-manaca-text); /* 3,9:1, >= 40px */
+}
+
+.heroMeta {
+  margin: 1.4rem 0 0;
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--jb-ink);
+}
+.heroPlace {
+  color: var(--jb-gray);
+  letter-spacing: 0.14em;
+}
+
+/* o palco: o arco (ou os nomes, sem foto) com o jardim em volta; as plantas nunca tocam o texto */
+.stage {
+  position: relative;
+  display: grid;
+  justify-items: center;
+}
+.stagePhoto {
+  width: min(84vw, 560px);
+  margin-top: 2.2rem;
+}
+.arch {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  aspect-ratio: 4 / 4.6;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 50% 50% 0 0 / 20% 20% 0 0;
+  background: var(--jb-cream-2);
+  box-shadow: 0 24px 50px -30px rgba(34, 48, 42, 0.45);
+}
+.archImg {
+  object-fit: cover;
+}
+.heroBtn {
+  position: relative;
+  z-index: 3;
+  margin-top: -1.5rem;
+}
+.stageBare + .heroBtn {
+  margin-top: 0.5rem;
+}
+
+.garden {
+  position: absolute;
+  inset: -6%;
+  z-index: 1;
+  pointer-events: none;
+}
+/* posições relativas ao palco (com foto: o arco) */
+.monsteraL {
+  left: -14%;
+  bottom: 0;
+  width: clamp(130px, 30vw, 290px);
+  color: var(--jb-mata);
+  opacity: 0.92;
+  transform: rotate(-12deg);
+}
+.palmR {
+  right: -22%;
+  bottom: -2%;
+  width: clamp(150px, 34vw, 320px);
+  color: var(--jb-manaca);
+  opacity: 0.55;
+  transform: scaleX(-1);
+}
+.bromeliaR {
+  right: -18%;
+  bottom: 24%;
+  width: clamp(110px, 24vw, 220px);
+  color: var(--jb-mata);
+}
+.blossomL {
+  left: -16%;
+  top: 30%;
+  width: clamp(90px, 20vw, 180px);
+  color: var(--jb-manaca-text);
+}
+.fernR {
+  right: -8%;
+  top: -4%;
+  width: clamp(70px, 16vw, 150px);
+  color: var(--jb-mata);
+  opacity: 0.8;
+  transform: rotate(28deg);
+}
+/* no celular, com foto, o arco ocupa quase tudo: só as silhuetas de baixo espiam */
+@media (max-width: 899px) {
+  .stagePhoto .fernR,
+  .stagePhoto .blossomL {
+    display: none;
+  }
+  .stagePhoto .bromeliaR {
+    right: -12%;
+    bottom: 10%;
+  }
+}
+
+/* capa sem foto: o jardim fecha em volta dos nomes, sol de ipê atrás */
+.stageBare {
+  width: min(100%, 44rem);
+  padding: clamp(5rem, 16vw, 7rem) clamp(2.5rem, 12vw, 6rem);
+  margin-top: 0.5rem;
+}
+.stageBare .heroText {
+  z-index: 3;
+}
+/* o sol de ipê cresce com os nomes (nunca menor que 460px no desktop): o texto fica sempre dentro dele */
+.stageBare .heroText::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 50%;
+  width: max(calc(100% + 4rem), min(62vw, 460px));
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: var(--jb-ipe);
+  opacity: 0.92;
+}
+.stageBare .garden {
+  inset: 0;
+}
+.stageBare .monsteraL {
+  left: -4%;
+  bottom: -2%;
+}
+.stageBare .palmR {
+  right: -6%;
+  bottom: 0;
+}
+.stageBare .bromeliaR {
+  right: -2%;
+  bottom: 40%;
+  width: clamp(90px, 22vw, 190px);
+}
+.stageBare .blossomL {
+  left: 0;
+  top: 0;
+}
+.stageBare .fernR {
+  right: 6%;
+  top: -4%;
+}
+/* sem foto a capa é uma peça centrada: não precisa de 100svh */
+.heroBare {
+  min-height: min(calc(100svh - var(--demo-bar-h, 0px)), 46rem);
+}
+@media (min-width: 900px) {
+  .stageBare {
+    width: min(100%, 66rem);
+    padding: 7.5rem 9rem;
+  }
+  .stageBare .monsteraL {
+    left: 0;
+    bottom: 0;
+  }
+  .stageBare .palmR {
+    right: 0;
+    bottom: -4%;
+  }
+  .stageBare .bromeliaR {
+    right: 5%;
+    bottom: 44%;
+  }
+  .stageBare .blossomL {
+    left: 6%;
+    top: 4%;
+  }
+  .stageBare .fernR {
+    right: 16%;
+    top: 0;
+  }
+}
+
+@media (min-width: 900px) {
+  .hero {
+    padding-bottom: 3.5rem;
+  }
+  .names {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    column-gap: 0.3em;
+    row-gap: 0;
+  }
+  .names[data-scale="long"] {
+    display: grid;
+  }
+  .amp {
+    display: inline;
+    font-size: 0.6em;
+  }
+  .heroMeta {
+    grid-auto-flow: column;
+    gap: 1.6rem;
+  }
+  .heroPlace::before {
+    content: "·";
+    margin-right: 1.6rem;
+    color: var(--jb-manaca-text);
+  }
+  .monsteraL {
+    left: -26%;
+  }
+  .palmR {
+    right: -34%;
+  }
+  .bromeliaR {
+    right: -30%;
+  }
+  .blossomL {
+    left: -28%;
+  }
+  .fernR {
+    right: -24%;
+    top: 2%;
+  }
+}
+
+/* --------------------------------------------------------------- convite */
+
+.invite {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(3.5rem, 8vw, 6rem) var(--jb-gutter);
+  background: var(--jb-mata);
+  color: var(--jb-on-forest);
+}
+.inviteBloom {
+  position: absolute;
+  right: -2rem;
+  bottom: -2.5rem;
+  width: clamp(130px, 22vw, 230px);
+  color: var(--jb-on-forest);
+  opacity: 0.55;
+  pointer-events: none;
+}
+.inviteInner {
+  position: relative;
+  max-width: 52rem;
+  margin-inline: auto;
+  display: grid;
+  gap: 1.2rem;
+  text-align: center;
+}
+.inviteWords {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35em 0.7em;
+  font-family: var(--jb-display), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.6rem, 4.2vw, 2.8rem);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+.inviteWord::after {
+  content: "";
+  display: inline-block;
+  width: 0.22em;
+  height: 0.22em;
+  margin-left: 0.7em;
+  vertical-align: middle;
+  border-radius: 50%;
+  background: var(--jb-ipe);
+}
+.inviteWord:last-child::after {
+  display: none;
+}
+.inviteText {
+  margin: 0;
+  max-width: 40rem;
+  justify-self: center;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--jb-on-forest);
+}
+
+/* -------------------------------------------------------------- história */
+
+.story {
+  padding: clamp(3.5rem, 8vw, 6.5rem) 0;
+}
+.storyHead {
+  max-width: 44rem;
+}
+.chapters {
+  display: grid;
+  gap: clamp(3rem, 7vw, 5.5rem);
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+}
+.chapter {
+  display: grid;
+  gap: 1.5rem;
+  align-items: center;
+}
+.leaf {
+  margin: 0;
+  width: min(86vw, 420px);
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 0 60% 0 60%;
+  background: var(--jb-cream-2);
+}
+.chapterFlip .leaf {
+  border-radius: 60% 0 60% 0;
+  justify-self: end;
+}
+.leafImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.chapterText {
+  position: relative;
+  padding-top: 0.5rem;
+}
+.chapterNum {
+  display: block;
+  font-family: var(--jb-display), Georgia, serif;
+  font-size: clamp(3rem, 8vw, 5rem);
+  line-height: 0.9;
+  color: var(--jb-manaca-text); /* 3,9:1, >= 48px */
+}
+.chapterTitle {
+  margin: 0.8rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--jb-mata);
+}
+.chapterHeadline {
+  margin: 0.7rem 0 0;
+  display: grid;
+  font-family: var(--jb-display), Georgia, serif;
+  font-size: clamp(1.45rem, 3vw, 2.1rem);
+  line-height: 1.2;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+@media (min-width: 760px) {
+  .chaptersBare {
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 2.5rem;
+  }
+  .chaptersBare .chapter {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+}
+@media (min-width: 900px) {
+  .chapter:not(.chaptersBare .chapter) {
+    grid-template-columns: 5fr 6fr;
+    gap: clamp(2.5rem, 6vw, 5rem);
+  }
+  .chapterFlip .chapterText {
+    order: -1;
+  }
+  .leaf {
+    width: 100%;
+    max-width: 480px;
+  }
+  .chapterFlip .leaf {
+    justify-self: start;
+  }
+}
+
+/* -------------------------------------------------------------- contagem */
+
+.count {
+  padding: clamp(3rem, 7vw, 5rem) 0;
+  background: var(--jb-cream-2);
+}
+.countInner {
+  display: grid;
+  justify-items: center;
+  gap: 1.5rem;
+  text-align: center;
+}
+.countGrid {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  gap: clamp(1rem, 5vw, 3rem);
+  margin-top: 0.4rem;
+}
+.cell {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.4rem;
+  padding-top: 0.7rem;
+}
+.cell::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: clamp(3.2rem, 10vw, 4.6rem);
+  aspect-ratio: 1;
+  translate: -62% -6%;
+  border-radius: 50%;
+  background: var(--jb-ipe);
+}
+.cellNum {
+  position: relative;
+  font-family: var(--jb-display), Georgia, serif;
+  font-size: clamp(2.3rem, 7vw, 3.6rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--jb-ink); /* 8,5:1 sobre o ipê */
+}
+.cellLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--jb-gray);
+}
+.countDate {
+  margin: 0;
+  font-family: var(--jb-display), Georgia, serif;
+  font-size: 1.2rem;
+  color: var(--jb-ink);
+}
+
+/* ----------------------------------------------------------- programação */
+
+.schedule {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(3.5rem, 8vw, 6.5rem) 0;
+}
+.scheduleLeaf {
+  position: absolute;
+  right: -22%;
+  top: 0;
+  width: clamp(220px, 36vw, 440px);
+  color: var(--jb-mata);
+  opacity: 0.08;
+  rotate: -18deg;
+  pointer-events: none;
+}
+.scheduleGrid {
+  position: relative;
+  display: grid;
+  gap: 2.5rem;
+}
+.scheduleHead {
+  max-width: 34rem;
+}
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  max-width: 36rem;
+}
+.slot {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.2rem;
+  padding: 1.1rem 0 1.1rem 1.6rem;
+  border-bottom: 1px solid var(--jb-line);
+}
+.slot::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 1.65rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--jb-ipe);
+}
+.slot:last-child {
+  border-bottom: 0;
+}
+.slotTime {
+  font-family: var(--jb-display), Georgia, serif;
+  font-size: 1.5rem;
+  line-height: 1.1;
+  color: var(--jb-mata);
+  min-width: 3.4rem;
+}
+.slotBody {
+  display: grid;
+  gap: 0.25rem;
+  padding-top: 0.2rem;
+}
+.slotTitle {
+  font-weight: 600;
+  line-height: 1.35;
+}
+.slotNote {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--jb-gray);
+}
+@media (min-width: 900px) {
+  .scheduleLeaf {
+    right: -8%;
+    top: 8%;
+  }
+  .scheduleGrid {
+    grid-template-columns: 5fr 6fr;
+    gap: 4rem;
+    align-items: start;
+  }
+  .scheduleHead {
+    position: sticky;
+    top: 5rem;
+  }
+}
+
+/* ----------------------------------------------------------------- local */
+
+.place {
+  padding: clamp(3.5rem, 8vw, 6.5rem) 0;
+  background: var(--jb-cream-2);
+}
+.placeHead {
+  max-width: 44rem;
+}
+.placeLine {
+  margin: 0.6rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--jb-gray);
+}
+.placeHead .btn {
+  margin-top: 1.4rem;
+}
+.mapFrame {
+  margin-top: 2.2rem;
+  padding: 10px;
+  border-radius: 28px;
+  background: var(--jb-mata);
+}
+.map {
+  display: block;
+  width: 100%;
+  height: clamp(280px, 50vw, 480px);
+  border: 0;
+  border-radius: 20px;
+  background: var(--jb-cream);
+}
+
+/* --------------------------------------------------------------- cartões */
+
+.cards {
+  padding: clamp(3rem, 7vw, 5.5rem) 0;
+}
+.cardList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1.25rem;
+}
+.card {
+  position: relative;
+  overflow: hidden;
+  padding: 2rem 1.6rem 2rem;
+  border: 1px solid var(--jb-line);
+  border-radius: 0 28px 0 28px;
+  background: var(--jb-white);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 36px -24px rgba(34, 48, 42, 0.5);
+}
+.cardPlant {
+  position: absolute;
+  right: 0.6rem;
+  top: 0.5rem;
+  width: 5.5rem;
+  color: var(--jb-mata);
+  opacity: 0.6;
+  pointer-events: none;
+}
+.cardTitle {
+  margin: 0;
+  padding-right: 4rem;
+  font-family: var(--jb-display), Georgia, serif;
+  font-weight: 400;
+  font-size: 1.55rem;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.cardSub {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--jb-mata);
+}
+.cardBody {
+  margin: 0.9rem 0 0;
+  font-size: 0.98rem;
+  line-height: 1.65;
+  color: var(--jb-gray); /* 7,1:1 sobre branco */
+}
+@media (min-width: 760px) {
+  .cardList {
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+/* ------------------------------------------------------------- presentes */
+
+.gifts {
+  padding: clamp(3.5rem, 8vw, 6rem) 0;
+  background: var(--jb-cream-2);
+}
+.giftsHead {
+  max-width: 44rem;
+  margin-bottom: 2.2rem;
+}
+
+/* --------------------------------------------------------------- galeria */
+
+.gallery {
+  padding: clamp(3.5rem, 8vw, 6.5rem) 0;
+}
+.galleryHead {
+  max-width: 44rem;
+}
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.8rem;
+  margin-top: 2.2rem;
+}
+.shot {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 0 24px;
+  background: var(--jb-cream-2);
+}
+.shot:nth-child(2n) {
+  border-radius: 24px 0;
+}
+.shotBtn {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.shotImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 300ms ease;
+}
+.shotBtn:hover .shotImg {
+  transform: scale(1.03);
+}
+@media (min-width: 760px) {
+  .galleryGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.1rem;
+  }
+  .shot:nth-child(2n) {
+    border-radius: 0 24px;
+  }
+  .shot:nth-child(3n + 2) {
+    border-radius: 24px 0;
+  }
+}
+
+.lightbox {
+  max-width: min(92vw, 1100px);
+  max-height: 92vh;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0 24px;
+  background: var(--jb-cream);
+  color: var(--jb-ink);
+  overflow: visible;
+}
+.lightbox::backdrop {
+  background: rgba(34, 48, 42, 0.78);
+}
+.lbClose,
+.lbNav {
+  position: absolute;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--jb-mata);
+  color: var(--jb-on-forest);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.lbClose {
+  top: -14px;
+  right: -14px;
+}
+.lbNav {
+  top: 50%;
+  transform: translateY(-50%);
+}
+.lbNav[data-dir="prev"] {
+  left: -14px;
+}
+.lbNav[data-dir="next"] {
+  right: -14px;
+}
+.lbFig {
+  margin: 0;
+  padding: 10px;
+}
+.lbImg {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: 80vh;
+  height: auto;
+  margin-inline: auto;
+  object-fit: contain;
+  border-radius: 0 18px;
+}
+.lbCap {
+  padding: 0.6rem 0.25rem 0;
+  font-size: 0.85rem;
+  color: var(--jb-gray);
+  text-align: center;
+}
+
+/* ---------------------------------------------------------- encerramento */
+
+.closing {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2.2rem;
+  padding: clamp(3.5rem, 8vw, 6.5rem) var(--jb-gutter) clamp(3rem, 7vw, 5rem);
+  text-align: center;
+}
+.closingStage {
+  width: min(78vw, 520px);
+}
+.closingStageBare {
+  width: min(100%, 30rem);
+  aspect-ratio: 5 / 3;
+  max-height: 260px;
+}
+.closingSun {
+  position: relative;
+  z-index: 2;
+  width: clamp(120px, 30vw, 180px);
+  aspect-ratio: 1;
+  align-self: center;
+  border-radius: 50%;
+  background: var(--jb-ipe);
+}
+.closingMonstera {
+  left: -18%;
+  bottom: 2%;
+  width: clamp(120px, 26vw, 260px);
+  color: var(--jb-mata);
+  opacity: 0.9;
+  transform: rotate(10deg);
+}
+.closingBromelia {
+  right: -20%;
+  bottom: 8%;
+  width: clamp(100px, 22vw, 210px);
+  color: var(--jb-mata);
+  transform: scaleX(-1);
+}
+.closingBlossom {
+  left: -12%;
+  top: 0;
+  width: clamp(80px, 18vw, 160px);
+  color: var(--jb-manaca-text);
+}
+.closingFern {
+  right: -10%;
+  top: -6%;
+  width: clamp(70px, 15vw, 130px);
+  color: var(--jb-manaca);
+  transform: rotate(24deg);
+}
+@media (max-width: 899px) {
+  .closingStage .closingBlossom,
+  .closingStage .closingFern {
+    display: none;
+  }
+}
+@media (min-width: 900px) {
+  .closingMonstera {
+    left: -34%;
+  }
+  .closingBromelia {
+    right: -36%;
+  }
+  .closingBlossom {
+    left: -26%;
+  }
+  .closingFern {
+    right: -26%;
+  }
+}
+.closingArch {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 50% 50% 0 0 / 22% 22% 0 0;
+  background: var(--jb-cream-2);
+}
+.closingImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.closingText {
+  position: relative;
+  z-index: 2;
+  max-width: 40rem;
+}
+.closingQuote {
+  margin: 0;
+  font-family: var(--jb-display), Georgia, serif;
+  font-size: clamp(1.5rem, 3.4vw, 2.3rem);
+  line-height: 1.25;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+/* texto de encerramento longo (> 180 caracteres): escala menor, ainda em Gloock */
+.closingQuoteLong {
+  font-size: clamp(1.25rem, 2.4vw, 1.7rem);
+  line-height: 1.35;
+}
+.closingSign {
+  margin: 1.2rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--jb-mata);
+  overflow-wrap: anywhere;
+}
+
+/* ---------------------------------------------------------------- rodapé */
+
+.footer {
+  padding: clamp(2.5rem, 6vw, 4rem) 0 2rem;
+  background: var(--jb-mata);
+  color: var(--jb-on-forest);
+}
+.footerInner {
+  display: grid;
+  justify-items: center;
+  gap: 0.7rem;
+  text-align: center;
+}
+.footerMono {
+  margin: 0;
+  font-family: var(--jb-display), Georgia, serif;
+  font-size: 1.6rem;
+  letter-spacing: 0.04em;
+}
+.footerText {
+  margin: 0;
+  max-width: 34rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.footerMeta {
+  margin: 0.3rem 0 0;
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--jb-on-forest-soft); /* 5,2:1 sobre o verde */
+}
+.footerCredit {
+  margin: 1.2rem 0 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  color: var(--jb-on-forest-soft);
+}

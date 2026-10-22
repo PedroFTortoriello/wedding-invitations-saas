@@ -16,7 +16,9 @@ export type GuestFormsVariant =
   | "garden"
   | "olive"
   | "praia"
-  | "cinema";
+  | "cinema"
+  /** O modelo define as vars --gf-* no próprio root (.template): ver TEMPLATE_GUIDE.md. */
+  | "inherit";
 type Mode = "both" | "rsvp" | "messages";
 
 /** Jardim Romântico: tokens verdes do modelo (--jr-*), mesmo nome de variant do GiftRegistry. */
@@ -138,7 +140,8 @@ const SKINS: Record<GuestFormsVariant, CSSProperties> = {
     "--gf-error": "#e6a99f",
     "--gf-btn-case": "uppercase",
     "--gf-btn-tracking": "0.1em"
-  } as CSSProperties
+  } as CSSProperties,
+  inherit: {}
 };
 
 type GuestFormsProps = {
@@ -245,6 +248,8 @@ function RsvpCard({ wedding }: { wedding: WeddingSite }) {
             disabled={state === "loading"}
             style={{
               marginTop: 4,
+              minHeight: 44,
+              padding: "0 12px",
               background: "none",
               border: "none",
               color: "inherit",

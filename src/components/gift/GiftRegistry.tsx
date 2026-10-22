@@ -11,7 +11,8 @@ import { GIFT_ASPECT_BY_TEMPLATE, GIFT_BACKDROP_STYLE, giftImageStyle, normalize
 import { useCardGiftConfig } from "./CardGiftContext";
 import styles from "./gift-registry.module.css";
 
-export type GiftVariant = "classico" | "civil" | "jardim" | "editorial" | "romantic-garden" | "praia" | "cinema";
+/** "inherit": o modelo define as vars --g-* no próprio root (.template); só --g-aspect vem do catálogo. */
+export type GiftVariant = "classico" | "civil" | "jardim" | "editorial" | "romantic-garden" | "praia" | "cinema" | "inherit";
 
 /**
  * Per-template skin. Shared layout + Pix logic; each template provides its own
@@ -149,7 +150,8 @@ const SKINS: Record<GiftVariant, CSSProperties> = {
     "--g-error": "#e6a99f",
     "--g-btn-case": "uppercase",
     "--g-btn-tracking": "0.1em"
-  } as CSSProperties
+  } as CSSProperties,
+  inherit: {}
 };
 
 /** Gifts shown before the in-place "Ver todos" expansion. */
@@ -212,7 +214,11 @@ export function GiftRegistry({ wedding, variant, sectionId = "presentes" }: Gift
   }
 
   return (
-    <div className={styles.root} style={SKINS[variant]} ref={rootRef}>
+    <div
+      className={styles.root}
+      style={variant === "inherit" ? ({ "--g-aspect": GIFT_ASPECT_BY_TEMPLATE[wedding.templateId] } as CSSProperties) : SKINS[variant]}
+      ref={rootRef}
+    >
       {notice ? (
         <p role="status" className={notice.tone === "ok" ? styles.notice : `${styles.notice} ${styles.noticeWarn}`}>
           {notice.text}
@@ -227,6 +233,7 @@ export function GiftRegistry({ wedding, variant, sectionId = "presentes" }: Gift
               key={gift.id}
               className={isExtra ? `${styles.card} ${styles.cardEnter}` : styles.card}
               data-reveal={isExtra ? undefined : ""}
+              suppressHydrationWarning
               style={
                 isExtra
                   ? { animationDelay: `${(index - VISIBLE_GIFTS) * 50}ms` }

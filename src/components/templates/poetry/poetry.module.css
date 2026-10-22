@@ -1,0 +1,944 @@
+/*
+ * Poesia: um livro. Papel, tinta, fio. Literata (versos, títulos, corpo) e Inter
+ * (cabeçalhos corridos, fólios, colofão, UI). Cada seção é uma "página" com
+ * cabeçalho corrido e fólio; no desktop o livro tem margens e fios laterais.
+ *
+ * Contraste (WCAG, calculado em python):
+ *   tinta  #2a2622 sobre papel #f7f4ed 13,67:1 | sobre papel-2 #efeae0 12,52:1
+ *   cinza  #5c564f sobre papel 6,59:1 | sobre papel-2 6,04:1 | sobre cartão #fdfbf7 7,01:1
+ *   acento #8a5a3c sobre papel 5,30:1 | sobre papel-2 4,85:1 (fólios 11px, links)
+ *   papel  #f7f4ed sobre acento #8a5a3c 5,30:1 (botões) | sobre tinta 13,67:1 (lightbox)
+ *   erro   #8d3d33 sobre papel 6,71:1 | sobre cartão 7,13:1
+ */
+
+.template {
+  --po-paper: #f7f4ed;
+  --po-paper-2: #efeae0;
+  --po-card: #fdfbf7;
+  --po-ink: #2a2622;
+  --po-muted: #5c564f;
+  --po-line: #d4cec1;
+  --po-accent: #8a5a3c;
+  --po-serif: var(--po-display), "Literata", Georgia, "Times New Roman", serif;
+  --po-sans-stack: var(--po-sans), "Inter", "Segoe UI", system-ui, sans-serif;
+
+  /* Widgets (GiftRegistry, GuestForms, modal do Pix). */
+  --font-serif: var(--po-serif);
+  --font-sans: var(--po-sans-stack);
+  --widget-card-radius: 0px;
+  --widget-btn-radius: 0px;
+  --widget-btn-case: none;
+  --widget-btn-tracking: 0.02em;
+
+  --g-card: #fdfbf7;
+  --g-dialog-bg: #f7f4ed;
+  --g-border: #d4cec1;
+  --g-ink: #2a2622;
+  --g-muted: #5c564f; /* 7,01:1 sobre o cartão */
+  --g-accent: #8a5a3c;
+  --g-on-accent: #f7f4ed;
+  --g-price: #2a2622;
+  --g-radius: 0px;
+  --g-img-radius: 0px;
+  --g-img-filter: saturate(0.9) contrast(1.02);
+  --g-scrim: rgba(42, 38, 34, 0.6);
+  --g-error: #8d3d33;
+
+  --gf-bg: #efeae0;
+  --gf-card: #fdfbf7;
+  --gf-ink: #2a2622;
+  --gf-muted: #5c564f;
+  --gf-border: #d4cec1;
+  --gf-field: #ffffff;
+  --gf-accent: #8a5a3c;
+  --gf-on-accent: #f7f4ed;
+  --gf-radius: 0px;
+  --gf-eyebrow: #5c564f;
+  --gf-error: #8d3d33;
+
+  font-family: var(--po-serif);
+  font-weight: 400;
+  color: var(--po-ink);
+  background: var(--po-paper-2);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+:where(.template) :where(a, button):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+/* O livro: largura total no celular; no desktop, um volume centrado com fios laterais. */
+.book {
+  background: var(--po-paper);
+  max-width: 68rem;
+  margin-inline: auto;
+}
+@media (min-width: 1100px) {
+  .book {
+    border-inline: 1px solid var(--po-line);
+  }
+}
+
+/* ------------------------------------------------------------- papéis */
+
+.runHead,
+.folio,
+.colophon,
+.countSmall,
+.countDate,
+.mapCap,
+.albumNum,
+.chapterNum,
+.noteSub,
+.placeCity,
+.colofaoMeta,
+.colofaoCredit,
+.navLink,
+.navToggle,
+.navMobileLink,
+.fim {
+  font-family: var(--po-sans-stack);
+}
+
+.runHead {
+  margin: 0 0 clamp(1.75rem, 4vw, 2.75rem);
+  font-size: 0.6875rem; /* 11px */
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--po-muted);
+}
+
+.folio {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  color: var(--po-accent);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.page {
+  padding: clamp(2.25rem, 5vw, 3.5rem) clamp(1.25rem, 5vw, 4rem) clamp(1.5rem, 3vw, 2rem);
+  border-top: 1px solid var(--po-line);
+}
+.pageBody {
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+
+/* coluna de livro */
+.column {
+  max-width: 32rem;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--po-serif);
+  font-weight: 300;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.body {
+  margin: 1rem 0 0;
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--po-ink);
+}
+
+.link {
+  color: var(--po-accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+  transition: color 0.2s ease;
+}
+.link:hover {
+  color: var(--po-ink);
+}
+
+/* ------------------------------------------------------------------ nav */
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--po-paper);
+  border-bottom: 1px solid var(--po-line);
+}
+.navInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  max-width: 68rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 5vw, 4rem);
+  height: 3.25rem;
+}
+.navMono {
+  font-family: var(--po-serif);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--po-ink);
+}
+.navLinks {
+  display: none;
+  gap: clamp(1rem, 2.5vw, 2rem);
+}
+.navLink {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--po-muted);
+  padding-block: 0.5rem;
+  transition: color 0.2s ease;
+}
+.navLink:hover {
+  color: var(--po-ink);
+}
+.navToggle {
+  min-height: 2.75rem;
+  padding: 0 0.25rem;
+  background: none;
+  border: 0;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--po-ink);
+  cursor: pointer;
+}
+.navMobile {
+  display: flex;
+  flex-direction: column;
+  padding: 0 clamp(1.25rem, 5vw, 4rem) 0.75rem;
+  background: var(--po-paper);
+  border-bottom: 1px solid var(--po-line);
+}
+.navMobileLink {
+  padding: 0.85rem 0;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-top: 1px solid var(--po-line);
+}
+@media (min-width: 900px) {
+  .navLinks {
+    display: flex;
+  }
+  .navToggle {
+    display: none;
+  }
+}
+
+/* ----------------------------------------------------------------- capa */
+
+.cover {
+  min-height: calc(100svh - var(--demo-bar-h, 0px) - 3.25rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: clamp(2.5rem, 6vw, 4.5rem) clamp(1.25rem, 5vw, 4rem) clamp(1.25rem, 3vw, 2rem);
+}
+.authors {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.25em 0.45em;
+  font-family: var(--po-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.35rem, 3.2vw, 1.9rem);
+  line-height: 1.25;
+  letter-spacing: 0.005em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  max-width: 34rem;
+}
+.authors[data-scale="long"] {
+  font-size: clamp(1.15rem, 2.6vw, 1.5rem);
+}
+.authorAmp {
+  font-weight: 300;
+  color: var(--po-accent);
+}
+
+.poem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.1em;
+  margin: clamp(2rem, 6vh, 4rem) 0;
+  font-family: var(--po-serif);
+  font-weight: 300;
+  font-size: clamp(2.1rem, 7.2vw, 4.4rem);
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  max-width: 18ch;
+}
+.verse {
+  display: block;
+}
+
+.coverFoot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1.5rem, 3vw, 2.25rem);
+}
+.colophon {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 0;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--po-ink);
+  max-width: 40rem;
+}
+.colophonItem {
+  display: inline-flex;
+  align-items: center;
+}
+.colophonItem + .colophonItem::before {
+  content: "";
+  display: inline-block;
+  width: 1px;
+  height: 0.8em;
+  margin-inline: 0.9rem;
+  background: var(--po-line);
+}
+
+/* Desktop: página mais baixa e o bloco (autores · poema · colofão · fólio) centrado,
+   sem o poema esticar para ocupar o vazio. */
+@media (min-width: 1024px) {
+  .cover {
+    min-height: calc(84svh - var(--demo-bar-h, 0px));
+    justify-content: center;
+    padding-block: 3rem 1.75rem;
+  }
+  .poem {
+    flex: 0 0 auto;
+    margin: 2.5rem 0 3rem;
+  }
+  .coverFoot {
+    gap: 1.5rem;
+  }
+}
+
+/* ---------------------------------------------------------- frontispício */
+
+.frontis {
+  background: var(--po-paper-2);
+  text-align: center;
+}
+.frontis .pageBody {
+  margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+}
+.frontisFig {
+  margin: 0 auto;
+  width: min(26rem, 78vw);
+}
+.frontisFrame {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 4;
+  border: 1px solid var(--po-line);
+  padding: 0.5rem;
+  background: var(--po-paper);
+}
+.frontisImg {
+  object-fit: cover;
+  padding: 0.5rem;
+  filter: saturate(0.88) contrast(1.02);
+}
+.frontisCap {
+  margin: 1.25rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-family: var(--po-serif);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--po-ink);
+  overflow-wrap: anywhere;
+}
+.frontisDate {
+  font-family: var(--po-sans-stack);
+  font-style: normal;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--po-muted);
+}
+
+/* -------------------------------------------------------------- convite */
+
+.lead {
+  margin: 0;
+  font-size: clamp(1.125rem, 1.5vw, 1.25rem);
+  line-height: 1.8;
+  color: var(--po-ink);
+}
+.lead::first-letter {
+  float: left;
+  font-family: var(--po-serif);
+  font-weight: 300;
+  font-size: 4.2em;
+  line-height: 0.78;
+  padding: 0.08em 0.12em 0 0;
+  color: var(--po-accent);
+}
+
+/* ------------------------------------------------------------- história */
+
+.chapters {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2.5rem, 5vw, 3.5rem);
+  margin-top: clamp(2rem, 4vw, 3rem);
+  max-width: 44rem;
+}
+.chapter {
+  display: flow-root;
+  padding-top: clamp(1.5rem, 3vw, 2rem);
+  border-top: 1px solid var(--po-line);
+}
+.chapterNum {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--po-accent);
+}
+.chapterTitle {
+  margin: 0.6rem 0 0;
+  font-family: var(--po-serif);
+  font-weight: 400;
+  font-size: clamp(1.4rem, 2.6vw, 1.75rem);
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  overflow-wrap: anywhere;
+}
+.chapterPhoto {
+  float: right;
+  width: clamp(6rem, 34vw, 11rem);
+  margin: 0.35rem 0 0.75rem 1.25rem;
+  border: 1px solid var(--po-line);
+  padding: 0.3rem;
+  background: var(--po-paper);
+  shape-outside: margin-box;
+}
+.chapterImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  filter: saturate(0.88) contrast(1.02);
+}
+.epigraph {
+  margin: 1rem 0 0;
+  max-width: 28rem;
+  font-family: var(--po-serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(1.15rem, 1.8vw, 1.35rem);
+  line-height: 1.45;
+  color: var(--po-ink);
+}
+.epigraph > span {
+  display: block;
+}
+.chapter .body {
+  max-width: 32rem;
+}
+
+/* -------------------------------------------------------------- contagem */
+
+.count {
+  background: var(--po-paper-2);
+}
+.countGrid {
+  display: grid;
+  gap: 1.25rem 3rem;
+  align-items: end;
+}
+.countLine {
+  margin: 0;
+  font-family: var(--po-serif);
+  font-weight: 300;
+  font-size: clamp(2rem, 5.6vw, 3.6rem);
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+  max-width: 14ch;
+}
+.countSmall {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--po-muted);
+}
+.countSmall b {
+  font-weight: 500;
+  color: var(--po-ink);
+  font-variant-numeric: tabular-nums;
+  margin-right: 0.25em;
+}
+.countDate {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--po-ink);
+}
+@media (min-width: 900px) {
+  .countGrid {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    grid-template-areas:
+      "line small"
+      "line date";
+  }
+  .countLine {
+    grid-area: line;
+  }
+  .countSmall {
+    grid-area: small;
+    flex-direction: column;
+    gap: 0.35rem;
+    align-self: end;
+  }
+  .countDate {
+    grid-area: date;
+  }
+}
+
+/* ---------------------------------------------------------------- índice */
+
+.index {
+  list-style: none;
+  margin: clamp(2rem, 4vw, 3rem) 0 0;
+  padding: 0;
+  max-width: 44rem;
+}
+.indexItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding-block: 0.9rem;
+}
+.indexItem + .indexItem {
+  border-top: 1px solid var(--po-line);
+}
+.indexLine {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+.indexTitle {
+  font-family: var(--po-serif);
+  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.leader {
+  flex: 1;
+  min-width: 1.5rem;
+  border-bottom: 1px dotted var(--po-muted);
+  transform: translateY(-0.3em);
+}
+.indexTime {
+  font-family: var(--po-sans-stack);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--po-ink);
+}
+.indexNote {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--po-muted);
+  max-width: 34rem;
+}
+
+/* ----------------------------------------------------------------- local */
+
+.ref {
+  font-family: var(--po-sans-stack);
+  font-size: 0.5em;
+  color: var(--po-accent);
+  margin-left: 0.15em;
+}
+.placeCity {
+  margin: 0.5rem 0 0;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--po-muted);
+}
+.mapFig {
+  margin: clamp(1.75rem, 3.5vw, 2.5rem) 0 0;
+}
+.mapFrame {
+  display: block;
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--po-line);
+  padding: 0.4rem;
+  background: var(--po-paper-2);
+}
+.map {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  filter: saturate(0.6) contrast(1.02);
+}
+.mapCap {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--po-muted);
+}
+.mapCap .link {
+  font-weight: 500;
+  padding-block: 0.35rem;
+}
+.footnote {
+  margin: clamp(1.5rem, 3vw, 2rem) 0 0;
+  padding-top: 0.75rem;
+  max-width: 32rem;
+  border-top: 1px solid var(--po-line);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--po-muted);
+  overflow-wrap: anywhere;
+}
+.footnoteMark {
+  color: var(--po-accent);
+  margin-right: 0.35em;
+}
+@media (min-width: 900px) {
+  .mapFrame {
+    aspect-ratio: 21 / 9;
+  }
+}
+
+/* ----------------------------------------------------------------- notas */
+
+.notes {
+  display: grid;
+  gap: clamp(1.5rem, 3vw, 2.5rem) clamp(2rem, 4vw, 3.5rem);
+}
+.note {
+  padding-top: 1rem;
+  border-top: 1px solid var(--po-line);
+}
+.noteMark {
+  margin: 0;
+  font-family: var(--po-serif);
+  font-size: 1.4rem;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  color: var(--po-accent);
+}
+.noteTitle {
+  margin: 0.6rem 0 0;
+  font-family: var(--po-serif);
+  font-weight: 400;
+  font-size: 1.25rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.noteSub {
+  margin: 0.4rem 0 0;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--po-muted);
+}
+.noteBody {
+  margin: 0.75rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--po-ink);
+}
+@media (min-width: 640px) {
+  .notes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1000px) {
+  .notes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ------------------------------------------------------------- presentes */
+
+.gifts {
+  margin-top: clamp(1.75rem, 3.5vw, 2.5rem);
+}
+
+/* --------------------------------------------------------------- caderno */
+
+.album {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1.25rem, 3vw, 2.5rem) clamp(0.75rem, 2.5vw, 2rem);
+}
+.albumFig {
+  margin: 0;
+}
+.albumBtn {
+  display: block;
+  width: 100%;
+  padding: 0.3rem;
+  border: 1px solid var(--po-line);
+  background: var(--po-paper);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+.albumBtn:hover {
+  border-color: var(--po-ink);
+}
+.albumImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  filter: saturate(0.88) contrast(1.02);
+}
+.albumCap {
+  margin-top: 0.6rem;
+  font-family: var(--po-serif);
+  font-style: italic;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--po-muted);
+  overflow-wrap: anywhere;
+}
+.albumNum {
+  font-style: normal;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  color: var(--po-accent);
+  margin-right: 0.5rem;
+  font-variant-numeric: tabular-nums;
+}
+/* Fotos ímpares: a última ocupa a página inteira, como uma prancha. */
+.albumFig:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  max-width: 30rem;
+  margin-inline: auto;
+  width: 100%;
+}
+
+/* lightbox */
+.lightbox {
+  width: min(92vw, 760px);
+  max-height: 92vh;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: var(--po-ink);
+  color: var(--po-paper);
+}
+.lightbox::backdrop {
+  background: rgba(42, 38, 34, 0.9);
+}
+.lightboxClose,
+.lightboxNav {
+  position: absolute;
+  z-index: 2;
+  width: 2.75rem;
+  height: 2.75rem;
+  font: inherit;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--po-paper);
+  background: rgba(42, 38, 34, 0.6);
+  border: 0;
+  cursor: pointer;
+}
+.lightboxClose {
+  top: 0.5rem;
+  right: 0.5rem;
+}
+.lightboxNav {
+  top: 50%;
+  transform: translateY(-50%);
+}
+.lightboxNav[data-dir="prev"] {
+  left: 0.5rem;
+}
+.lightboxNav[data-dir="next"] {
+  right: 0.5rem;
+}
+.lightboxFig {
+  margin: 0;
+}
+.lightboxImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 84vh;
+  object-fit: contain;
+}
+.lightboxCaption {
+  padding: 0.75rem 1rem;
+  font-style: italic;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------ formulários */
+
+.forms {
+  border-top: 1px solid var(--po-line);
+}
+
+/* ------------------------------------------------------------ última página */
+
+.closing {
+  text-align: center;
+}
+.closingInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  max-width: 32rem;
+  margin-inline: auto;
+}
+.closingPhoto {
+  display: block;
+  width: clamp(7rem, 32vw, 10rem);
+  border: 1px solid var(--po-line);
+  padding: 0.3rem;
+  background: var(--po-paper);
+}
+.closingImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  filter: saturate(0.88) contrast(1.02);
+}
+.closingText {
+  margin: 0;
+  font-family: var(--po-serif);
+  font-weight: 300;
+  font-size: clamp(1.35rem, 2.6vw, 1.8rem);
+  line-height: 1.4;
+  text-wrap: balance;
+}
+.fim {
+  margin: 0.5rem 0 0;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--po-accent);
+}
+
+/* --------------------------------------------------------------- colofão */
+
+.colofao {
+  padding: clamp(2rem, 4vw, 3rem) clamp(1.25rem, 5vw, 4rem) clamp(2rem, 4vw, 2.5rem);
+  border-top: 1px solid var(--po-line);
+  background: var(--po-paper-2);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+.colofao p {
+  margin: 0;
+}
+.colofaoMono {
+  font-family: var(--po-serif);
+  font-style: italic;
+  font-size: 1.4rem;
+  color: var(--po-accent);
+}
+.colofaoNames {
+  font-family: var(--po-serif);
+  font-size: 1.1rem;
+  overflow-wrap: anywhere;
+}
+.colofaoText {
+  max-width: 30rem;
+  font-family: var(--po-serif);
+  font-style: italic;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--po-muted);
+}
+.colofaoMeta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem 1.25rem;
+  margin-top: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--po-muted);
+}
+.colofaoCredit {
+  margin-top: 1rem;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--po-muted);
+}
+
+/* ------------------------------------------------------- reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .link,
+  .navLink,
+  .albumBtn {
+    transition: none;
+  }
+}

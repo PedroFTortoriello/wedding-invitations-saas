@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { getTemplate } from "@/lib/templates/catalog";
 
 // Rotas que exigem sessão. O site público (/casamento/[slug], /modelo/...) e a
 // landing ficam de fora.
@@ -56,6 +57,21 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
+  // Site do casal: cada modelo tem um segmento de rota interno (/tpl/<id>/site/…) para o
+  // HTML sair com o CSS só daquele modelo (ver components/templates/site-page.tsx; as demos
+  // são reescritas em next.config). A reescrita não muda a URL do navegador e preserva a
+  // query (?presente=…).
+  const site = pathname.match(/^\/casamento\/([^/]+)$/);
+  if (site) {
+    const slug = decodeURIComponent(site[1]);
+    // RLS: site publicado para qualquer um; rascunho só para o dono (cookie). Sem linha,
+    // a página do modelo padrão mostra "em breve"/404.
+    const { data } = await supabase.from("weddings").select("template:content->>templateId").eq("slug", slug).maybeSingle();
+    const template = getTemplate(String(data?.template ?? "")).id;
+    const url = request.nextUrl.clone();
+    url.pathname = `/tpl/${template}/site/${site[1]}`;
+    return rewriteKeepingCookies(url, response);
+  }
   if (!user && matches(pathname, PROTECTED_PREFIXES)) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
@@ -71,6 +87,13 @@ export async function middleware(request: NextRequest) {
   }
 
   return response;
+}
+
+/** Reescreve mantendo os cookies de sessão que o refresh acima possa ter gravado. */
+function rewriteKeepingCookies(url: URL, from: NextResponse) {
+  const rewritten = NextResponse.rewrite(url);
+  for (const cookie of from.cookies.getAll()) rewritten.cookies.set(cookie);
+  return rewritten;
 }
 
 export const config = {

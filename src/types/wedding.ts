@@ -1,3 +1,5 @@
+import type { TemplateId } from "@/lib/templates/catalog";
+
 export type WeddingSiteStatus = "draft" | "published" | "suspended" | "expired";
 export type UserRole = "admin" | "client";
 export type CashGiftStatus = "pending" | "paid" | "refunded" | "failed";
@@ -89,15 +91,7 @@ export type WeddingSite = {
   ownerId?: string;
   slug: string;
   status: WeddingSiteStatus;
-  templateId:
-    | "classico-romantico"
-    | "civil-minimalista"
-    | "garden-classico"
-    | "olive-burgundy"
-    | "editorial-luxury"
-    | "jardim-romantico"
-    | "pe-na-areia"
-    | "cinema-noir";
+  templateId: TemplateId;
   templateName: string;
   coupleNames: string;
   monogram: string;
@@ -183,14 +177,6 @@ export type WeddingMessage = {
   guestName: string;
   message: string;
   createdAt: string;
-};
-
-export type PlatformTemplate = {
-  id: WeddingSite["templateId"];
-  name: string;
-  description: string;
-  previewImage: string;
-  status: "active" | "draft";
 };
 
 export type PlatformMetrics = {

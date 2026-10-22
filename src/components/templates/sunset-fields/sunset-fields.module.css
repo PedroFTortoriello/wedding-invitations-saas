@@ -1,0 +1,1076 @@
+/*
+ * Entardecer — sol baixo: areia, mel, terracota e marrom; Castoro (display, itálico
+ * nos números e na frase final) + Mulish (texto). A foto da capa derrete em areia; um
+ * SunRays grande em terracota atrás dos nomes; linha do sol na programação.
+ *
+ * Contraste (WCAG, calculado):
+ *   ink #2c231c / areia #f7eedd 13,4:1 · / mel #ecd9b4 11,1:1
+ *   gray #5e5043 / areia 6,7:1 · / mel 5,6:1 · / branco-quente #fffaf0 7,5:1
+ *   brown #7a4a2a / areia 6,4:1 · / mel 5,3:1 (eyebrows, legendas)
+ *   areia #f7eedd sobre brown #7a4a2a 6,4:1 (contagem, rodapé)
+ *   areia sobre terracota-fundo #9c4f28 5,1:1 (botões) — o #b8653a (3,7:1) fica só
+ *   em ornamentos e nos números de capítulo (>= 40px: 3:1 ok), nunca em corpo.
+ */
+
+.template {
+  --sf-sand: #f7eedd;
+  --sf-honey: #ecd9b4;
+  --sf-terra: #b8653a;
+  --sf-terra-deep: #9c4f28;
+  --sf-brown: #7a4a2a;
+  --sf-ink: #2c231c;
+  --sf-gray: #5e5043;
+  --sf-white: #fffaf0;
+  --sf-line: rgba(184, 101, 58, 0.45);
+  --sf-warm: sepia(0.25) saturate(1.15) brightness(0.95);
+  --sf-gutter: clamp(1.25rem, 5vw, 3rem);
+
+  /* widgets */
+  --font-serif: var(--sf-display), Georgia, serif;
+  --font-sans: var(--sf-sans), "Segoe UI", sans-serif;
+  --widget-card-radius: 12px;
+  --widget-btn-radius: 999px;
+  --widget-btn-case: uppercase;
+  --widget-btn-tracking: 0.14em;
+  --g-card: #fffaf0;
+  --g-dialog-bg: #f7eedd;
+  --g-border: rgba(122, 74, 42, 0.28);
+  --g-ink: #2c231c;
+  --g-muted: #5e5043; /* 7,5:1 sobre #fffaf0 */
+  --g-accent: #9c4f28;
+  --g-on-accent: #f7eedd;
+  --g-price: #7a4a2a;
+  --g-radius: 12px;
+  --g-img-radius: 8px;
+  --g-img-filter: sepia(0.12) saturate(1.05);
+  --g-scrim: rgba(44, 35, 28, 0.58);
+  --g-error: #8d3d33;
+  --gf-bg: #ecd9b4;
+  --gf-card: #fffaf0;
+  --gf-ink: #2c231c;
+  --gf-muted: #5e5043;
+  --gf-border: rgba(122, 74, 42, 0.28);
+  --gf-field: #f7eedd;
+  --gf-accent: #9c4f28;
+  --gf-on-accent: #f7eedd;
+  --gf-radius: 12px;
+  --gf-eyebrow: #7a4a2a;
+  --gf-error: #8d3d33;
+
+  font-family: var(--sf-sans), "Segoe UI", system-ui, sans-serif;
+  color: var(--sf-ink);
+  background: var(--sf-sand);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+:where(.template) :where(a, button):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+/* ponytail: o "Não poderei ir" do GuestForms vem com estilo inline e 24px de altura; alvo de
+   toque >= 44px garantido aqui até o widget corrigir (seletor pelo atributo para não mexer no resto). */
+:where(.template) button[style*="underline"] {
+  min-height: 44px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 74rem;
+  margin-inline: auto;
+  padding-inline: var(--sf-gutter);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------ tipografia */
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--sf-brown);
+}
+.eyebrowOnDark {
+  color: var(--sf-honey); /* 5,3:1 sobre brown */
+}
+
+.h2 {
+  margin: 0.6rem 0 0;
+  font-family: var(--sf-display), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2rem, 4.2vw, 3.1rem);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.lead {
+  margin: 1rem 0 0;
+  max-width: 40rem;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--sf-gray);
+}
+
+.body {
+  margin: 0.9rem 0 0;
+  max-width: 36rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--sf-ink);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding-inline: 1.8rem;
+  border-radius: 999px;
+  background: var(--sf-terra-deep);
+  color: var(--sf-sand);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.btn:hover {
+  background: var(--sf-brown);
+  transform: translateY(-1px);
+}
+
+.rule {
+  display: block;
+  width: 3.5rem;
+  height: 2px;
+  margin-inline: auto;
+  background: var(--sf-terra);
+  border-radius: 2px;
+}
+
+/* ------------------------------------------------------------------ nav */
+
+.nav {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 40;
+  border-bottom: 1px solid transparent;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+.navSolid {
+  background: color-mix(in srgb, var(--sf-sand) 90%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom-color: var(--sf-line);
+}
+.navInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  height: 4rem;
+}
+.navMono {
+  font-family: var(--sf-display), Georgia, serif;
+  font-size: 1.2rem;
+  letter-spacing: 0.08em;
+  color: var(--sf-ink);
+  text-decoration: none;
+}
+.navLinks {
+  display: none;
+  gap: clamp(1rem, 2.4vw, 2rem);
+}
+.navLink {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sf-ink);
+  text-decoration: none;
+  padding-block: 0.25rem;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s ease;
+}
+.navLink:hover {
+  border-bottom-color: var(--sf-terra);
+}
+.navToggle {
+  min-height: 44px;
+  padding: 0 0.25rem;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sf-ink);
+  cursor: pointer;
+}
+.navMobile {
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--sf-gutter) 1rem;
+  background: var(--sf-sand);
+  border-bottom: 1px solid var(--sf-line);
+}
+.navMobileLink {
+  padding: 0.8rem 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sf-ink);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(184, 101, 58, 0.25);
+}
+@media (min-width: 900px) {
+  .navLinks {
+    display: flex;
+  }
+  .navToggle {
+    display: none;
+  }
+}
+
+/* ----------------------------------------------------------------- capa */
+
+.hero {
+  position: relative;
+  min-height: calc(100svh - var(--demo-bar-h, 0px));
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 6rem var(--sf-gutter) clamp(2.5rem, 6vh, 4rem);
+  overflow: hidden;
+  isolation: isolate;
+  text-align: center;
+}
+.heroSky {
+  background: linear-gradient(to bottom, var(--sf-sand) 0%, var(--sf-honey) 58%, var(--sf-sand) 100%);
+}
+.heroMedia {
+  position: absolute;
+  inset: -6% 0 0;
+  z-index: 0;
+}
+.heroImg {
+  object-fit: cover;
+  object-position: 50% 30%;
+  filter: var(--sf-warm);
+}
+/* A foto derrete em areia: transparente em cima, sólido onde os nomes ficam (a partir de 64%). */
+.heroScrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.heroWithPhoto .heroScrim {
+  background: linear-gradient(
+    to bottom,
+    rgba(247, 238, 221, 0) 0%,
+    rgba(247, 238, 221, 0) 34%,
+    rgba(247, 238, 221, 0.5) 54%,
+    var(--sf-sand) 72%,
+    var(--sf-sand) 100%
+  );
+}
+/* Areia garantida atrás do bloco de texto, seja qual for a altura dos nomes (nomes longos
+   empurram o texto para cima da foto): gradiente próprio, full-bleed, 9rem acima do bloco. */
+.heroWithPhoto .heroText::before {
+  content: "";
+  position: absolute;
+  inset: -9rem -100vw -100vh;
+  z-index: -1;
+  background: linear-gradient(
+    to bottom,
+    rgba(247, 238, 221, 0) 0,
+    rgba(247, 238, 221, 0.85) 5.5rem,
+    var(--sf-sand) 8.5rem
+  );
+  pointer-events: none;
+}
+.heroSunWrap {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(5rem, 16vh, 9rem);
+  z-index: 2;
+  width: clamp(300px, 86vw, 720px);
+  aspect-ratio: 1;
+  margin-left: calc(clamp(300px, 86vw, 720px) / -2);
+  pointer-events: none;
+}
+.heroSunRise {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.heroSun {
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: var(--sf-terra);
+  opacity: 0.42;
+}
+.heroSky .heroSun {
+  opacity: 0.5;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .heroSunRise {
+    animation: sfSunRise 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+@keyframes sfSunRise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.heroText {
+  position: relative;
+  z-index: 3;
+  isolation: isolate;
+  max-width: 58rem;
+}
+/* Sem foto: céu areia → mel, conteúdo centrado e o sol atrás dos nomes. */
+.heroSky {
+  justify-content: center;
+}
+.heroSky .heroSunWrap {
+  top: 50%;
+  bottom: auto;
+  margin-top: calc(clamp(300px, 86vw, 720px) / -2 - 3rem);
+}
+.names {
+  margin: 0;
+  font-family: var(--sf-display), Georgia, serif;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  color: var(--sf-ink);
+}
+.names[data-scale="short"] {
+  font-size: clamp(3.2rem, 11vw, 7.2rem);
+}
+.names[data-scale="medium"] {
+  font-size: clamp(2.5rem, 8.4vw, 5.6rem);
+}
+.names[data-scale="long"] {
+  font-size: clamp(1.9rem, 6.2vw, 4.1rem);
+}
+.name {
+  display: block;
+}
+.amp {
+  display: block;
+  margin: 0.08em 0;
+  font-style: italic;
+  font-size: 0.5em;
+  line-height: 1;
+  color: var(--sf-terra-deep); /* 5,1:1 sobre areia */
+}
+.heroMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 1.5rem 0 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+.heroDate {
+  color: var(--sf-brown);
+}
+.heroPlace {
+  color: var(--sf-gray);
+  letter-spacing: 0.14em;
+  font-weight: 600;
+}
+.heroText .btn {
+  margin-top: 1.75rem;
+}
+
+@media (min-width: 900px) {
+  .hero {
+    padding-bottom: clamp(3rem, 7vh, 5rem);
+  }
+  .heroWithPhoto .heroScrim {
+    background: linear-gradient(
+      to bottom,
+      rgba(247, 238, 221, 0) 0%,
+      rgba(247, 238, 221, 0) 42%,
+      rgba(247, 238, 221, 0.5) 62%,
+      var(--sf-sand) 78%,
+      var(--sf-sand) 100%
+    );
+  }
+  .heroSunWrap {
+    bottom: clamp(4rem, 10vh, 7rem);
+    width: clamp(560px, 52vw, 760px);
+    margin-left: calc(clamp(560px, 52vw, 760px) / -2);
+  }
+  .heroMeta {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1.5rem;
+  }
+  .heroDate {
+    white-space: nowrap;
+  }
+  .heroPlace {
+    max-width: 44rem;
+    text-wrap: balance;
+  }
+  .heroSky .heroSunWrap {
+    margin-top: calc(clamp(560px, 52vw, 760px) / -2 - 3rem);
+  }
+}
+
+/* -------------------------------------------------------------- convite */
+
+.invite {
+  padding: clamp(3rem, 7vw, 5rem) var(--sf-gutter);
+}
+.inviteInner {
+  max-width: 40rem;
+  margin-inline: auto;
+  text-align: center;
+}
+.inviteInner .eyebrow {
+  margin-top: 1.5rem;
+}
+.inviteWords {
+  margin: 0.9rem 0 0;
+  font-family: var(--sf-display), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.7rem, 3.8vw, 2.7rem);
+  line-height: 1.2;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.inviteText {
+  margin: 1.25rem auto 1.75rem;
+  max-width: 34rem;
+  font-size: 1.02rem;
+  line-height: 1.7;
+  color: var(--sf-ink);
+}
+
+/* ------------------------------------------------------------- história */
+
+.story {
+  padding-top: clamp(2rem, 5vw, 3.5rem);
+}
+.storyHead {
+  max-width: 40rem;
+  padding-bottom: clamp(2rem, 4vw, 3rem);
+}
+.chapter {
+  padding: clamp(2.25rem, 5vw, 4rem) 0;
+}
+.chapterBand {
+  background: var(--sf-honey);
+}
+.chapterGrid {
+  display: grid;
+  gap: 1.75rem;
+  align-items: center;
+}
+.chapterPhoto {
+  margin: 0;
+  width: min(80%, 360px);
+}
+.chapterImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 999px 999px 12px 12px;
+  filter: var(--sf-warm);
+}
+.chapterFlip .chapterPhoto {
+  margin-left: auto;
+}
+.chapterSolo {
+  max-width: 40rem;
+  margin-inline: auto;
+}
+.chapterSolo .chapterText {
+  text-align: center;
+}
+.chapterSolo .body {
+  margin-inline: auto;
+}
+.chapterNum {
+  display: block;
+  font-family: var(--sf-display), Georgia, serif;
+  font-style: italic;
+  font-size: clamp(2.6rem, 6vw, 4rem);
+  line-height: 1;
+  color: var(--sf-terra); /* >= 40px: 3,7:1 sobre areia, 3,1:1 sobre mel */
+}
+.chapterTitle {
+  margin: 0.5rem 0 0;
+  font-family: var(--sf-display), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.5rem, 2.8vw, 2.1rem);
+  line-height: 1.15;
+}
+.chapterHeadline {
+  margin: 0.7rem 0 0;
+  font-family: var(--sf-display), Georgia, serif;
+  font-style: italic;
+  font-size: 1.15rem;
+  line-height: 1.45;
+  color: var(--sf-brown);
+}
+.chapterHeadline span {
+  display: block;
+}
+@media (min-width: 900px) {
+  .chapterGrid {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: clamp(2.5rem, 6vw, 6rem);
+  }
+  .chapterPhoto,
+  .chapterFlip .chapterPhoto {
+    width: 100%;
+    max-width: 420px;
+    margin: 0;
+  }
+  .chapterFlip .chapterPhoto {
+    order: 2;
+    margin-left: auto;
+  }
+  .chapterText {
+    padding-left: clamp(0rem, 3vw, 2rem);
+  }
+  .chapterSolo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .chapterSolo .chapterText {
+    padding: 0;
+  }
+  .chapterFlip .chapterText {
+    padding-left: 0;
+    padding-right: clamp(0rem, 3vw, 2rem);
+  }
+}
+
+/* ------------------------------------------------------------- contagem */
+
+.count {
+  position: relative;
+  padding: clamp(3rem, 6vw, 4.5rem) 0;
+  background: var(--sf-brown);
+  color: var(--sf-sand);
+  overflow: hidden;
+  isolation: isolate;
+}
+.countSun {
+  position: absolute;
+  right: -6%;
+  top: 50%;
+  width: clamp(180px, 30vw, 300px);
+  transform: translateY(-50%);
+  color: #d9a66a;
+  opacity: 0.55;
+  z-index: 0;
+  pointer-events: none;
+}
+.countInner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 1.75rem;
+  align-items: center;
+}
+.countDate {
+  margin: 0.6rem 0 0;
+  font-family: var(--sf-display), Georgia, serif;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+.countGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem clamp(1rem, 4vw, 2.5rem);
+}
+.countCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 4.2rem;
+}
+.countNum {
+  font-family: var(--sf-display), Georgia, serif;
+  font-size: clamp(2.4rem, 7vw, 4rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--sf-sand);
+}
+.countLabel {
+  margin-top: 0.4rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--sf-honey); /* 5,3:1 sobre brown */
+}
+@media (min-width: 900px) {
+  .countInner {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .countGrid {
+    flex-wrap: nowrap;
+  }
+}
+
+/* ---------------------------------------------------------- programação */
+
+.schedule {
+  padding: clamp(3.5rem, 8vw, 6rem) 0;
+}
+.scheduleHead {
+  max-width: 44rem;
+}
+/* linha do sol: um fio de mel a terracota a marrom com o sol marcando o item em foco */
+.trail {
+  position: relative;
+  list-style: none;
+  margin: clamp(2rem, 5vw, 3.5rem) 0 0;
+  padding: 0 0 0 2.25rem;
+}
+.trail::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 0.6rem;
+  bottom: 0.6rem;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--sf-honey), var(--sf-terra) 55%, var(--sf-brown));
+}
+.stop {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-bottom: 1.6rem;
+}
+.stop:last-child {
+  padding-bottom: 0;
+}
+.stopSun {
+  position: absolute;
+  left: -2.25rem;
+  top: 0.3rem;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--sf-sand);
+  border: 2px solid var(--sf-terra);
+  box-shadow: 0 0 0 0 rgba(184, 101, 58, 0);
+  transition: background-color 0.2s ease, box-shadow 0.25s ease;
+}
+.trail:not(:hover) .stop:first-child .stopSun,
+.stop:hover .stopSun {
+  background: var(--sf-terra);
+  box-shadow: 0 0 0 7px rgba(184, 101, 58, 0.22);
+}
+.stopTime {
+  font-family: var(--sf-display), Georgia, serif;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--sf-brown);
+}
+.stopTitle {
+  margin-top: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.stopNote {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--sf-gray);
+}
+@media (min-width: 900px) {
+  .trail {
+    display: flex;
+    gap: 1.5rem;
+    padding: 2.25rem 0 0;
+  }
+  .trail::before {
+    left: 0.6rem;
+    right: 0.6rem;
+    top: 9px;
+    bottom: auto;
+    width: auto;
+    height: 2px;
+    background: linear-gradient(to right, var(--sf-honey), var(--sf-terra) 55%, var(--sf-brown));
+  }
+  .stop {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 0.75rem 0 0;
+  }
+  .stopSun {
+    left: 0;
+    top: -2.25rem;
+  }
+}
+
+/* ---------------------------------------------------------------- local */
+
+.place {
+  padding: clamp(3.5rem, 8vw, 6rem) 0;
+  background: var(--sf-honey);
+}
+.placeHead {
+  max-width: 42rem;
+}
+.placeMeta {
+  margin: 0.5rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--sf-gray); /* 5,6:1 sobre mel */
+}
+.placeHead .btn {
+  margin-top: 1.5rem;
+}
+.map {
+  margin-top: 2rem;
+  padding: clamp(8px, 1.5vw, 14px);
+  border-radius: 18px;
+  background: var(--sf-sand);
+  border: 1px solid var(--sf-line);
+}
+.mapFrame {
+  display: block;
+  width: 100%;
+  height: clamp(260px, 40vw, 440px);
+  border: 0;
+  border-radius: 10px;
+  filter: sepia(0.3);
+}
+
+/* -------------------------------------------------------------- cartões */
+
+.cards {
+  padding: clamp(3rem, 7vw, 5rem) 0;
+}
+.cardList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+.card {
+  position: relative;
+  padding: 1.6rem 1.5rem 1.7rem;
+  background: var(--sf-honey);
+  border-radius: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(122, 74, 42, 0.14);
+}
+.cardIndex {
+  position: absolute;
+  right: 1.25rem;
+  top: 1.1rem;
+  font-family: var(--sf-display), Georgia, serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--sf-brown);
+}
+.cardTitle {
+  margin: 0;
+  padding-right: 2.5rem;
+  font-family: var(--sf-display), Georgia, serif;
+  font-weight: 400;
+  font-size: 1.45rem;
+  line-height: 1.2;
+}
+.cardSub {
+  margin: 0.35rem 0 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sf-brown); /* 5,3:1 sobre mel */
+}
+.cardBody {
+  margin: 0.8rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--sf-ink);
+}
+@media (min-width: 640px) {
+  .cardList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 900px) {
+  .cardList {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+/* ------------------------------------------------------------ presentes */
+
+.gifts {
+  padding: clamp(3.5rem, 8vw, 6rem) 0;
+}
+.giftsHead {
+  max-width: 42rem;
+  margin-bottom: 2rem;
+}
+
+/* -------------------------------------------------------------- galeria */
+
+.gallery {
+  padding: clamp(3.5rem, 8vw, 6rem) 0;
+  background: var(--sf-honey);
+}
+.galleryHead {
+  max-width: 40rem;
+}
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(0.6rem, 2vw, 1.25rem);
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+.shot {
+  min-width: 0;
+}
+.shotBtn {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.shotImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  filter: var(--sf-warm);
+  transition: filter 0.25s ease, transform 0.25s ease;
+}
+.shotBtn:hover .shotImg,
+.shotBtn:focus-visible .shotImg {
+  filter: none;
+  transform: scale(1.02);
+}
+@media (min-width: 900px) {
+  .galleryGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .shot:nth-child(4n + 1) .shotImg {
+    aspect-ratio: 4 / 5;
+  }
+}
+.lightbox {
+  max-width: min(92vw, 1100px);
+  max-height: 92vh;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: var(--sf-sand);
+  color: var(--sf-ink);
+  overflow: visible;
+}
+.lightbox::backdrop {
+  background: rgba(44, 35, 28, 0.78);
+}
+.lbClose,
+.lbNav {
+  position: absolute;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--sf-sand);
+  color: var(--sf-ink);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(44, 35, 28, 0.25);
+}
+.lbClose {
+  top: -14px;
+  right: -14px;
+}
+.lbNav {
+  top: 50%;
+  transform: translateY(-50%);
+}
+.lbNav[data-dir="prev"] {
+  left: -14px;
+}
+.lbNav[data-dir="next"] {
+  right: -14px;
+}
+.lbFig {
+  margin: 0;
+  padding: 10px;
+}
+.lbImg {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: 80vh;
+  height: auto;
+  margin-inline: auto;
+  object-fit: contain;
+}
+.lbCap {
+  padding: 0.6rem 0.25rem 0;
+  font-size: 0.85rem;
+  color: var(--sf-gray);
+  text-align: center;
+}
+
+/* --------------------------------------------------------- encerramento */
+
+.closing {
+  position: relative;
+  padding: clamp(3rem, 7vw, 5rem) var(--sf-gutter);
+  overflow: hidden;
+  isolation: isolate;
+}
+.closingWithPhoto {
+  min-height: clamp(520px, 80vh, 760px);
+  display: flex;
+  align-items: flex-end;
+  padding-top: 40vh;
+}
+.closingMedia {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.closingImg {
+  object-fit: cover;
+  object-position: 50% 35%;
+  filter: var(--sf-warm);
+}
+.closingScrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(247, 238, 221, 0) 0%,
+    rgba(247, 238, 221, 0) 30%,
+    rgba(247, 238, 221, 0.9) 58%,
+    var(--sf-sand) 68%
+  );
+}
+.closingText {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 40rem;
+  margin-inline: auto;
+  text-align: center;
+}
+.closingSun {
+  width: 72px;
+  height: 72px;
+  color: var(--sf-terra);
+}
+.closingQuote {
+  margin: 0.75rem 0 0;
+  font-family: var(--sf-display), Georgia, serif;
+  font-style: italic;
+  font-size: clamp(1.35rem, 2.6vw, 1.9rem);
+  line-height: 1.4;
+  text-wrap: balance;
+  color: var(--sf-ink);
+}
+.closingMeta {
+  margin: 1.1rem 0 0;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--sf-brown);
+}
+
+/* --------------------------------------------------------------- rodapé */
+
+.footer {
+  padding: 2.75rem 0;
+  background: var(--sf-brown);
+  color: var(--sf-sand);
+}
+.footerInner {
+  text-align: center;
+}
+.footerMono {
+  margin: 0;
+  font-family: var(--sf-display), Georgia, serif;
+  font-size: 1.4rem;
+  letter-spacing: 0.1em;
+}
+.footerText {
+  margin: 0.5rem auto 0;
+  max-width: 36rem;
+  font-family: var(--sf-display), Georgia, serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+.footerMeta {
+  margin: 0.85rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--sf-honey); /* 5,3:1 sobre brown */
+}
+.footerCredit {
+  margin: 1.1rem 0 0;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--sf-honey);
+}

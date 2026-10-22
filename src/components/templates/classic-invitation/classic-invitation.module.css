@@ -1,0 +1,883 @@
+/*
+ * Convite Clássico: a suíte de papelaria sobre a mesa.
+ * Fundo cinza-quente (a mesa) e cartões marfim retos, com fio de 1px e papel de
+ * algodão; tudo centrado como convite de gráfica. Libre Baskerville (display e
+ * corpo, itálico) + Josefin Sans em versaletes (eyebrows, dados, botões).
+ *
+ * Contraste (WCAG): tinta #2b2420 sobre marfim #f8f4ea 13,9:1 e sobre cinza
+ * #e9e3d5 11,9:1; cinza #5a514a sobre marfim 7,05:1 e sobre cinza 6,06:1;
+ * marfim sobre tinta 13,9:1; #cfc6b8 sobre tinta 9,0:1; erro #8d3d33 6,7:1.
+ * O fio #c9bda6 (1,7:1) e o ornamento #a89a7c (2,5:1) nunca são texto.
+ */
+
+.template {
+  --ci-ivory: #f8f4ea;
+  --ci-table: #e9e3d5;
+  --ci-ink: #2b2420;
+  --ci-muted: #5a514a;
+  --ci-rule: #c9bda6;
+  --ci-ornament: #a89a7c;
+  --ci-on-ink: #f8f4ea;
+  --ci-on-ink-soft: #cfc6b8;
+  --ci-pad: clamp(1.5rem, 5vw, 3.25rem);
+
+  /* widgets (GiftRegistry, GuestForms) */
+  --font-serif: var(--ci-display), Georgia, "Times New Roman", serif;
+  --font-sans: var(--ci-sans), "Segoe UI", sans-serif;
+  --widget-card-radius: 0;
+  --widget-btn-radius: 0;
+  --widget-btn-case: uppercase;
+  --widget-btn-tracking: 0.18em;
+  --g-card: var(--ci-ivory);
+  --g-dialog-bg: var(--ci-ivory);
+  --g-border: var(--ci-rule);
+  --g-ink: var(--ci-ink);
+  --g-muted: var(--ci-muted);
+  --g-accent: var(--ci-ink);
+  --g-on-accent: var(--ci-ivory);
+  --g-price: var(--ci-ink);
+  --g-radius: 0;
+  --g-img-radius: 0;
+  --g-img-filter: none;
+  --g-scrim: rgba(43, 36, 32, 0.55);
+  --g-error: #8d3d33;
+  --gf-bg: var(--ci-table);
+  --gf-card: var(--ci-ivory);
+  --gf-ink: var(--ci-ink);
+  --gf-muted: var(--ci-muted);
+  --gf-border: var(--ci-rule);
+  --gf-field: #fffdf8;
+  --gf-accent: var(--ci-ink);
+  --gf-on-accent: var(--ci-ivory);
+  --gf-radius: 0;
+  --gf-eyebrow: var(--ci-muted);
+  --gf-error: #8d3d33;
+
+  font-family: var(--ci-display), Georgia, serif;
+  color: var(--ci-ink);
+  background: var(--ci-table);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+:where(.template) :where(a, button):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 76rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 3rem);
+}
+
+/* ------------------------------------------------------------- o cartão */
+
+.card {
+  position: relative;
+  isolation: isolate;
+  background: var(--ci-ivory);
+  border: 1px solid var(--ci-rule);
+  color: var(--ci-ink);
+}
+/* fibra de papel por baixo do conteúdo (z-index -1 dentro do contexto do cartão) */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--ci-paper);
+  background-size: 320px 320px;
+  opacity: 0.07;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------- tipografia */
+
+.eyebrow {
+  margin: 0;
+  font-family: var(--ci-sans), "Segoe UI", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ci-muted);
+}
+.caps {
+  margin: 0.6rem 0 0;
+  font-family: var(--ci-sans), "Segoe UI", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ci-muted);
+}
+.h2 {
+  margin: 0.85rem 0 0;
+  font-family: var(--ci-display), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.55rem, 3.2vw, 2.3rem);
+  line-height: 1.18;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.lead {
+  margin: 1rem 0 0;
+  max-width: 38rem;
+  font-style: italic;
+  font-size: clamp(1rem, 1.2vw, 1.1rem);
+  line-height: 1.65;
+  color: var(--ci-muted);
+}
+.body {
+  margin: 0.9rem 0 0;
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: var(--ci-ink);
+  overflow-wrap: anywhere;
+}
+.bodyItalic {
+  margin: 0.9rem 0 0;
+  font-style: italic;
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: var(--ci-muted);
+}
+.hair {
+  display: block;
+  width: 3rem;
+  height: 1px;
+  margin: 1.25rem auto 0;
+  background: var(--ci-rule);
+}
+.rule {
+  display: block;
+  width: min(100%, 20rem);
+  height: auto;
+  margin-inline: auto;
+  color: var(--ci-ornament);
+}
+.line {
+  display: block;
+}
+.sectionHead {
+  max-width: 40rem;
+  margin: 0 auto clamp(1.75rem, 4vw, 2.75rem);
+  text-align: center;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0.9rem 1.75rem 0.75rem; /* Josefin assenta alto: compensa na base */
+  font-family: var(--ci-sans), "Segoe UI", sans-serif;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ci-ivory);
+  background: var(--ci-ink);
+  border: 1px solid var(--ci-ink);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.btn:hover {
+  background: transparent;
+  color: var(--ci-ink);
+}
+.btnGhost {
+  color: var(--ci-ink);
+  background: transparent;
+}
+.btnGhost:hover {
+  background: var(--ci-ink);
+  color: var(--ci-ivory);
+}
+
+/* ------------------------------------------------------------------ nav */
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--ci-ivory);
+  border-bottom: 1px solid var(--ci-rule);
+}
+.navInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.5rem;
+}
+.navMono {
+  font-family: var(--ci-display), Georgia, serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  color: var(--ci-ink);
+}
+.navLinks {
+  display: none;
+  gap: clamp(1rem, 2.5vw, 2rem);
+}
+.navLink,
+.navMobileLink {
+  font-family: var(--ci-sans), "Segoe UI", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ci-ink);
+}
+.navLink {
+  padding: 0.45rem 0 0.25rem;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+.navLink:hover {
+  border-bottom-color: var(--ci-ink);
+}
+.navToggle {
+  min-height: 2.75rem;
+  padding: 0.5rem 0 0.35rem;
+  font-family: var(--ci-sans), "Segoe UI", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ci-ink);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.navMobile {
+  display: flex;
+  flex-direction: column;
+  padding: 0.25rem clamp(1rem, 4vw, 3rem) 1rem;
+  background: var(--ci-ivory);
+  border-top: 1px solid var(--ci-rule);
+}
+.navMobileLink {
+  padding: 0.95rem 0 0.75rem;
+  border-bottom: 1px solid var(--ci-rule);
+}
+@media (min-width: 880px) {
+  .navLinks {
+    display: flex;
+  }
+  .navToggle {
+    display: none;
+  }
+}
+
+/* ----------------------------------------------------------------- capa */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(100svh - var(--demo-bar-h, 0px) - 3.5rem);
+  padding-block: clamp(2rem, 5vw, 4rem);
+}
+.heroCard {
+  max-width: 44rem;
+  margin-inline: auto;
+  padding: clamp(2.25rem, 7vw, 4.5rem) var(--ci-pad);
+  text-align: center;
+}
+/* segunda borda, 6px para dentro */
+.heroCard::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1px solid var(--ci-rule);
+  pointer-events: none;
+}
+.names {
+  margin: 1.5rem 0 0;
+  font-family: var(--ci-display), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2.3rem, 8.5vw, 3.9rem);
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.names[data-scale="medium"] {
+  font-size: clamp(1.9rem, 7vw, 3.2rem);
+}
+.names[data-scale="long"] {
+  font-size: clamp(1.5rem, 5.6vw, 2.5rem);
+}
+.name {
+  display: block;
+}
+.amp {
+  display: block;
+  margin-block: 0.15em;
+  font-style: italic;
+  font-size: 0.62em;
+  color: var(--ci-muted);
+}
+.heroLine {
+  margin: 1.25rem 0 0;
+  font-style: italic;
+  font-size: clamp(1rem, 1.3vw, 1.15rem);
+  line-height: 1.5;
+  color: var(--ci-muted);
+}
+.heroCard .rule {
+  margin-top: 1.5rem;
+  width: min(100%, 14rem);
+}
+.heroDate {
+  margin: 1.5rem 0 0;
+  font-family: var(--ci-sans), "Segoe UI", sans-serif;
+  font-size: clamp(0.86rem, 1.4vw, 1rem);
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ci-ink);
+}
+.heroMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin: 0.85rem 0 0;
+  font-family: var(--ci-sans), "Segoe UI", sans-serif;
+  font-size: 0.76rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ci-muted);
+  overflow-wrap: anywhere;
+}
+.heroPhoto {
+  position: relative;
+  max-width: 44rem;
+  margin: clamp(1rem, 2.5vw, 1.5rem) auto 0;
+  padding: 0.5rem;
+  aspect-ratio: 4 / 3;
+}
+.heroImg {
+  object-fit: cover;
+  padding: 0.5rem; /* a foto respeita a margem do cartão */
+}
+
+/* -------------------------------------------------------------- convite */
+
+.invite {
+  padding-block: clamp(1rem, 3vw, 2rem) clamp(3rem, 7vw, 5rem);
+}
+.inviteGrid {
+  display: grid;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+  align-items: start;
+}
+.message {
+  padding: var(--ci-pad);
+  text-align: left;
+}
+.message .hair {
+  margin-inline: 0;
+}
+.inviteWords {
+  margin: 1rem 0 0;
+  font-family: var(--ci-sans), "Segoe UI", sans-serif;
+  font-weight: 400;
+  font-size: clamp(0.9rem, 1.5vw, 1.05rem);
+  line-height: 1.8;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  color: var(--ci-ink);
+}
+.messageText {
+  margin: 1.25rem 0 0;
+  max-width: 38rem;
+  font-style: italic;
+  font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+  line-height: 1.7;
+}
+.reply {
+  padding: calc(var(--ci-pad) * 0.85) var(--ci-pad);
+  text-align: center;
+}
+.replyTitle {
+  margin: 0.85rem 0 0;
+  font-size: clamp(1.3rem, 2.2vw, 1.6rem);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+.replyText {
+  margin: 0.75rem 0 1.5rem;
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--ci-muted);
+}
+@media (min-width: 880px) {
+  .inviteGrid {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    align-items: stretch;
+  }
+  .reply {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2.5rem; /* descaído, como cartão solto sobre a mesa */
+  }
+}
+
+/* ------------------------------------------------------------- história */
+
+.story {
+  padding-block: clamp(1rem, 3vw, 2rem) clamp(3rem, 7vw, 5rem);
+}
+.storyRow {
+  display: grid;
+  gap: clamp(1.25rem, 3vw, 2rem);
+}
+.storyCard {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+}
+/* no celular, cada cartão sai um pouco do eixo, como se fanado */
+.storyCard:nth-child(odd) {
+  margin-right: 1.25rem;
+}
+.storyCard:nth-child(even) {
+  margin-left: 1.25rem;
+}
+.storyFig {
+  margin: 0;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border: 1px solid var(--ci-rule);
+}
+.storyImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.storyBody {
+  padding: 1.5rem calc(var(--ci-pad) - 0.5rem) calc(var(--ci-pad) - 0.5rem);
+  text-align: center;
+}
+.storyNum {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 1.6rem;
+  font-style: italic;
+  line-height: 1;
+  color: var(--ci-muted);
+}
+.storyHeadline {
+  margin: 0.75rem 0 0;
+  font-weight: 400;
+  font-size: clamp(1.2rem, 1.8vw, 1.4rem);
+  line-height: 1.3;
+  text-wrap: balance;
+}
+.storyBody .body {
+  color: var(--ci-muted);
+  font-size: 0.95rem;
+  text-align: left; /* parágrafos longos leem melhor alinhados */
+}
+@media (min-width: 880px) {
+  .storyRow {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+  }
+  .storyCard:nth-child(odd),
+  .storyCard:nth-child(even) {
+    margin-inline: 0;
+  }
+  .storyCard:nth-child(2) {
+    margin-top: 2.5rem;
+  }
+  .storyCard:nth-child(3) {
+    margin-top: 5rem;
+  }
+}
+
+/* ------------------------------------------------------------- contagem */
+
+.count {
+  padding-block: 0 clamp(3rem, 7vw, 5rem);
+}
+.countCard {
+  max-width: 30rem;
+  margin-inline: auto;
+  padding: calc(var(--ci-pad) * 0.8) var(--ci-pad);
+  text-align: center;
+}
+.countGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 1.25rem 0 0;
+  border-top: 1px solid var(--ci-rule);
+  border-bottom: 1px solid var(--ci-rule);
+}
+.countCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem 0.25rem 0.85rem;
+}
+.countCell + .countCell {
+  border-left: 1px solid var(--ci-rule);
+}
+.countNum {
+  font-size: clamp(1.8rem, 6vw, 2.6rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.countLabel {
+  font-family: var(--ci-sans), "Segoe UI", sans-serif;
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ci-muted);
+}
+.countDate {
+  margin: 1.1rem 0 0;
+  font-style: italic;
+  color: var(--ci-muted);
+}
+
+/* ------------------------------------------- programação + local */
+
+.day {
+  padding-block: 0 clamp(3rem, 7vw, 5rem);
+}
+.programCard {
+  max-width: 38rem;
+  padding: var(--ci-pad);
+  text-align: center;
+}
+.programCard .lead {
+  margin-inline: auto;
+}
+.program {
+  list-style: none;
+  margin: 1.75rem 0 0;
+  padding: 0;
+}
+.programItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+.programItem .rule {
+  width: min(100%, 16rem);
+  margin-block: 1.25rem;
+}
+.programTime {
+  font-family: var(--ci-sans), "Segoe UI", sans-serif;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  color: var(--ci-muted);
+}
+.programTitle {
+  font-size: clamp(1.15rem, 1.8vw, 1.35rem);
+  line-height: 1.3;
+  text-wrap: balance;
+}
+.programNote {
+  max-width: 28rem;
+  font-style: italic;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--ci-muted);
+}
+.placeCard {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 46rem;
+  margin-top: clamp(1.25rem, 3vw, 2rem);
+  padding: var(--ci-pad);
+}
+.placeInfo .btn {
+  margin-top: 1.5rem;
+}
+.map {
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--ci-rule);
+  background: var(--ci-table);
+}
+.mapFrame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  filter: grayscale(0.35) sepia(0.12);
+}
+@media (min-width: 880px) {
+  .programCard {
+    margin-right: auto;
+  }
+  .placeCard {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    align-items: center;
+    margin-left: auto;
+    z-index: 2;
+  }
+  /* o cartão de direções sobe só sobre o canto do programa (38rem + 46rem em 76rem:
+     8rem de sobreposição horizontal, dentro do padding do programa) */
+  .placeOverlap {
+    margin-top: -3rem;
+  }
+  .map {
+    aspect-ratio: 1;
+  }
+}
+
+/* ---------------------------------------------------------- informações */
+
+.info {
+  padding-block: 0 clamp(3rem, 7vw, 5rem);
+}
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 20rem));
+  justify-content: center;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+}
+.infoCard {
+  padding: calc(var(--ci-pad) * 0.8) calc(var(--ci-pad) * 0.8) var(--ci-pad);
+  text-align: center;
+}
+.flourish {
+  display: block;
+  width: 6.5rem;
+  height: auto;
+  margin: 0 auto 0.5rem;
+  color: var(--ci-ornament);
+}
+.infoTitle {
+  margin: 0;
+  font-weight: 400;
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  line-height: 1.25;
+  text-wrap: balance;
+}
+.infoCard .body {
+  font-size: 0.95rem;
+  color: var(--ci-muted);
+  text-align: left;
+}
+
+/* ------------------------------------------------------------ presentes */
+
+.gifts {
+  padding-block: 0 clamp(3rem, 7vw, 5rem);
+}
+.gifts .lead {
+  margin-inline: auto;
+}
+
+/* -------------------------------------------------------------- galeria */
+
+.gallery {
+  padding-block: 0 clamp(3rem, 7vw, 5rem);
+}
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(0.75rem, 2vw, 1.25rem);
+}
+.photo {
+  display: block;
+  width: 100%;
+  padding: 0.4rem;
+  background: var(--ci-ivory);
+  border: 1px solid var(--ci-rule);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.photo:hover {
+  transform: translateY(-3px);
+}
+.photoImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+@media (min-width: 640px) {
+  .galleryGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1024px) {
+  .galleryGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  /* múltiplo de 3 (e não de 4): três colunas, sem foto sozinha na última linha */
+  .galleryGrid:has(> :last-child:nth-child(3n)):not(:has(> :last-child:nth-child(4n))) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.lightbox {
+  width: min(92vw, 760px);
+  max-height: 92vh;
+  margin: auto;
+  padding: 0.5rem;
+  border: 1px solid var(--ci-rule);
+  background: var(--ci-ivory);
+}
+.lightbox::backdrop {
+  background: rgba(43, 36, 32, 0.82);
+}
+.lightboxClose,
+.lightboxNav {
+  position: absolute;
+  z-index: 2;
+  width: 2.75rem;
+  height: 2.75rem;
+  font-family: var(--ci-display), Georgia, serif;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--ci-ink);
+  background: rgba(248, 244, 234, 0.9);
+  border: 1px solid var(--ci-rule);
+  cursor: pointer;
+}
+.lightboxClose {
+  top: 0.9rem;
+  right: 0.9rem;
+}
+.lightboxNav {
+  top: 50%;
+  transform: translateY(-50%);
+}
+.lightboxNav[data-dir="prev"] {
+  left: 0.9rem;
+}
+.lightboxNav[data-dir="next"] {
+  right: 0.9rem;
+}
+.lightboxFig {
+  margin: 0;
+}
+.lightboxImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 82vh;
+  object-fit: contain;
+}
+.lightboxCaption {
+  padding: 0.75rem 0.5rem 0.4rem;
+  font-style: italic;
+  font-size: 0.9rem;
+  text-align: center;
+  color: var(--ci-muted);
+}
+
+/* --------------------------------------------------------- encerramento */
+
+.closing {
+  padding-block: clamp(2rem, 5vw, 3.5rem) clamp(3rem, 7vw, 5rem);
+}
+.closingCard {
+  max-width: 44rem;
+  margin-inline: auto;
+  padding: 0.5rem;
+  text-align: center;
+}
+.closingFig {
+  margin: 0;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  border: 1px solid var(--ci-rule);
+}
+.closingImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.closingBody {
+  padding: 1.75rem calc(var(--ci-pad) - 0.5rem) calc(var(--ci-pad) - 0.5rem);
+}
+.closingBody .rule {
+  width: min(100%, 14rem);
+}
+.closingText {
+  margin: 1.5rem auto 0;
+  max-width: 34rem;
+  font-style: italic;
+  font-size: clamp(1.1rem, 1.7vw, 1.35rem);
+  line-height: 1.6;
+}
+.closingSign {
+  margin: 1.25rem 0 0;
+  font-family: var(--ci-sans), "Segoe UI", sans-serif;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ci-muted);
+}
+
+/* --------------------------------------------------------------- rodapé */
+
+.footer {
+  background: var(--ci-ink);
+  color: var(--ci-on-ink);
+  padding-block: 2rem;
+}
+.footerInner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+  text-align: center;
+}
+.footerLine {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem 0.75rem;
+  margin: 0;
+  font-family: var(--ci-sans), "Segoe UI", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.footerCredit {
+  margin: 0;
+  font-family: var(--ci-sans), "Segoe UI", sans-serif;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ci-on-ink-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photo,
+  .btn,
+  .navLink {
+    transition: none;
+  }
+  .photo:hover {
+    transform: none;
+  }
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { getTemplate } from "@/lib/templates/catalog";
 import { useRef, useState, type DragEvent } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
@@ -15,13 +16,6 @@ const EXT: Record<string, string> = {
   "image/webp": "webp",
   "image/avif": "avif"
 };
-
-/** Modelos cujo rodapé exibe uma foto (os demais têm rodapé só de texto/ornamento). */
-const TEMPLATES_WITH_FOOTER_PHOTO = new Set<WeddingSite["templateId"]>([
-  "classico-romantico",
-  "garden-classico",
-  "cinema-noir"
-]);
 
 function newId() {
   return crypto.randomUUID();
@@ -77,7 +71,7 @@ export function PhotoManager({
   const [dragOver, setDragOver] = useState<string | null>(null);
   const [dropActive, setDropActive] = useState(false);
 
-  const showFooter = TEMPLATES_WITH_FOOTER_PHOTO.has(templateId);
+  const showFooter = getTemplate(templateId).shows.footerPhoto;
   const isCustomCover = gallery.some((p) => p.src === heroImage);
   const isCustomFooter = gallery.some((p) => p.src === footerImage);
 

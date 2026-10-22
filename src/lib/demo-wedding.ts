@@ -1,30 +1,10 @@
-import type { WeddingSite } from "@/types/wedding";
+import type { WeddingLocation, WeddingSite } from "@/types/wedding";
 import { DEMO_WEDDING_ID } from "@/lib/demo-id";
-import {
-  DEMO_GIFT_PHOTOS,
-  DEMO_INFO_PHOTOS,
-  DEMO_SHOOTS,
-  DEMO_VENUE,
-  type DemoShootId
-} from "@/lib/demo-photos";
+import { DEMO_GIFT_PHOTOS, DEMO_INFO_PHOTOS, DEMO_SHOOTS, DEMO_VENUE, romanticImages } from "@/lib/demo-photos";
 
-const unsplashImage = (photoId: string, width = 2200) =>
-  `https://images.unsplash.com/${photoId}?auto=format&fit=crop&w=${width}&q=82`;
-
-export const romanticImages = {
-  hero: unsplashImage("photo-1636137674064-4db66407a54f", 2600),
-  toast: unsplashImage("photo-1770582071129-df561abd78e8", 1800),
-  hands: unsplashImage("photo-1694709283346-bbc66a18e731", 1800),
-  blackWhitePortrait: unsplashImage("photo-1640654454819-34e53d3ef40a", 1800),
-  blackWhiteWide: unsplashImage("photo-1641807672584-0c6e999276a6", 2200),
-  reception: unsplashImage("photo-1769812343775-85a27e6a076c", 1800),
-  ringEditorial: unsplashImage("photo-1708601421101-9ad139d83f4d", 1600),
-  ringSoftGold: unsplashImage("photo-1648758566573-a820206cea29", 1600),
-  ceremonyAisle: unsplashImage("photo-1764010521191-878abfde05c6", 1800),
-  luxuryVenue: unsplashImage("photo-1773745060497-4cc1df774c72", 2200),
-  gardenPortrait: "/assets/canva-intimate/hero-canva.jpg",
-  botanicalDetail: "/assets/canva-garden/hero-garden.jpg"
-};
+export { romanticImages };
+import { getTemplate, type TemplateId } from "@/lib/templates/catalog";
+import { defaultWeddingContent } from "@/lib/wedding";
 
 export const demoWedding: WeddingSite = {
   id: DEMO_WEDDING_ID,
@@ -274,22 +254,136 @@ export const demoWedding: WeddingSite = {
   }
 };
 
+/**
+ * Slugs de QA das demos (/modelo/<id>/<slug>), além do casal de exemplo:
+ *   site-novo     o site como nasce no cadastro: textos iniciais, sem foto nenhuma,
+ *                 sem presentes, sem programação, sem cartões (nada pode ficar vazio ou feio)
+ *   nomes-longos  nomes compostos, textos de 600 caracteres, endereço longo, 7 horários,
+ *                 5 cartões, 12 presentes (nada pode cortar ou vazar)
+ */
+export const DEMO_SLUGS = [demoWedding.slug, "site-novo", "nomes-longos"] as const;
+
 export function getDemoWeddingBySlug(slug: string) {
   return slug === demoWedding.slug ? demoWedding : null;
 }
 
-/**
- * Demo de um modelo da vitrine: o casamento base com o ensaio do modelo (lib/demo-photos)
- * e cartões de informação úteis no lugar dos que repetiam local e presentes.
- */
-export function demoWeddingFor(templateId: DemoShootId, slug: string): WeddingSite | null {
-  const base = getDemoWeddingBySlug(slug);
-  if (!base) return null;
-  const shoot = DEMO_SHOOTS[templateId];
+const LONG_TEXT =
+  "Estamos preparando uma celebração íntima, elegante e cheia de significado, pensada para receber as pessoas que fizeram parte da nossa história com leveza, beleza e presença. Queremos que cada detalhe conte um pouco de quem somos: a música que escolhemos juntos, a mesa farta que lembra os almoços de domingo, o jardim onde demos o primeiro passo dessa caminhada. Venham com o coração aberto e os sapatos confortáveis, porque a ideia é ficar até a última música. Este convite é o nosso abraço antecipado em cada um de vocês.";
 
+function newSiteDemo(templateId: TemplateId): WeddingSite {
+  const template = getTemplate(templateId);
+  return {
+    ...demoWedding,
+    ...defaultWeddingContent({ coupleNames: "Ana & Pedro", templateId }),
+    slug: "site-novo",
+    coupleNames: "Ana & Pedro",
+    templateId,
+    templateName: template.name,
+    heroImage: "",
+    footerImage: "",
+    gallery: [],
+    floatingImages: [],
+    gifts: [],
+    detailCards: [],
+    locations: [{ id: "principal", title: "Local", venue: "", city: "", note: "", mapUrl: "", image: "" }]
+  };
+}
+
+function longNamesDemo(templateId: TemplateId): WeddingSite {
+  const base = demoWeddingFor(templateId, demoWedding.slug)!;
+  const primary = base.locations[0];
   return {
     ...base,
-    templateId,
+    slug: "nomes-longos",
+    coupleNames: "Maria Fernanda Albuquerque Sampaio & João Pedro Cavalcanti de Souza Ramos",
+    monogram: "MF&JP",
+    invitationWords: "com imensa alegria e gratidão convidamos vocês para celebrar conosco o dia do nosso casamento".split(" "),
+    welcomeText: LONG_TEXT,
+    storyTitle: "uma história que começou numa tarde de chuva e virou a nossa casa",
+    storyMoments: base.storyMoments.map((moment) => ({
+      ...moment,
+      headline: "quando o simples passou a ser raro\ne o raro virou todo dia",
+      description: LONG_TEXT.slice(0, 420)
+    })),
+    detailsTitle: "um fim de tarde inteiro para guardar na memória com quem a gente mais ama",
+    detailsSubtitle: LONG_TEXT.slice(0, 300),
+    schedule: [
+      { id: "1", time: "15:00", title: "Chegada dos convidados e recepção com drinks de boas-vindas", note: "Estacionamento com manobrista na entrada principal da fazenda." },
+      { id: "2", time: "16:00", title: "Retratos ao entardecer", note: "Quem quiser tirar foto com os noivos, é a hora." },
+      { id: "3", time: "17:30", title: "Cerimônia", note: "O sim, diante de quem importa, no jardim ao lado do lago." },
+      { id: "4", time: "18:30", title: "Coquetel", note: "Canapés e espumante no deck." },
+      { id: "5", time: "19:30", title: "Jantar", note: "Menu assinado em três tempos, com opção vegetariana." },
+      { id: "6", time: "21:00", title: "Primeira dança e brindes", note: "" },
+      { id: "7", time: "22:00", title: "Festa até a última música", note: "Van de volta para os hotéis a partir da meia-noite." }
+    ],
+    locations: [
+      {
+        ...primary,
+        venue: "Fazenda Três Ipês Eventos e Hospedaria Rural de Alto Padrão",
+        city: "Itu, São Paulo",
+        address: "Estrada Municipal do Pirapitingui, km 14,5, Bairro Pirapitingui, Itu, SP, CEP 13300-970",
+        note: LONG_TEXT.slice(0, 260)
+      },
+      ...base.locations.slice(1)
+    ],
+    detailCards: [
+      ...base.detailCards,
+      { id: "criancas", type: "custom", title: "Crianças", subtitle: "Espaço kids com monitoras", image: base.detailCards[0]?.image ?? "", body: LONG_TEXT.slice(0, 200), active: true },
+      { id: "presentes-info", type: "gifts", title: "Lista de presentes e contribuições para a lua de mel", subtitle: "Pix direto para o casal", image: base.detailCards[1]?.image ?? "", body: LONG_TEXT.slice(0, 180), active: true }
+    ],
+    gifts: [...base.gifts, ...base.gifts.map((gift) => ({ ...gift, id: `${gift.id}-2`, title: `${gift.title} para a casa nova dos dois` }))],
+    finalText: LONG_TEXT.slice(0, 330),
+    footerText: "com todo o amor do mundo, maria fernanda e joão pedro, que mal podem esperar por esse dia.",
+    rsvp: { ...base.rsvp, subtitle: "Responda até 5 de novembro de 2026, por favor, para fecharmos a lista com o buffet" }
+  };
+}
+
+/** Casamento de uma demo por slug (ver DEMO_SLUGS) ou null. */
+export function demoBySlug(templateId: TemplateId, slug: string): WeddingSite | null {
+  if (slug === "site-novo") return newSiteDemo(templateId);
+  if (slug === "nomes-longos") return longNamesDemo(templateId);
+  return demoWeddingFor(templateId, slug);
+}
+
+// Olive Burgundy: save the date fiel ao vídeo de referência (casal e local próprios).
+const OLIVE_LOCATION: WeddingLocation = {
+  id: "occitanie",
+  title: "Meet us in",
+  venue: "Occitanie",
+  city: "Occitanie, France",
+  note: "Formal invitation to follow",
+  mapUrl: "https://maps.google.com/?q=Occitanie+France",
+  image: ""
+};
+
+function oliveDemo(wedding: WeddingSite): WeddingSite {
+  return {
+    ...wedding,
+    coupleNames: "Clara Ashford & Elliot Reed",
+    monogram: "C&E",
+    weddingDate: "2027-06-21T12:30:00",
+    weddingDateLabel: "21.06.2027",
+    weddingTime: "Twelve thirty in the afternoon",
+    locations: [OLIVE_LOCATION, ...wedding.locations.slice(1)]
+  };
+}
+
+/**
+ * Demo de um modelo (/modelo/<id>/<slug>): o casamento base com o ensaio do modelo
+ * (lib/demo-photos, via catálogo) e cartões de informação úteis no lugar dos que
+ * repetiam local e presentes. Modelo sem ensaio usa as fotos base.
+ */
+export function demoWeddingFor(templateId: TemplateId, slug: string): WeddingSite | null {
+  const base = getDemoWeddingBySlug(slug);
+  if (!base) return null;
+  const template = getTemplate(templateId);
+  const withTemplate = { ...base, templateId, templateName: template.name };
+  if (templateId === "olive-burgundy") return oliveDemo(withTemplate);
+  if (!template.demoShoot) return withTemplate;
+  const shoot = DEMO_SHOOTS[template.demoShoot];
+
+  return {
+    ...withTemplate,
     heroImage: shoot.hero,
     floatingImages: [],
     gallery: shoot.gallery,

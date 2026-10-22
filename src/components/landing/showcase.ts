@@ -19,7 +19,7 @@ export type ShowcaseId = (typeof SHOWCASE_IDS)[number];
 export const SHOWCASE = SHOWCASE_IDS.flatMap((id) => TEMPLATE_CHOICES.filter((choice) => choice.id === id));
 
 /** Demo completa do modelo (o mesmo casamento de exemplo em todos). */
-export const demoPath = (id: ShowcaseId) => `/modelo/${id}/helena-e-lucas`;
+export const demoPath = (id: WeddingSite["templateId"]) => `/modelo/${id}/helena-e-lucas`;
 
 /**
  * Página inteira do modelo, para rolar dentro dos aparelhos da seção Modelos:

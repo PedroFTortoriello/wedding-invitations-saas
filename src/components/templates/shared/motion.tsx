@@ -12,7 +12,26 @@ import { useEffect, useState, type CSSProperties, type ElementType, type ReactNo
  */
 
 /** Tags Reveal can render as. Polymorphic so it can wrap list items, figures, etc. */
-type RevealTag = "div" | "li" | "ul" | "ol" | "section" | "article" | "figure" | "span" | "header";
+type RevealTag =
+  | "div"
+  | "li"
+  | "ul"
+  | "ol"
+  | "section"
+  | "article"
+  | "aside"
+  | "nav"
+  | "footer"
+  | "figure"
+  | "figcaption"
+  | "blockquote"
+  | "p"
+  | "h1"
+  | "h2"
+  | "h3"
+  | "dl"
+  | "span"
+  | "header";
 
 type RevealProps = {
   as?: RevealTag;
@@ -66,6 +85,8 @@ export function Reveal({
   return (
     <Tag
       data-reveal=""
+      // O RevealObserver pode marcar data-shown antes de o chunk do modelo hidratar (next/dynamic).
+      suppressHydrationWarning
       className={className}
       style={Object.keys(vars).length ? vars : undefined}
       id={id}

@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { TEMPLATES } from "@/lib/templates/catalog";
 import type { WeddingGift, WeddingSite } from "@/types/wedding";
 
 /**
@@ -26,19 +27,12 @@ export const GIFT_ZOOM_MAX = 3;
 
 /**
  * Proporção do quadro da foto no cartão de presente de cada modelo (--g-aspect do
- * GiftRegistry). A prévia do painel usa a mesma, para o casal ver o corte real.
- * olive-burgundy não tem lista de presentes: fica no 4 / 3 neutro.
+ * GiftRegistry), vinda do catálogo. A prévia do painel usa a mesma, para o casal ver o corte real.
  */
-export const GIFT_ASPECT_BY_TEMPLATE: Record<WeddingSite["templateId"], string> = {
-  "classico-romantico": "4 / 3",
-  "civil-minimalista": "1.2 / 1",
-  "garden-classico": "0.82 / 1",
-  "olive-burgundy": "4 / 3",
-  "editorial-luxury": "3 / 4",
-  "jardim-romantico": "0.85 / 1",
-  "pe-na-areia": "4 / 3",
-  "cinema-noir": "3 / 4"
-};
+export const GIFT_ASPECT_BY_TEMPLATE = Object.fromEntries(TEMPLATES.map((t) => [t.id, t.giftAspect])) as Record<
+  WeddingSite["templateId"],
+  string
+>;
 
 const finite = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value);
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));

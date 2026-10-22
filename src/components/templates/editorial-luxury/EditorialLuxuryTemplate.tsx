@@ -500,6 +500,8 @@ function RsvpBlock({ wedding }: Props) {
                 disabled={state === "loading"}
                 style={{
                   marginTop: 4,
+                  minHeight: 44,
+                  padding: "0 12px",
                   background: "none",
                   border: "none",
                   color: "inherit",

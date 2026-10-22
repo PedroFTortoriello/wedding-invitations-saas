@@ -1,0 +1,1055 @@
+/*
+ * Pintura (painted-memories): galeria de quadros. Tela com trama de canvas, molduras
+ * duplas em ocre, plaquinhas de museu em Public Sans caixa alta; Rosarivo no display.
+ *
+ * Contraste (WCAG, calculado):
+ *   tinta #2b2622 sobre tela #efe8dc 12,3:1 · sobre tela-2 #e6ddcd 11,1:1 · sobre cartão #f6f1e7 13,3:1
+ *   cinza #5a534a sobre tela 6,2:1 · sobre tela-2 5,6:1 · sobre cartão 6,7:1
+ *   ocre #6f5a3a sobre tela 5,4:1 · sobre tela-2 4,9:1 · sobre cartão 5,8:1 (eyebrows, horários, preço)
+ *   tela #efe8dc sobre ardósia-escura #3f4a52 7,5:1 · sobre ocre (botões) 5,4:1 · sobre musgo #5f6b4a 4,7:1
+ *   ardósia #8b9aa5 sobre tela 2,4:1 e ocre sobre ardósia-escura 1,4:1: só ornamento, nunca texto.
+ */
+
+.template {
+  --pm-tela: #efe8dc;
+  --pm-tela-2: #e6ddcd;
+  --pm-card: #f6f1e7;
+  --pm-ocre: #6f5a3a;
+  --pm-ardosia: #8b9aa5;
+  --pm-ardosia-escura: #3f4a52;
+  --pm-musgo: #5f6b4a;
+  --pm-tinta: #2b2622;
+  --pm-cinza: #5a534a;
+  --pm-line: rgba(111, 90, 58, 0.32);
+  --pm-nav-h: 3.25rem;
+
+  --font-serif: var(--pm-display), Georgia, serif;
+  --font-sans: var(--pm-sans), "Segoe UI", sans-serif;
+  --widget-card-radius: 0px;
+  --widget-btn-radius: 0px;
+  --widget-btn-case: uppercase;
+  --widget-btn-tracking: 0.16em;
+
+  --g-card: var(--pm-card);
+  --g-dialog-bg: var(--pm-tela);
+  --g-border: var(--pm-line);
+  --g-ink: var(--pm-tinta);
+  --g-muted: var(--pm-cinza);
+  --g-accent: var(--pm-ocre);
+  --g-on-accent: var(--pm-tela);
+  --g-price: var(--pm-ocre);
+  --g-radius: 0px;
+  --g-img-radius: 0px;
+  --g-img-filter: saturate(0.92) contrast(1.02);
+  --g-scrim: rgba(43, 38, 34, 0.62);
+  --g-backdrop: rgba(43, 38, 34, 0.72);
+  --g-error: #8d3d33;
+  --g-btn-case: uppercase;
+  --g-btn-radius: 0px;
+  --g-btn-tracking: 0.16em;
+
+  --gf-bg: var(--pm-tela-2);
+  --gf-card: var(--pm-card);
+  --gf-ink: var(--pm-tinta);
+  --gf-muted: var(--pm-cinza);
+  --gf-border: var(--pm-line);
+  --gf-field: #fcfaf5;
+  --gf-accent: var(--pm-ocre);
+  --gf-on-accent: var(--pm-tela);
+  --gf-radius: 0px;
+  --gf-eyebrow: var(--pm-ocre);
+  --gf-error: #8d3d33;
+  --gf-btn-case: uppercase;
+  --gf-btn-radius: 0px;
+  --gf-btn-tracking: 0.16em;
+
+  position: relative;
+  isolation: isolate;
+  font-family: var(--pm-sans), "Segoe UI", system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--pm-tinta);
+  background: var(--pm-tela);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+/* Trama de tela sobre tudo (lightbox e modal do Pix ficam na top layer). */
+.template::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background-image: var(--pm-canvas);
+  background-size: 240px 240px;
+  opacity: 0.12;
+}
+
+:where(.template) :where(a, button):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 74rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 5vw, 3rem);
+}
+
+/* ------------------------------------------------------------ papéis */
+
+.eyebrow,
+.eyebrowLight {
+  margin: 0;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--pm-ocre);
+}
+.eyebrowLight {
+  color: var(--pm-tela);
+}
+
+.h2 {
+  margin: 0.5rem 0 0;
+  font-family: var(--pm-display);
+  font-weight: 400;
+  font-size: clamp(1.9rem, 4.2vw, 3rem);
+  line-height: 1.1;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.body {
+  margin: 1rem 0 0;
+  max-width: 36rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--pm-cinza);
+}
+
+.lead {
+  margin: 1rem 0 0;
+  max-width: 34rem;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--pm-cinza);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding-inline: 1.75rem;
+  margin-top: 1.5rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--pm-tela);
+  background: var(--pm-ocre);
+  border: 1px solid var(--pm-ocre);
+  border-radius: 0;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+.btn:hover {
+  background: var(--pm-tinta);
+  border-color: var(--pm-tinta);
+  transform: translateY(-1px);
+}
+
+/* Quadro: moldura dupla ocre, passe-partout e sombra interna curta. */
+.frame {
+  --pm-ratio: 4 / 5;
+  padding: 14px;
+  background: var(--pm-card);
+  border: 6px double var(--pm-ocre);
+  box-shadow: 0 18px 30px -22px rgba(43, 38, 34, 0.55);
+}
+.canvas {
+  position: relative;
+  aspect-ratio: var(--pm-ratio);
+  overflow: hidden;
+  background: var(--pm-tela-2);
+}
+.canvas::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 2px 6px rgba(43, 38, 34, 0.45), inset 0 0 0 1px rgba(43, 38, 34, 0.25);
+}
+.img,
+.heroImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.92) contrast(1.03);
+}
+
+/* Plaquinha de museu. */
+.plate {
+  display: inline-block;
+  margin: 0;
+  padding: 0.5rem 0.9rem;
+  font-family: var(--pm-sans);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pm-tinta);
+  background: var(--pm-card);
+  border: 1px solid var(--pm-ocre);
+  box-shadow: 0 2px 0 var(--pm-tela-2), 0 6px 12px -8px rgba(43, 38, 34, 0.5);
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+
+/* Estudo: manchas de tinta no lugar da foto. */
+.study {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(43, 38, 34, 0.55) 0, rgba(43, 38, 34, 0) 58%),
+    radial-gradient(ellipse 60% 45% at 28% 26%, var(--pm-ocre) 0, transparent 70%),
+    radial-gradient(ellipse 55% 50% at 74% 58%, var(--pm-ardosia) 0, transparent 70%),
+    radial-gradient(ellipse 65% 40% at 40% 86%, var(--pm-musgo) 0, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 82% 14%, var(--pm-musgo) 0, transparent 70%),
+    var(--pm-tela-2);
+}
+.study[data-seed="1"] {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(43, 38, 34, 0.55) 0, rgba(43, 38, 34, 0) 58%),
+    radial-gradient(ellipse 60% 45% at 72% 24%, var(--pm-ardosia) 0, transparent 70%),
+    radial-gradient(ellipse 55% 50% at 24% 62%, var(--pm-musgo) 0, transparent 70%),
+    radial-gradient(ellipse 65% 40% at 60% 88%, var(--pm-ocre) 0, transparent 70%),
+    var(--pm-tela-2);
+}
+.study[data-seed="2"] {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(43, 38, 34, 0.55) 0, rgba(43, 38, 34, 0) 58%),
+    radial-gradient(ellipse 60% 45% at 30% 70%, var(--pm-ocre) 0, transparent 70%),
+    radial-gradient(ellipse 55% 50% at 70% 30%, var(--pm-musgo) 0, transparent 70%),
+    radial-gradient(ellipse 65% 40% at 80% 80%, var(--pm-ardosia) 0, transparent 70%),
+    var(--pm-tela-2);
+}
+.studyMark {
+  font-family: var(--pm-display);
+  font-style: italic;
+  font-size: clamp(2.6rem, 10cqw, 5rem);
+  line-height: 1;
+  color: var(--pm-tela);
+  text-shadow: 0 1px 2px rgba(43, 38, 34, 0.5);
+  padding-inline: 0.5rem;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.canvas {
+  container-type: inline-size;
+}
+
+/* ---------------------------------------------------------------- nav */
+
+.nav {
+  position: sticky;
+  top: var(--demo-bar-h, 0px);
+  z-index: 20;
+  background: color-mix(in srgb, var(--pm-tela) 92%, transparent);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--pm-line);
+}
+.navInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: var(--pm-nav-h);
+}
+.navMono {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--pm-tinta);
+  border: 1px solid var(--pm-ocre);
+  background: var(--pm-card);
+}
+.navLinks {
+  display: none;
+  gap: clamp(1rem, 2.4vw, 2rem);
+}
+.navLink {
+  padding-block: 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--pm-tinta);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.navLink:hover {
+  color: var(--pm-ocre);
+  border-bottom-color: var(--pm-ocre);
+}
+.navToggle {
+  min-height: 2.75rem;
+  padding: 0 0.25rem;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pm-tinta);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.navMobile {
+  display: grid;
+  padding: 0.5rem clamp(1.25rem, 5vw, 3rem) 1rem;
+  border-top: 1px solid var(--pm-line);
+}
+.navMobileLink {
+  padding: 0.7rem 0;
+  font-family: var(--pm-display);
+  font-size: 1.2rem;
+  text-decoration: none;
+  color: var(--pm-tinta);
+  border-bottom: 1px solid var(--pm-line);
+}
+@media (min-width: 960px) {
+  .navLinks {
+    display: flex;
+  }
+  .navToggle {
+    display: none;
+  }
+}
+
+/* --------------------------------------------------------------- capa */
+
+.hero {
+  min-height: calc(100svh - var(--demo-bar-h, 0px) - var(--pm-nav-h));
+  display: flex;
+  align-items: center;
+  padding-block: clamp(2.5rem, 6vw, 5rem);
+  background:
+    radial-gradient(ellipse 60% 50% at 100% 0%, rgba(139, 154, 165, 0.28) 0, transparent 70%),
+    var(--pm-tela);
+}
+.heroGrid {
+  display: grid;
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: center;
+}
+.heroText {
+  max-width: 36rem;
+}
+.names {
+  margin: 1rem 0 0;
+  font-family: var(--pm-display);
+  font-weight: 400;
+  font-size: clamp(2.9rem, 9vw, 5.4rem);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.names[data-scale="medium"] {
+  font-size: clamp(2.5rem, 7.5vw, 4.4rem);
+}
+.names[data-scale="long"] {
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  line-height: 1.06;
+}
+.name {
+  display: block;
+}
+.amp {
+  display: block;
+  margin-block: 0.1em;
+  font-style: italic;
+  font-size: 0.6em;
+  color: var(--pm-ocre);
+}
+.heroMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 2.5rem;
+  margin: clamp(1.5rem, 3vw, 2.25rem) 0 0;
+}
+.heroMeta div {
+  min-width: 10rem;
+  max-width: 100%;
+}
+.heroMeta dt {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--pm-ocre);
+}
+.heroMeta dd {
+  margin: 0.25rem 0 0;
+  font-family: var(--pm-display);
+  font-size: 1.2rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.heroBtn {
+  margin-top: clamp(1.5rem, 3vw, 2.25rem);
+}
+.heroArt {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  width: min(100%, 26rem);
+  margin-inline: auto;
+}
+.heroFrame {
+  width: 100%;
+}
+.heroPlate {
+  text-align: center;
+  max-width: 24rem;
+}
+@media (min-width: 900px) {
+  .heroGrid {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+  .heroArt {
+    width: min(100%, 30rem);
+    margin-inline: auto 0;
+  }
+}
+
+/* ------------------------------------------------------------ convite */
+
+.invite {
+  padding-block: clamp(3.5rem, 7vw, 5.5rem);
+  background: var(--pm-ardosia-escura);
+  color: var(--pm-tela);
+  text-align: center;
+}
+.inviteCol {
+  width: 100%;
+  max-width: 46rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 5vw, 3rem);
+}
+.inviteWords {
+  margin: 1rem 0 0;
+  font-family: var(--pm-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.7rem, 4vw, 2.8rem);
+  line-height: 1.2;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.ruleOcre {
+  display: block;
+  width: 5rem;
+  height: 2px;
+  margin: 1.5rem auto;
+  background: var(--pm-ocre);
+  outline: 1px solid var(--pm-tela);
+  outline-offset: 3px;
+}
+.inviteText {
+  margin: 0 auto;
+  max-width: 38rem;
+  font-size: 1.02rem;
+  line-height: 1.7;
+}
+
+/* ----------------------------------------------------------- história */
+
+.story {
+  padding-block: clamp(3.5rem, 7vw, 6rem) clamp(3rem, 6vw, 5rem);
+}
+.storyHead {
+  max-width: 40rem;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+/* Fio da parede: a borda superior; cada quadro desce por um arame até ela. */
+.rail {
+  border-top: 2px solid var(--pm-ocre);
+}
+.room {
+  display: grid;
+  gap: clamp(2rem, 5vw, 3.5rem) clamp(1.5rem, 3vw, 2.5rem);
+  align-items: start;
+}
+.hung {
+  position: relative;
+  display: grid;
+  gap: 0.9rem;
+  justify-items: start;
+  padding-top: var(--pm-drop, 2.25rem);
+}
+.wire {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: var(--pm-drop, 2.25rem);
+  background: var(--pm-ocre);
+}
+.wire::before,
+.wire::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: var(--pm-ocre);
+  transform-origin: top;
+}
+.wire::before {
+  transform: rotate(-16deg);
+}
+.wire::after {
+  transform: rotate(16deg);
+}
+.hungFrame {
+  width: 100%;
+}
+.hung:nth-child(3n + 1) {
+  --pm-drop: 2rem;
+}
+.hung:nth-child(3n + 1) .hungFrame {
+  --pm-ratio: 4 / 5;
+  width: min(100%, 22rem);
+}
+.hung:nth-child(3n + 2) {
+  --pm-drop: 3.75rem;
+}
+.hung:nth-child(3n + 2) .hungFrame {
+  --pm-ratio: 1 / 1;
+  width: min(100%, 18rem);
+}
+.hung:nth-child(3n + 3) {
+  --pm-drop: 2.75rem;
+}
+.hung:nth-child(3n + 3) .hungFrame {
+  --pm-ratio: 3 / 4;
+  width: min(100%, 24rem);
+}
+/* O arame nasce no centro do quadro, não da coluna. */
+.hung:nth-child(3n + 1) .wire {
+  left: min(50%, 11rem);
+}
+.hung:nth-child(3n + 2) .wire {
+  left: min(50%, 9rem);
+}
+.hung:nth-child(3n + 3) .wire {
+  left: min(50%, 12rem);
+}
+.hungPlate span {
+  margin-right: 0.75em;
+  color: var(--pm-ocre);
+}
+.chapterHeadline {
+  margin: 0.25rem 0 0;
+  font-family: var(--pm-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.35rem, 2.4vw, 1.8rem);
+  line-height: 1.25;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.chapterHeadline span {
+  display: block;
+}
+.hung .body {
+  margin-top: 0.25rem;
+}
+@media (min-width: 900px) {
+  .room {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) minmax(0, 6fr);
+  }
+  .hung:nth-child(3n + 2) .hungFrame {
+    margin-left: auto;
+  }
+  .hung:nth-child(3n + 2) {
+    justify-items: end;
+    text-align: right;
+  }
+  .hung:nth-child(3n + 2) .wire {
+    left: auto;
+    right: min(50%, 9rem);
+  }
+}
+
+/* ------------------------------------------------------------ contagem */
+
+.count {
+  padding-block: clamp(2.5rem, 5vw, 4rem);
+  background: var(--pm-musgo);
+  color: var(--pm-tela);
+  text-align: center;
+}
+.countEyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.countGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(0.5rem, 2vw, 1.5rem);
+  max-width: 40rem;
+  margin: 1.25rem auto 0;
+}
+.countCell {
+  display: grid;
+  gap: 0.35rem;
+  padding-block: 0.75rem;
+  border-top: 1px solid rgba(239, 232, 220, 0.45);
+}
+.countNum {
+  font-family: var(--pm-display);
+  font-size: clamp(2.2rem, 7vw, 4rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.countLabel {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.countDate {
+  margin: 1.25rem 0 0;
+  font-family: var(--pm-display);
+  font-style: italic;
+  font-size: 1.2rem;
+}
+
+/* --------------------------------------------------------- programação */
+
+.program {
+  padding-block: clamp(3.5rem, 7vw, 6rem);
+  background: var(--pm-tela-2);
+}
+.programGrid {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3.5rem);
+  align-items: start;
+}
+.labels {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.label {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  background: var(--pm-card);
+  border: 1px solid var(--pm-ocre);
+  box-shadow: 0 2px 0 var(--pm-tela), 0 8px 14px -10px rgba(43, 38, 34, 0.45);
+}
+.labelTime {
+  padding-top: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pm-ocre);
+  font-variant-numeric: tabular-nums;
+}
+.labelMain {
+  display: grid;
+  gap: 0.25rem;
+}
+.labelTitle {
+  font-family: var(--pm-display);
+  font-style: italic;
+  font-size: clamp(1.25rem, 2.2vw, 1.55rem);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.labelNote {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--pm-cinza);
+}
+@media (min-width: 900px) {
+  .programGrid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+  .programHead {
+    position: sticky;
+    top: calc(var(--demo-bar-h, 0px) + var(--pm-nav-h) + 1.5rem);
+  }
+}
+
+/* --------------------------------------------------------------- local */
+
+.place {
+  padding-block: clamp(3.5rem, 7vw, 6rem);
+}
+.placeGrid {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3.5rem);
+  align-items: center;
+}
+.placeArt {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+}
+.placeArt .frame {
+  width: 100%;
+}
+.map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  filter: sepia(0.25) saturate(0.8);
+}
+.placePlate {
+  text-align: center;
+  max-width: 30rem;
+}
+.placeCity {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pm-ocre);
+}
+.placeAddress {
+  margin: 0.75rem 0 0;
+  max-width: 32rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--pm-cinza);
+  overflow-wrap: anywhere;
+}
+@media (min-width: 900px) {
+  .placeGrid {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+}
+
+/* ------------------------------------------------------------- cartões */
+
+.cards {
+  padding-block: 0 clamp(3.5rem, 7vw, 6rem);
+}
+.cardList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+}
+.card {
+  padding: 1.5rem 1.5rem 1.6rem;
+  background: var(--pm-card);
+  border: 1px solid var(--pm-ocre);
+  outline: 1px solid var(--pm-ocre);
+  outline-offset: 3px;
+  box-shadow: 0 10px 20px -16px rgba(43, 38, 34, 0.5);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 26px -16px rgba(43, 38, 34, 0.55);
+}
+.cardSub {
+  margin: 0 0 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pm-ocre);
+}
+.cardTitle {
+  margin: 0;
+  font-family: var(--pm-display);
+  font-weight: 400;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.cardBody {
+  margin: 0.75rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--pm-cinza);
+}
+
+/* ------------------------------------------------------------ presentes */
+
+.gifts {
+  padding-block: clamp(3.5rem, 7vw, 6rem);
+  background: var(--pm-tela-2);
+}
+.giftsHead {
+  max-width: 40rem;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+
+/* -------------------------------------------------------------- galeria */
+
+.gallery {
+  padding-block: clamp(3.5rem, 7vw, 6rem);
+}
+.galleryHead {
+  max-width: 40rem;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+/* Parede de quadros: colunas (salão) com molduras de proporções alternadas. */
+.wall {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  columns: 2;
+  column-gap: clamp(1rem, 2.5vw, 2rem);
+}
+.wallItem {
+  break-inside: avoid;
+  margin-bottom: clamp(1.25rem, 3vw, 2.25rem);
+}
+.wallBtn {
+  display: grid;
+  gap: 0.6rem;
+  justify-items: center;
+  width: 100%;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: center;
+}
+.wallFrame {
+  width: 100%;
+  padding: 10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.wallBtn:hover .wallFrame {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 34px -22px rgba(43, 38, 34, 0.6);
+}
+.wallItem:nth-child(4n + 1) .wallFrame {
+  --pm-ratio: 4 / 5;
+}
+.wallItem:nth-child(4n + 2) .wallFrame {
+  --pm-ratio: 1 / 1;
+}
+.wallItem:nth-child(4n + 3) .wallFrame {
+  --pm-ratio: 3 / 4;
+}
+.wallItem:nth-child(4n + 4) .wallFrame {
+  --pm-ratio: 5 / 4;
+}
+.wallPlate {
+  font-size: 10px;
+  padding: 0.35rem 0.7rem;
+  max-width: 100%;
+}
+@media (min-width: 700px) {
+  .wall {
+    columns: 3;
+  }
+}
+@media (min-width: 1100px) {
+  .wall {
+    columns: 4;
+  }
+}
+
+/* lightbox */
+.lightbox {
+  width: min(92vw, 760px);
+  max-height: 92vh;
+  margin: auto;
+  padding: 10px;
+  border: 6px double var(--pm-ocre);
+  background: var(--pm-card);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+}
+.lightbox::backdrop {
+  background: rgba(43, 38, 34, 0.86);
+}
+.lightboxClose,
+.lightboxNav {
+  position: absolute;
+  z-index: 2;
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--pm-tela);
+  background: var(--pm-ocre);
+  border: 0;
+  cursor: pointer;
+}
+.lightboxClose {
+  top: 0.75rem;
+  right: 0.75rem;
+}
+.lightboxNav {
+  top: 50%;
+  transform: translateY(-50%);
+}
+.lightboxNav[data-dir="prev"] {
+  left: 0.75rem;
+}
+.lightboxNav[data-dir="next"] {
+  right: 0.75rem;
+}
+.lightboxFig {
+  margin: 0;
+}
+.lightboxImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 80vh;
+  object-fit: contain;
+  filter: saturate(0.92) contrast(1.03);
+}
+.lightboxCaption {
+  padding: 0.75rem 1rem 0.4rem;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--pm-tinta);
+}
+
+/* --------------------------------------------------------- encerramento */
+
+.closing {
+  padding-block: clamp(3.5rem, 7vw, 6rem);
+  background: var(--pm-tela-2);
+}
+.closingInner {
+  display: grid;
+  justify-items: center;
+  gap: 1.5rem;
+}
+.closingFrame {
+  width: min(100%, 52rem);
+}
+/* Plaquinha grande: o texto final em Rosarivo itálico, caixa alta só no monograma. */
+.closingPlate {
+  width: min(100%, 36rem);
+  padding: 1.6rem clamp(1.25rem, 4vw, 2.25rem) 1.8rem;
+  text-align: center;
+  background: var(--pm-card);
+  border: 1px solid var(--pm-ocre);
+  outline: 1px solid var(--pm-ocre);
+  outline-offset: 3px;
+  box-shadow: 0 2px 0 var(--pm-tela), 0 12px 20px -14px rgba(43, 38, 34, 0.5);
+}
+.closingKicker {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--pm-ocre);
+  overflow-wrap: anywhere;
+}
+.closingWords {
+  margin: 0.75rem 0 0;
+  font-family: var(--pm-display);
+  font-style: italic;
+  font-size: clamp(1.15rem, 2vw, 1.4rem);
+  line-height: 1.5;
+  text-wrap: balance;
+}
+
+/* --------------------------------------------------------------- rodapé */
+
+.footer {
+  padding-block: clamp(2.5rem, 5vw, 3.5rem);
+  background: var(--pm-ardosia-escura);
+  color: var(--pm-tela);
+  text-align: center;
+}
+.footerInner {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+}
+.footerNames {
+  margin: 0;
+  font-family: var(--pm-display);
+  font-size: clamp(1.3rem, 2.6vw, 1.8rem);
+  line-height: 1.2;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.footerText {
+  margin: 0.25rem 0 0;
+  max-width: 34rem;
+  font-family: var(--pm-display);
+  font-style: italic;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+.footerMeta {
+  margin: 0.5rem 0 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.footerBrand {
+  margin: 1.25rem 0 0;
+  padding: 0.35rem 0.8rem;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  border: 1px solid rgba(239, 232, 220, 0.5);
+}
+
+/* ------------------------------------------------------ reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .card,
+  .wallFrame,
+  .navLink {
+    transition: none;
+  }
+  .btn:hover,
+  .card:hover,
+  .wallBtn:hover .wallFrame {
+    transform: none;
+  }
+}

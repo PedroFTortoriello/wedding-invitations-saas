@@ -1,0 +1,1065 @@
+/*
+ * Jardim Botânico — herbário.
+ * Papel creme, traço fino verde-folha, etiquetas de coleção com borda de 1px e
+ * cantos retos. Cormorant Garamond (nomes, títulos, horários) + Nunito Sans (UI).
+ *
+ * Contraste (WCAG, calculado):
+ *   --bt-ink   #23281f sobre --bt-bg #f4f0e6 = 13,23:1 · sobre --bt-bg2 #ebe5d6 = 11,98:1
+ *   --bt-muted #555b4d sobre #f4f0e6 = 6,17:1 · sobre #ebe5d6 = 5,59:1 · sobre #fbf9f3 = 6,67:1
+ *   --bt-leaf  #2f4a33 sobre #f4f0e6 = 8,59:1 (eyebrows, botões vazados) · sobre #ebe5d6 = 7,78:1
+ *   --bt-on-leaf #f4f0e6 sobre #2f4a33 = 8,59:1 · --bt-on-leaf-soft #c9d2bf sobre #2f4a33 = 6,26:1
+ *   --bt-leaf-light #8aa08a = 2,47:1 sobre creme: SÓ ornamento (numeral decorativo, aria-hidden)
+ */
+
+.template {
+  --bt-bg: #f4f0e6;
+  --bt-bg2: #ebe5d6;
+  --bt-card: #fbf9f3;
+  --bt-leaf: #2f4a33;
+  --bt-leaf-light: #8aa08a;
+  --bt-ink: #23281f;
+  --bt-muted: #555b4d;
+  --bt-on-leaf: #f4f0e6;
+  --bt-on-leaf-soft: #c9d2bf;
+  --bt-line: rgba(35, 40, 31, 0.18);
+  --bt-line-leaf: rgba(47, 74, 51, 0.32);
+  --bt-overlap: clamp(4rem, 11vw, 7rem);
+
+  /* Widgets compartilhados (GiftRegistry, GuestForms, Pix) */
+  --font-serif: var(--bt-display), Georgia, serif;
+  --font-sans: var(--bt-sans), "Segoe UI", sans-serif;
+  --widget-card-radius: 0px;
+  --widget-btn-radius: 0px;
+  --widget-btn-case: uppercase;
+  --widget-btn-tracking: 0.14em;
+  --g-card: var(--bt-card);
+  --g-dialog-bg: var(--bt-bg);
+  --g-border: var(--bt-line-leaf);
+  --g-ink: var(--bt-ink);
+  --g-muted: var(--bt-muted);
+  --g-accent: var(--bt-leaf);
+  --g-on-accent: var(--bt-on-leaf);
+  --g-price: var(--bt-leaf);
+  --g-radius: 0px;
+  --g-img-radius: 0px;
+  --g-img-filter: saturate(0.92);
+  --g-scrim: rgba(35, 40, 31, 0.55);
+  --g-error: #8d3d33;
+  --gf-bg: var(--bt-bg2);
+  --gf-card: var(--bt-card);
+  --gf-ink: var(--bt-ink);
+  --gf-muted: var(--bt-muted);
+  --gf-border: var(--bt-line-leaf);
+  --gf-field: #fdfcf8;
+  --gf-accent: var(--bt-leaf);
+  --gf-on-accent: var(--bt-on-leaf);
+  --gf-radius: 0px;
+  --gf-eyebrow: var(--bt-leaf);
+  --gf-error: #8d3d33;
+
+  font-family: var(--bt-sans), "Segoe UI", system-ui, sans-serif;
+  color: var(--bt-ink);
+  background: var(--bt-bg);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+:where(.template) :where(a, button):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 5vw, 3rem);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------ tipografia */
+
+.eyebrow,
+.kicker {
+  margin: 0;
+  font-family: var(--bt-sans), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bt-leaf);
+}
+
+.h2 {
+  margin: 0.6rem 0 0;
+  font-family: var(--bt-display), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2rem, 4.2vw, 3.2rem);
+  line-height: 1.08;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.h3 {
+  margin: 0.75rem 0 0;
+  font-family: var(--bt-display), Georgia, serif;
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(1.5rem, 2.8vw, 2.1rem);
+  line-height: 1.15;
+}
+.line {
+  display: block;
+}
+
+.lead {
+  margin: 1.1rem 0 0;
+  max-width: 40rem;
+  font-size: clamp(1rem, 1.2vw, 1.1rem);
+  line-height: 1.65;
+}
+
+.body {
+  margin: 0.9rem 0 0;
+  max-width: 36rem;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.9rem;
+  margin-top: 1.5rem;
+  padding-inline: 1.5rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--bt-leaf);
+  border: 1px solid var(--bt-leaf);
+  background: transparent;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.btn:hover {
+  background: var(--bt-leaf);
+  color: var(--bt-on-leaf);
+}
+
+/* --------------------------------------------------------------- balanço */
+/* Base em `transform`; o balanço anima a propriedade `rotate`, que compõe antes. */
+@media (prefers-reduced-motion: no-preference) {
+  .sway {
+    animation: btSway 7s ease-in-out infinite alternate;
+  }
+  .swayAlt {
+    animation: btSway 9s ease-in-out infinite alternate-reverse;
+  }
+}
+@keyframes btSway {
+  from {
+    rotate: -1.5deg;
+  }
+  to {
+    rotate: 1.5deg;
+  }
+}
+
+/* ------------------------------------------------------------------- nav */
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--bt-bg) 90%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--bt-line);
+}
+.navInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.5rem;
+}
+.navMono {
+  font-family: var(--bt-display), Georgia, serif;
+  font-weight: 500;
+  font-size: 1.35rem;
+  letter-spacing: 0.04em;
+  color: var(--bt-ink);
+  text-decoration: none;
+}
+.navLinks {
+  display: none;
+  gap: 1.6rem;
+}
+.navLink {
+  padding: 0.5rem 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bt-ink);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.navLink:hover {
+  color: var(--bt-leaf);
+  border-color: var(--bt-leaf);
+}
+.navToggle {
+  min-height: 2.75rem;
+  padding: 0 0.9rem;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bt-ink);
+  background: none;
+  border: 1px solid var(--bt-line-leaf);
+  cursor: pointer;
+}
+.navMobile {
+  display: grid;
+  padding: 0.5rem clamp(1.25rem, 5vw, 3rem) 1rem;
+  border-top: 1px solid var(--bt-line);
+}
+.navMobileLink {
+  padding: 0.7rem 0;
+  font-family: var(--bt-display), Georgia, serif;
+  font-size: 1.35rem;
+  color: var(--bt-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--bt-line);
+}
+.navMobileLink:last-child {
+  border-bottom: 0;
+}
+@media (min-width: 860px) {
+  .navLinks {
+    display: flex;
+  }
+  .navToggle,
+  .navMobile {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------ capa */
+
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: calc(100svh - var(--demo-bar-h, 0px) - 3.5rem);
+  padding: clamp(2.5rem, 6vw, 4.5rem) 1.25rem 0;
+  text-align: center;
+}
+.heroText {
+  position: relative;
+  z-index: 2;
+  max-width: 46rem;
+}
+
+.names {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1rem 0 0;
+  font-family: var(--bt-display), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2.9rem, 9vw, 5.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.names[data-scale="medium"] {
+  font-size: clamp(2.4rem, 7.6vw, 4.4rem);
+}
+.names[data-scale="long"] {
+  font-size: clamp(1.9rem, 6.4vw, 3.4rem);
+}
+.name {
+  display: block;
+}
+.amp {
+  display: block;
+  margin: 0.08em 0;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.6em;
+  line-height: 1;
+  color: var(--bt-leaf);
+}
+
+/* Etiqueta de herbário: borda fina, linhas por campo, caixa alta miúda. */
+.tag {
+  display: inline-grid;
+  min-width: min(100%, 22rem);
+  margin: 1.6rem auto 0;
+  text-align: left;
+  background: var(--bt-bg); /* papel por cima dos ramos */
+  border: 1px solid var(--bt-ink);
+}
+.tagRow {
+  display: grid;
+  grid-template-columns: 3.6rem 1fr;
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.5rem 0.9rem;
+  border-top: 1px solid var(--bt-line);
+}
+.tagRow:first-child {
+  border-top: 0;
+}
+.tagKey {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bt-muted);
+}
+.tagVal {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1.5;
+  color: var(--bt-ink);
+  overflow-wrap: anywhere;
+}
+
+/* Moldura vertical 3:4, deslocada para baixo (invade a seção do convite). */
+.heroStage {
+  position: relative;
+  z-index: 1;
+  width: min(78vw, 400px);
+  margin: 2.25rem auto calc(-1 * var(--bt-overlap));
+}
+.heroFrame {
+  position: relative;
+  z-index: 1;
+  display: block;
+  padding: 8px;
+  background: var(--bt-bg);
+  border: 1px solid var(--bt-leaf);
+}
+.heroPhoto {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+}
+.heroImg {
+  object-fit: cover;
+}
+.heroFern,
+.heroEuca {
+  position: absolute;
+  z-index: 0;
+  color: var(--bt-leaf);
+  pointer-events: none;
+}
+/* Samambaia espelhada (origem no centro: a caixa fica onde foi posta): a ponta
+   sobe para fora do canto superior esquerdo, a base some atrás da moldura. */
+.heroFern {
+  width: 58%;
+  top: -20%;
+  left: -26%;
+  transform: scaleX(-1) rotate(6deg);
+  stroke-width: 1.6;
+}
+/* Eucalipto girado 125°: centro da caixa no canto inferior direito, metade do
+   ramo atrás da moldura e a ponta saindo em diagonal para baixo e para fora. */
+.heroEuca {
+  width: 38%;
+  right: -19%;
+  bottom: -23%;
+  transform: rotate(125deg);
+  stroke-width: 1.6;
+}
+
+/* Sem foto: a moldura some e os ramos passam a emoldurar os nomes. */
+.hero:not([data-photo]) {
+  justify-content: center;
+  padding-bottom: clamp(2.5rem, 6vw, 4.5rem);
+}
+.hero:not([data-photo]) .heroStage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: auto;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.hero:not([data-photo]) .heroFern {
+  width: min(46vw, 280px);
+  top: 3%;
+  left: -6%;
+  transform: scaleX(-1) rotate(10deg);
+}
+.hero:not([data-photo]) .heroEuca {
+  width: min(30vw, 190px);
+  right: -3%;
+  bottom: 8%;
+  transform: rotate(150deg);
+}
+@media (min-width: 900px) {
+  /* Os ramos acompanham a coluna dos nomes, não as bordas da tela. */
+  .hero:not([data-photo]) .heroFern {
+    width: min(26vw, 360px);
+    top: 6%;
+    left: max(2%, calc(50% - 30rem));
+  }
+  .hero:not([data-photo]) .heroEuca {
+    width: min(18vw, 250px);
+    right: max(3%, calc(50% - 27rem));
+    bottom: 8%;
+  }
+}
+
+/* --------------------------------------------------------------- convite */
+
+.invite {
+  padding: calc(var(--bt-overlap) + 2.5rem) 1.25rem 4rem;
+  background: var(--bt-bg2);
+  text-align: center;
+}
+.hero:not([data-photo]) + .invite {
+  padding-top: 3.5rem;
+}
+.inviteCol {
+  position: relative;
+  z-index: 2; /* acima do eucalipto da capa */
+  max-width: 38rem;
+  margin-inline: auto;
+}
+.inviteWords {
+  margin: 0.6rem 0 0;
+  font-family: var(--bt-display), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+/* O ramo sobe em diagonal (≈18,5°); girado, vira um fio horizontal. */
+.inviteRule {
+  display: block;
+  width: 150px;
+  height: auto;
+  margin: 1.4rem auto 0.2rem;
+  color: var(--bt-leaf);
+  transform: rotate(18.5deg);
+  stroke-width: 2.4; /* viewBox de 320 em 150px: o 1.3 do kit vira meio pixel */
+}
+.invite .lead {
+  margin-inline: auto;
+}
+
+/* -------------------------------------------------------------- história */
+
+.story {
+  padding: clamp(3.5rem, 7vw, 5.5rem) 0 clamp(3rem, 6vw, 5rem);
+}
+.storyHead {
+  max-width: 40rem;
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+}
+.chapters {
+  display: grid;
+  gap: clamp(3rem, 7vw, 5.5rem);
+}
+.chapter {
+  position: relative;
+  display: grid;
+  gap: 1.5rem;
+}
+.chapterFig {
+  position: relative;
+  width: min(100%, 26rem);
+  margin: 0;
+}
+.chapter[data-alt] .chapterFig {
+  margin-left: auto;
+}
+.chapterFrame {
+  position: relative;
+  z-index: 1;
+  display: block;
+  padding: 8px;
+  background: var(--bt-bg);
+  border: 1px solid var(--bt-leaf);
+}
+.chapterImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+.chapterBranch {
+  position: absolute;
+  z-index: 0;
+  width: 46%;
+  bottom: -12%;
+  left: -20%;
+  color: var(--bt-leaf);
+  transform: rotate(-10deg);
+  stroke-width: 2;
+  pointer-events: none;
+}
+.chapter[data-alt] .chapterBranch {
+  left: auto;
+  right: -20%;
+  transform: scaleX(-1) rotate(-10deg);
+}
+/* O numeral ocupa 0.78em acima do texto: a base do algarismo encosta no kicker sem cobri-lo. */
+.chapterBody {
+  --num: clamp(5rem, 10vw, 8rem);
+  position: relative;
+  padding-top: calc(var(--num) * 0.78);
+}
+.chapterBody > * {
+  position: relative;
+  z-index: 1;
+}
+.chapterNum {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: -0.3rem;
+  font-family: var(--bt-display), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: var(--num);
+  line-height: 0.9;
+  color: var(--bt-leaf-light); /* ornamento, aria-hidden */
+  pointer-events: none;
+  user-select: none;
+}
+/* Sem fotos (site novo): capítulos viram pranchas curtas lado a lado. */
+.chapters[data-plain] {
+  gap: 2.5rem;
+}
+@media (min-width: 760px) {
+  .chapters[data-plain] {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
+  }
+  .chapters[data-plain] .chapter {
+    display: block;
+  }
+}
+@media (min-width: 900px) {
+  .chapter {
+    grid-template-columns: repeat(12, 1fr);
+    align-items: center;
+    gap: 2rem;
+  }
+  .chapterFig {
+    grid-column: 1 / 7;
+    width: auto;
+  }
+  .chapterBody {
+    grid-column: 8 / 13;
+  }
+  .chapter[data-alt] .chapterFig {
+    grid-column: 7 / 13;
+    grid-row: 1;
+  }
+  .chapter[data-alt] .chapterBody {
+    grid-column: 1 / 6;
+    grid-row: 1;
+  }
+  .chapters:not([data-plain]) .chapter:not([data-photo]) .chapterBody {
+    grid-column: 2 / 11;
+  }
+}
+
+/* -------------------------------------------------------------- contagem */
+
+.count {
+  padding: clamp(3rem, 6vw, 4.5rem) 1.25rem;
+  background: var(--bt-leaf);
+  color: var(--bt-on-leaf);
+}
+/* Etiqueta grande: borda fina + fio externo, cantos retos. */
+.countLabel {
+  max-width: 40rem;
+  margin-inline: auto;
+  padding: clamp(1.5rem, 4vw, 2.5rem) 1.25rem;
+  text-align: center;
+  border: 1px solid rgba(244, 240, 230, 0.6);
+  outline: 1px solid rgba(244, 240, 230, 0.22);
+  outline-offset: 5px;
+}
+.countEyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bt-on-leaf-soft); /* 6,26:1 sobre --bt-leaf */
+}
+.countGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin: 1.25rem 0 1rem;
+}
+.countCell {
+  display: grid;
+  gap: 0.2rem;
+}
+.countNum {
+  font-family: var(--bt-display), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2.4rem, 8vw, 4.4rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.countUnit {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  font-variant: small-caps;
+  color: var(--bt-on-leaf-soft);
+}
+.countDate {
+  margin: 0.4rem 0 0;
+  font-family: var(--bt-display), Georgia, serif;
+  font-style: italic;
+  font-size: 1.25rem;
+  color: var(--bt-on-leaf);
+}
+
+/* ----------------------------------------------------------- programação */
+
+.schedule {
+  padding: clamp(3.5rem, 7vw, 5.5rem) 0;
+}
+.scheduleGrid {
+  display: grid;
+  gap: 2rem;
+}
+.scheduleList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--bt-line);
+}
+.scheduleItem {
+  display: grid;
+  grid-template-columns: 1.1rem 3.6rem 1fr;
+  gap: 0.9rem;
+  align-items: start;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--bt-line);
+}
+.scheduleLeaf {
+  width: 16px;
+  height: 26px;
+  margin-top: 0.1rem;
+  color: var(--bt-leaf);
+  stroke-width: 9; /* viewBox de 200 em 16px */
+}
+.scheduleTime {
+  font-family: var(--bt-display), Georgia, serif;
+  font-weight: 500;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--bt-ink);
+}
+.scheduleMain {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.scheduleTitle {
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+.scheduleNote {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--bt-muted);
+}
+@media (min-width: 900px) {
+  .scheduleGrid {
+    grid-template-columns: 5fr 7fr;
+    gap: 4rem;
+    align-items: start;
+  }
+  .scheduleHead {
+    position: sticky;
+    top: 5rem;
+  }
+  .scheduleItem {
+    grid-template-columns: 1.1rem 4.5rem 1fr;
+    gap: 1.25rem;
+    padding: 1.35rem 0;
+  }
+}
+
+/* ----------------------------------------------------------------- local */
+
+.place {
+  padding: clamp(3.5rem, 7vw, 5.5rem) 0;
+  background: var(--bt-bg2);
+}
+.placeGrid {
+  display: grid;
+  gap: 2.5rem;
+}
+.placeCity {
+  margin: 0.3rem 0 0;
+  font-family: var(--bt-display), Georgia, serif;
+  font-style: italic;
+  font-size: 1.35rem;
+  color: var(--bt-ink);
+}
+.placeMap {
+  position: relative;
+  padding: 10px;
+  background: var(--bt-bg);
+  border: 1px solid var(--bt-leaf);
+}
+.mapFrame {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border: 0;
+  filter: saturate(0.75);
+}
+.mapBranch {
+  position: absolute;
+  z-index: 1;
+  width: clamp(100px, 14vw, 140px);
+  color: var(--bt-leaf);
+  stroke-width: 2.6;
+  pointer-events: none;
+}
+.mapBranchA {
+  top: -28px;
+  left: -30px;
+  transform: rotate(150deg);
+}
+.mapBranchB {
+  right: -30px;
+  bottom: -26px;
+  transform: rotate(-30deg);
+}
+@media (min-width: 900px) {
+  .placeGrid {
+    grid-template-columns: 1fr 1.15fr;
+    gap: 4rem;
+    align-items: center;
+  }
+  .placeMap {
+    padding: 12px;
+  }
+}
+
+/* ---------------------------------------------------------------- pranchas */
+
+.plates {
+  padding: clamp(3rem, 6vw, 4.5rem) 0 clamp(3.5rem, 7vw, 5.5rem);
+}
+.platesHead {
+  margin-bottom: 1rem;
+}
+.plateList {
+  margin: 0;
+  border-top: 1px solid var(--bt-line-leaf);
+}
+.plate {
+  display: grid;
+  gap: 0.5rem 2.5rem;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--bt-line);
+}
+.plateTitle {
+  font-family: var(--bt-display), Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(1.5rem, 2.4vw, 1.9rem);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+.plateSub {
+  display: block;
+  margin-top: 0.45rem;
+  font-family: var(--bt-sans), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bt-muted);
+}
+.plateBody {
+  margin: 0;
+  max-width: 40rem;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+@media (min-width: 760px) {
+  .plate {
+    grid-template-columns: 2fr 3fr;
+    padding: 1.9rem 0;
+  }
+}
+
+/* -------------------------------------------------------------- presentes */
+
+.gifts {
+  padding: clamp(3.5rem, 7vw, 5.5rem) 0;
+  background: var(--bt-bg2);
+}
+.giftsHead {
+  max-width: 40rem;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+
+/* ---------------------------------------------------------------- galeria */
+
+.gallery {
+  padding: clamp(3.5rem, 7vw, 5.5rem) 0;
+}
+.galleryHead {
+  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+}
+/* Grade orgânica: alturas diferentes, dense preenche os buracos. */
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: 150px;
+  grid-auto-flow: dense;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.galleryItem {
+  padding: 5px;
+  background: var(--bt-bg2);
+  border: 1px solid var(--bt-line-leaf);
+  min-height: 0;
+}
+.galleryItem[data-tall] {
+  grid-row: span 2;
+}
+.galleryCell {
+  height: 100%;
+}
+.galleryBtn {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  overflow: hidden;
+  cursor: pointer;
+}
+.galleryImg {
+  object-fit: cover;
+  transition: transform 0.25s ease;
+}
+.galleryBtn:hover .galleryImg {
+  transform: scale(1.03);
+}
+@media (min-width: 700px) {
+  .galleryGrid {
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 200px;
+    gap: 14px;
+  }
+  .galleryItem[data-wide] {
+    grid-column: span 2;
+  }
+}
+@media (min-width: 1100px) {
+  .galleryGrid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 230px;
+  }
+}
+
+.lightbox {
+  width: min(92vw, 760px);
+  max-height: 92vh;
+  margin: auto;
+  padding: 8px;
+  border: 1px solid var(--bt-leaf);
+  background: var(--bt-bg);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+}
+.lightbox::backdrop {
+  background: rgba(35, 40, 31, 0.86);
+  backdrop-filter: blur(2px);
+}
+.lightboxClose,
+.lightboxNav {
+  position: absolute;
+  z-index: 2;
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1.7rem;
+  line-height: 1;
+  color: var(--bt-ink);
+  background: color-mix(in srgb, var(--bt-bg) 82%, transparent);
+  border: 0;
+  cursor: pointer;
+}
+.lightboxClose {
+  top: 8px;
+  right: 8px;
+}
+.lightboxNav {
+  top: 50%;
+  transform: translateY(-50%);
+}
+.lightboxNav[data-dir="prev"] {
+  left: 8px;
+}
+.lightboxNav[data-dir="next"] {
+  right: 8px;
+}
+.lightboxFig {
+  margin: 0;
+}
+.lightboxImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 82vh;
+  object-fit: contain;
+}
+.lightboxCap {
+  padding: 0.8rem 1rem;
+  font-size: 0.85rem;
+  text-align: center;
+  color: var(--bt-muted);
+}
+
+/* ----------------------------------------------------------- encerramento */
+
+.closing {
+  padding: clamp(3.5rem, 7vw, 5.5rem) 1.25rem;
+  text-align: center;
+}
+.closingCol {
+  max-width: 36rem;
+  margin-inline: auto;
+}
+/* Foto em arco: máscara por border-radius, fio externo acompanha a curva. */
+.arch {
+  position: relative;
+  display: block;
+  width: min(78vw, 380px);
+  aspect-ratio: 3 / 4;
+  margin: 0 auto 2rem;
+  border-radius: 999px 999px 0 0;
+  overflow: hidden;
+  outline: 1px solid var(--bt-leaf);
+  outline-offset: 8px;
+}
+.archImg {
+  object-fit: cover;
+}
+.closingFern {
+  display: block;
+  width: 110px;
+  height: auto;
+  margin: 0 auto 1.25rem;
+  color: var(--bt-leaf);
+  transform: rotate(12deg);
+  stroke-width: 2.2;
+}
+.closingText {
+  margin: 0;
+  font-family: var(--bt-display), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  line-height: 1.3;
+  text-wrap: balance;
+}
+
+/* ----------------------------------------------------------------- rodapé */
+
+.footer {
+  padding: clamp(3rem, 6vw, 4.5rem) 1.25rem 2.5rem;
+  background: var(--bt-bg2);
+  border-top: 1px solid var(--bt-line);
+  text-align: center;
+}
+.footerMono {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 150px;
+  height: 150px;
+  margin: 0 auto 1.25rem;
+}
+.wreath {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: var(--bt-leaf);
+  stroke-width: 2.2;
+}
+.monogram {
+  font-family: var(--bt-display), Georgia, serif;
+  font-weight: 500;
+  font-size: 1.9rem;
+  letter-spacing: 0.04em;
+  color: var(--bt-ink);
+}
+.footerNames {
+  margin: 0;
+  font-family: var(--bt-display), Georgia, serif;
+  font-size: 1.3rem;
+  text-wrap: balance;
+}
+.footerMeta {
+  margin: 0.4rem 0 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bt-muted);
+}
+.footerText {
+  max-width: 32rem;
+  margin: 1.25rem auto 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--bt-muted);
+}
+.footerBrand {
+  margin: 2rem 0 0;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bt-muted);
+}

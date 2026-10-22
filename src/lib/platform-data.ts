@@ -1,9 +1,8 @@
-import { demoWedding, romanticImages } from "@/lib/demo-wedding";
+import { demoWedding } from "@/lib/demo-wedding";
 import type {
   CashGiftRevenueModel,
   CashGiftTransaction,
   PlatformMetrics,
-  PlatformTemplate,
   PlatformUser,
   WeddingGuest,
   WeddingMessage,
@@ -72,62 +71,6 @@ export const cashGiftRevenueModel: CashGiftRevenueModel = {
     "Acompanhe os recebimentos no painel"
   ]
 };
-
-export const platformTemplates: PlatformTemplate[] = [
-  {
-    id: "cinema-noir",
-    name: "Cinema Noir",
-    description:
-      "Convite cinematográfico em espresso e champanhe: hero fílmico com poeira dourada, tipografia Cormorant em escala editorial e entradas suaves — luxo de boutique Cartier/Rolex à noite.",
-    previewImage: romanticImages.luxuryVenue,
-    status: "active"
-  },
-  {
-    id: "pe-na-areia",
-    name: "Pé na Areia",
-    description:
-      "Casamento pé na areia ao pôr do sol — azuis oceânicos, areia e coral no golden hour, com ondas e um sol que balança ao scroll. Para destinos litorâneos.",
-    previewImage: romanticImages.ceremonyAisle,
-    status: "active"
-  },
-  {
-    id: "editorial-luxury",
-    name: "Editorial Luxury",
-    description:
-      "Capa de revista em preto e branco, serifa Didone e dourado nos detalhes — Vogue e Dior em forma de convite, com glass sutil e micro-animações.",
-    previewImage: romanticImages.blackWhiteWide,
-    status: "active"
-  },
-  {
-    id: "jardim-romantico",
-    name: "Jardim Romântico",
-    description:
-      "Verde jardim, creme e rosa-blush com molduras em arco e folhagens que balançam ao scroll — clima de vinícola na Toscana e na Provence.",
-    previewImage: romanticImages.ceremonyAisle,
-    status: "active"
-  },
-  {
-    id: "classico-romantico",
-    name: "Clássico Romântico",
-    description: "Editorial, romântico, cinematográfico e mobile-first.",
-    previewImage: demoWedding.heroImage,
-    status: "active"
-  },
-  {
-    id: "civil-minimalista",
-    name: "Civil Minimalista",
-    description: "Inspirado em site de casamento editorial preto, branco e bege, com fotos reais em destaque.",
-    previewImage: "/assets/canva-intimate/hero-canva.jpg",
-    status: "active"
-  },
-  {
-    id: "garden-classico",
-    name: "Jardim Clássico",
-    description: "Azul-empoeirado e greige em tom sóbrio e atemporal, fotos em grade fria e programa do evento — um jardim clássico e sereno.",
-    previewImage: "/assets/canva-garden/hero-garden.jpg",
-    status: "active"
-  }
-];
 
 export const cashGiftTransactions: CashGiftTransaction[] = [
   {

@@ -1,0 +1,486 @@
+"use client";
+
+import Image from "next/image";
+import { Space_Grotesk, Syne } from "next/font/google";
+import type { CSSProperties } from "react";
+import type { WeddingSite } from "@/types/wedding";
+import { GiftRegistry } from "@/components/gift/GiftRegistry";
+import { galleryRest, storyImage } from "@/components/templates/shared/gallery";
+import { Reveal, useCountdown, pad } from "@/components/templates/shared/motion";
+import { GuestForms } from "@/components/templates/shared/GuestForms";
+import { Lightbox, useLightbox } from "@/components/templates/kit/Lightbox";
+import { useMenu } from "@/components/templates/kit/hooks";
+import {
+  activeCards,
+  activeGifts,
+  dateParts,
+  headlineLines,
+  mainLocation,
+  mapEmbedUrl,
+  mapLink,
+  nameScale,
+  program,
+  splitCouple,
+  storyMoments
+} from "@/components/templates/kit/utils";
+import styles from "./avant-garde.module.css";
+
+const display = Syne({
+  subsets: ["latin"],
+  weight: ["500", "700", "800"],
+  variable: "--ag-display",
+  display: "swap"
+});
+
+const sans = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--ag-sans",
+  display: "swap"
+});
+
+type Props = { wedding: WeddingSite };
+
+const NAV = [
+  ["#convite", "Convite"],
+  ["#historia", "História"],
+  ["#programa", "Programa"],
+  ["#local", "Local"],
+  ["#presentes", "Presentes"],
+  ["#galeria", "Galeria"],
+  ["#confirmar", "Confirmar"]
+] as const;
+
+/** Numeração das seções, no canto, como folhas de uma revista: "N°01", "N°02"… */
+const folio = (n: number) => `N°${String(n).padStart(2, "0")}`;
+
+export function AvantGardeTemplate({ wedding }: Props) {
+  const location = mainLocation(wedding);
+  const moments = storyMoments(wedding);
+  const schedule = program(wedding);
+  const cards = activeCards(wedding);
+  const gallery = galleryRest(wedding);
+  const hasGifts = activeGifts(wedding).length > 0;
+
+  return (
+    <main className={`${display.variable} ${sans.variable} ${styles.template}`}>
+      <Nav wedding={wedding} />
+      <Hero wedding={wedding} />
+
+      {/* Convite: faixa índigo, palavras em tamanhos alternados + texto na coluna direita */}
+      <section id="convite" className={styles.invite} aria-labelledby="ag-invite">
+        <div className={`${styles.wrap} ${styles.inviteGrid}`}>
+          <Reveal className={styles.inviteWords} y={20}>
+            <p className={styles.eyebrowDark}>
+              <span className={styles.folio}>{folio(2)}</span> Convite
+            </p>
+            <h2 id="ag-invite" className={styles.inviteLine}>
+              {wedding.invitationWords.map((word, i) => (
+                <span key={`${word}-${i}`} className={word.length >= 4 ? styles.wordBig : styles.wordSmall}>
+                  {word}
+                </span>
+              ))}
+            </h2>
+          </Reveal>
+          {wedding.welcomeText ? (
+            <Reveal className={`${styles.inviteText} ${styles.fromRight}`} y={0} delay={0.12}>
+              <p className={styles.bodyDark}>{wedding.welcomeText}</p>
+            </Reveal>
+          ) : null}
+        </div>
+      </section>
+
+      {/* História: colagem (foto, número meio fora, bloco areia sobreposto) */}
+      {moments.length ? (
+        <section id="historia" className={styles.story} aria-labelledby="ag-story">
+          <div className={styles.wrap}>
+            <Reveal className={styles.storyHead} y={16}>
+              <p className={styles.eyebrow}>
+                <span className={styles.folio}>{folio(3)}</span> {wedding.storyEyebrow}
+              </p>
+              <h2 id="ag-story" className={styles.h2}>
+                {wedding.storyTitle}
+              </h2>
+            </Reveal>
+
+            <div className={styles.chapters}>
+              {moments.map((m, i) => {
+                const img = storyImage(wedding.gallery, i);
+                const lines = headlineLines(m.headline);
+                const alt = i % 2 === 1;
+                return (
+                  <article
+                    key={m.id}
+                    className={`${styles.chapter} ${alt ? styles.chapterAlt : ""} ${img ? "" : styles.chapterBare}`}
+                  >
+                    <Reveal as="span" className={`${styles.chNum} ${alt ? styles.fromRight : styles.fromLeft}`} y={0} aria-label={`Capítulo ${m.number}`}>
+                      {m.number}
+                    </Reveal>
+                    {img ? (
+                      <Reveal className={styles.chMedia} y={24}>
+                        <Image
+                          src={img.src}
+                          alt={img.alt}
+                          width={1000}
+                          height={1250}
+                          loading="lazy"
+                          sizes="(min-width: 900px) 52vw, 100vw"
+                          className={styles.chImg}
+                        />
+                      </Reveal>
+                    ) : null}
+                    <Reveal className={styles.chText} y={20} delay={0.1}>
+                      {m.title ? <p className={styles.kicker}>{m.title}</p> : null}
+                      {lines.length ? (
+                        <h3 className={styles.h3}>
+                          {lines.map((line, k) => (
+                            <span key={k} className={styles.line}>
+                              {line}
+                            </span>
+                          ))}
+                        </h3>
+                      ) : null}
+                      {m.description ? <p className={styles.body}>{m.description}</p> : null}
+                    </Reveal>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <Countdown wedding={wedding} />
+
+      {/* Programação: horários em Syne, fios índigo, títulos escorregando para a direita */}
+      {schedule.length ? (
+        <section id="programa" className={styles.program} aria-labelledby="ag-program">
+          <div className={`${styles.wrap} ${styles.programGrid}`}>
+            <Reveal className={styles.programHead} y={16}>
+              <p className={styles.eyebrow}>
+                <span className={styles.folio}>{folio(5)}</span> Programa
+              </p>
+              <h2 id="ag-program" className={styles.h2}>
+                {wedding.detailsTitle}
+              </h2>
+              {wedding.detailsSubtitle ? <p className={styles.body}>{wedding.detailsSubtitle}</p> : null}
+            </Reveal>
+            <ol className={styles.programList}>
+              {schedule.map((item, i) => (
+                <Reveal
+                  as="li"
+                  key={item.id}
+                  className={styles.programItem}
+                  y={12}
+                  delay={i * 0.05}
+                  style={{ "--i": i } as CSSProperties}
+                >
+                  <span className={styles.time}>{item.time}</span>
+                  <span className={styles.programBody}>
+                    <span className={styles.programTitle}>{item.title}</span>
+                    {item.note ? <span className={styles.programNote}>{item.note}</span> : null}
+                  </span>
+                </Reveal>
+              ))}
+            </ol>
+          </div>
+        </section>
+      ) : null}
+
+      {/* Local: mapa com bloco índigo sobreposto no canto */}
+      {location ? (
+        <section id="local" className={styles.place} aria-labelledby="ag-place">
+          <div className={styles.wrap}>
+            <div className={styles.placeStage}>
+              <Reveal className={styles.mapWrap} y={16}>
+                <iframe
+                  className={styles.map}
+                  src={mapEmbedUrl(location)}
+                  title={`Mapa: ${location.venue || location.city}`}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </Reveal>
+              <Reveal className={`${styles.placeBlock} ${styles.fromLeft}`} y={0} delay={0.1}>
+                <p className={styles.eyebrowDark}>
+                  <span className={styles.folio}>{folio(6)}</span> Local
+                </p>
+                <h2 id="ag-place" className={styles.placeName}>
+                  {location.venue || location.city}
+                </h2>
+                {location.venue && location.city ? <p className={styles.placeCity}>{location.city}</p> : null}
+                {location.address ? <p className={styles.placeLine}>{location.address}</p> : null}
+                {location.note ? <p className={styles.placeLine}>{location.note}</p> : null}
+                <a className={styles.btnLight} href={mapLink(location)} target="_blank" rel="noreferrer">
+                  Abrir no mapa
+                </a>
+              </Reveal>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {/* Cartões: blocos com borda 1px e etiqueta girada */}
+      {cards.length ? (
+        <section id="informacoes" className={styles.cards} aria-label="Informações">
+          <div className={`${styles.wrap} ${styles.cardsGrid}`}>
+            {cards.map((card, i) => (
+              <Reveal as="article" key={card.id} className={styles.card} y={16} delay={i * 0.06}>
+                <span className={styles.cardTag}>{card.subtitle || folio(i + 1)}</span>
+                <div className={styles.cardBody}>
+                  <h3 className={styles.cardTitle}>{card.title}</h3>
+                  {card.body ? <p className={styles.body}>{card.body}</p> : null}
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {/* Presentes */}
+      {hasGifts ? (
+        <section id="presentes" className={styles.gifts} aria-labelledby="ag-gifts">
+          <div className={styles.wrap}>
+            <Reveal className={styles.giftsHead} y={16}>
+              <p className={styles.eyebrow}>
+                <span className={styles.folio}>{folio(7)}</span> Presentes
+              </p>
+              <h2 id="ag-gifts" className={styles.h2}>
+                Um gesto para a casa nova
+              </h2>
+            </Reveal>
+            <GiftRegistry wedding={wedding} variant="inherit" />
+          </div>
+        </section>
+      ) : null}
+
+      {gallery.length ? <Gallery images={gallery} /> : null}
+
+      <GuestForms wedding={wedding} variant="inherit" mode="both" sectionId="confirmar" />
+
+      {/* Encerramento: índigo, texto em Syne 500 e foto com recorte deslocado */}
+      <section className={`${styles.closing} ${wedding.footerImage ? styles.closingWithPhoto : ""}`} aria-label="Encerramento">
+        <div className={`${styles.wrap} ${styles.closingGrid}`}>
+          <Reveal className={styles.closingText} y={16}>
+            <p className={styles.eyebrowDark}>
+              <span className={styles.folio}>{folio(9)}</span> Até lá
+            </p>
+            <p className={styles.closingLine}>{wedding.finalText}</p>
+          </Reveal>
+          {wedding.footerImage ? (
+            <Reveal className={`${styles.closingMedia} ${styles.fromRight}`} y={0} delay={0.1}>
+              <Image
+                src={wedding.footerImage}
+                alt=""
+                width={900}
+                height={1100}
+                loading="lazy"
+                sizes="(min-width: 900px) 32vw, 70vw"
+                className={styles.closingImg}
+              />
+            </Reveal>
+          ) : null}
+        </div>
+      </section>
+
+      <footer className={styles.footer}>
+        <div className={`${styles.wrap} ${styles.footerGrid}`}>
+          <p className={styles.footerMono}>{wedding.monogram}</p>
+          <div className={styles.footerMain}>
+            <p className={styles.footerNames}>{wedding.coupleNames}</p>
+            {wedding.footerText ? <p className={styles.footerText}>{wedding.footerText}</p> : null}
+          </div>
+          <p className={styles.footerSide}>
+            <span>{wedding.weddingDateLabel}</span>
+            {location?.city ? <span>{location.city}</span> : null}
+          </p>
+          <p className={styles.footerCredit}>Feito com Noivar</p>
+        </div>
+      </footer>
+    </main>
+  );
+}
+
+/* ------------------------------------------------------------------ nav */
+
+function Nav({ wedding }: Props) {
+  const [open, toggle, close] = useMenu();
+  return (
+    <header className={styles.nav}>
+      <div className={`${styles.wrap} ${styles.navInner}`}>
+        <a href="#topo" className={styles.navMono} aria-label={wedding.coupleNames}>
+          {wedding.monogram}
+        </a>
+        <nav className={styles.navLinks} aria-label="Seções">
+          {NAV.map(([href, label]) => (
+            <a key={href} href={href} className={styles.navLink}>
+              {label}
+            </a>
+          ))}
+        </nav>
+        <button type="button" className={styles.navToggle} aria-expanded={open} onClick={toggle}>
+          {open ? "Fechar" : "Menu"}
+        </button>
+      </div>
+      {open ? (
+        <nav className={styles.navMobile} aria-label="Seções">
+          {NAV.map(([href, label]) => (
+            <a key={href} href={href} className={styles.navMobileLink} onClick={close}>
+              {label}
+            </a>
+          ))}
+        </nav>
+      ) : null}
+    </header>
+  );
+}
+
+/* ----------------------------------------------------------------- hero */
+
+function Hero({ wedding }: Props) {
+  const [a, b] = splitCouple(wedding.coupleNames);
+  const location = mainLocation(wedding);
+  const { day, month, year } = dateParts(wedding);
+  const numerals = day ? `${day}.${month}.${year}` : "";
+  const place = location ? [location.venue, location.city].filter(Boolean).join(" · ") : "";
+  const side = location?.city || location?.venue || "";
+
+  return (
+    <section id="topo" className={styles.hero} aria-label={`Casamento de ${wedding.coupleNames}`}>
+      <p className={`${styles.heroTag} hero-rise`}>
+        <span className={styles.folioBig}>{folio(1)}</span>
+        <span>Convite</span>
+      </p>
+      {/* Etiquetas verticais nas margens (só no desktop; no celular a linha de meta cobre) */}
+      <p className={`${styles.heroSide} ${styles.heroSideLeft} hero-rise`} aria-hidden>
+        {wedding.weddingDateLabel}
+        {wedding.weddingTime ? ` · ${wedding.weddingTime}` : ""}
+      </p>
+      {side ? (
+        <p className={`${styles.heroSide} ${styles.heroSideRight} hero-rise`} aria-hidden>
+          {side}
+        </p>
+      ) : null}
+
+      <div className={styles.heroStage}>
+        <div className={`${styles.heroPhoto} hero-rise`}>
+          {wedding.heroImage ? (
+            <Image src={wedding.heroImage} alt="" fill priority sizes="(min-width: 900px) 60vw, 100vw" className={styles.heroImg} />
+          ) : (
+            <div className={styles.heroPlate} aria-hidden>
+              <span className={styles.plateDate}>{numerals || wedding.weddingDateLabel || wedding.monogram}</span>
+              {numerals && wedding.weddingDateLabel ? <span className={styles.plateLabel}>{wedding.weddingDateLabel}</span> : null}
+            </div>
+          )}
+        </div>
+
+        <h1 className={`${styles.names} hero-rise`} data-scale={nameScale(wedding.coupleNames)} style={{ animationDelay: "120ms" }}>
+          <span className={styles.nameLine}>
+            <span className={styles.cut}>{a}</span>
+          </span>
+          {b ? (
+            <span className={styles.nameLine}>
+              <span className={styles.cut}>
+                <em className={styles.amp}>&</em>
+                {b}
+              </span>
+            </span>
+          ) : null}
+        </h1>
+
+        <p className={`${styles.heroMeta} hero-rise`} style={{ animationDelay: "220ms" }}>
+          <span>{wedding.weddingDateLabel}</span>
+          {wedding.weddingTime ? <span>{wedding.weddingTime}</span> : null}
+          {place ? <span>{place}</span> : null}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------ countdown */
+
+function Countdown({ wedding }: Props) {
+  const c = useCountdown(wedding.weddingDate);
+  const valid = Number.isFinite(new Date(wedding.weddingDate).getTime());
+  const units: Array<[number, string]> = [
+    [c.days, "dias"],
+    [c.hours, "horas"],
+    [c.minutes, "min"],
+    [c.seconds, "seg"]
+  ];
+
+  return (
+    <section className={styles.count} aria-label="Contagem regressiva">
+      <div className={`${styles.wrap} ${styles.countGrid}`}>
+        <Reveal className={styles.countHead} y={16}>
+          <p className={styles.eyebrow}>
+            <span className={styles.folio}>{folio(4)}</span> {c.isPast ? "Hoje é o dia" : "Faltam"}
+          </p>
+          <p className={styles.countDate}>{wedding.weddingDateLabel}</p>
+          {wedding.weddingTime ? <p className={styles.countTime}>{wedding.weddingTime}</p> : null}
+        </Reveal>
+        {valid && !c.isPast ? (
+          <Reveal className={styles.countBlocks} y={20} delay={0.08}>
+            {units.map(([value, label]) => (
+              <div key={label} className={styles.countBlock}>
+                <span className={styles.countNum}>{c.ready ? pad(value) : "00"}</span>
+                <span className={styles.countLabel}>{label}</span>
+              </div>
+            ))}
+          </Reveal>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+/* -------------------------------------------------------------- gallery */
+
+function Gallery({ images }: { images: WeddingSite["gallery"] }) {
+  const lb = useLightbox();
+  return (
+    <section id="galeria" className={styles.gallery} aria-labelledby="ag-gallery">
+      <div className={styles.wrap}>
+        <Reveal className={styles.galleryHead} y={16}>
+          <p className={styles.eyebrow}>
+            <span className={styles.folio}>{folio(8)}</span> Galeria
+          </p>
+          <h2 id="ag-gallery" className={styles.h2}>
+            Retratos
+          </h2>
+        </Reveal>
+        <div className={styles.galleryGrid}>
+          {images.map((img, i) => (
+            <Reveal key={img.id} className={styles.galleryCell} y={16} delay={(i % 3) * 0.05}>
+              <button type="button" className={styles.galleryBtn} onClick={() => lb.open(i)} aria-label={`Abrir foto: ${img.alt}`}>
+                <Image
+                  src={img.src}
+                  alt={img.alt}
+                  width={900}
+                  height={900}
+                  loading="lazy"
+                  sizes="(min-width: 900px) 40vw, 50vw"
+                  className={styles.galleryImg}
+                />
+              </button>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+      <Lightbox
+        images={images}
+        active={lb.active}
+        onClose={lb.close}
+        classNames={{
+          dialog: styles.lightbox,
+          close: styles.lightboxClose,
+          nav: styles.lightboxNav,
+          figure: styles.lightboxFig,
+          img: styles.lightboxImg,
+          caption: styles.lightboxCaption
+        }}
+      />
+    </section>
+  );
+}

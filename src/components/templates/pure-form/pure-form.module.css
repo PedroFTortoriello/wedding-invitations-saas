@@ -1,0 +1,775 @@
+/*
+ * Pure Form: só tipografia e espaço. Branco, cinza-papel, tinta, fios de 1px.
+ * Inter Tight 200–500 (display e corpo, tracking negativo) + Instrument Serif
+ * itálico só no "&". Grade de 12 colunas visível na capa.
+ *
+ * Contraste (WCAG, calculado):
+ *   #111111 sobre #ffffff 18,9:1 | sobre #f2f1ed 16,7:1
+ *   #5a5a57 sobre #ffffff  6,9:1 | sobre #f2f1ed  6,1:1  (muted, eyebrows, legendas)
+ *   #ffffff sobre #111111 18,9:1 (botão invertido, lightbox)
+ *   #8d3d33 sobre #ffffff  7,4:1 (erro dos widgets)
+ */
+
+.template {
+  --pf-white: #ffffff;
+  --pf-paper: #f2f1ed;
+  --pf-ink: #111111;
+  --pf-muted: #5a5a57;
+  --pf-line: #d9d7d0;
+  --pf-sans-stack: var(--pf-sans), "Inter", "Segoe UI", system-ui, sans-serif;
+
+  /* Widgets: títulos também em Inter Tight 400 (o modelo não usa serif em texto). */
+  --font-serif: var(--pf-sans-stack);
+  --font-sans: var(--pf-sans-stack);
+  --widget-card-radius: 0px;
+  --widget-btn-radius: 0px;
+  --widget-btn-case: uppercase;
+  --widget-btn-tracking: 0.14em;
+
+  --g-card: #ffffff;
+  --g-dialog-bg: #ffffff;
+  --g-border: #d9d7d0;
+  --g-ink: #111111;
+  --g-muted: #5a5a57; /* 6,9:1 sobre o cartão branco */
+  --g-accent: #111111;
+  --g-on-accent: #ffffff;
+  --g-price: #111111;
+  --g-radius: 0px;
+  --g-img-radius: 0px;
+  --g-img-filter: none;
+  --g-scrim: rgba(17, 17, 17, 0.6);
+  --g-error: #8d3d33;
+
+  --gf-bg: #f2f1ed;
+  --gf-card: #ffffff;
+  --gf-ink: #111111;
+  --gf-muted: #5a5a57;
+  --gf-border: #d9d7d0;
+  --gf-field: #ffffff;
+  --gf-accent: #111111;
+  --gf-on-accent: #ffffff;
+  --gf-radius: 0px;
+  --gf-eyebrow: #5a5a57;
+  --gf-error: #8d3d33;
+
+  font-family: var(--pf-sans-stack);
+  font-weight: 400;
+  color: var(--pf-ink);
+  background: var(--pf-white);
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+:where(.template) :where(a, button):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 78rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 3rem);
+}
+
+.section {
+  padding-block: clamp(2.5rem, 6vw, 5rem);
+  border-top: 1px solid var(--pf-line);
+}
+.paper {
+  background: var(--pf-paper);
+}
+
+/* grade de 12 colunas das seções */
+.cols {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: 1rem;
+  row-gap: 1.5rem;
+}
+.cols > * {
+  grid-column: 1 / -1;
+}
+
+/* ------------------------------------------------------------- tipografia */
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pf-muted);
+}
+.h2 {
+  margin: 0.6rem 0 0;
+  font-size: clamp(1.75rem, 3.6vw, 3rem);
+  font-weight: 300;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+.body {
+  margin: 1rem 0 0;
+  max-width: 40rem;
+  font-size: 1rem;
+  line-height: 1.65;
+  letter-spacing: 0;
+  color: var(--pf-ink);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  margin-top: 1.25rem;
+  padding-inline: 1.25rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pf-ink);
+  background: var(--pf-white);
+  border: 1px solid var(--pf-ink);
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+.btn:hover {
+  background: var(--pf-ink);
+  color: var(--pf-white);
+}
+
+/* -------------------------------------------------------------------- nav */
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--pf-white);
+  border-bottom: 1px solid var(--pf-line);
+}
+.navInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 3.25rem;
+}
+.navMono {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem; /* alvo de toque (WCAG 2.5.8) */
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.navLinks {
+  display: none;
+  gap: clamp(1rem, 2.5vw, 2rem);
+}
+.navLink {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding-block: 0.5rem;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.18s ease;
+}
+.navLink:hover {
+  border-bottom-color: var(--pf-ink);
+}
+.navToggle {
+  min-height: 2.75rem;
+  padding: 0;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pf-ink);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.navMobile {
+  display: flex;
+  flex-direction: column;
+  padding: 0 clamp(1.25rem, 4vw, 3rem) 0.5rem;
+  border-top: 1px solid var(--pf-line);
+}
+.navMobileLink {
+  padding: 0.8rem 0;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--pf-line);
+}
+@media (min-width: 900px) {
+  .navLinks {
+    display: flex;
+  }
+  .navToggle {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------- capa */
+
+.hero {
+  position: relative;
+  min-height: calc(100svh - var(--demo-bar-h, 0px) - 3.25rem);
+  display: flex;
+  /* 12 fios verticais de 1px; o último pelo box-shadow interno */
+  background-image: linear-gradient(90deg, var(--pf-line) 1px, transparent 1px);
+  background-size: calc(100% / 12) 100%;
+  box-shadow: inset -1px 0 0 var(--pf-line);
+}
+/* Sem foto a composição é a mesma (nomes na base), só mais baixa: sem o retângulo
+   a capa inteira virava vazio no celular. */
+.heroBare {
+  min-height: calc(72svh - var(--demo-bar-h, 0px));
+}
+.heroInner {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding-block: clamp(1.25rem, 3vw, 2rem) clamp(1.25rem, 4vw, 2.5rem);
+}
+.heroTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+.heroDate {
+  margin: 0;
+  font-size: clamp(1.05rem, 1.8vw, 1.4rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.heroMeta {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--pf-muted);
+}
+.heroPlace {
+  max-width: 55%;
+  text-align: right;
+}
+.heroPlaceName {
+  margin: 0;
+  font-size: clamp(0.95rem, 1.4vw, 1.15rem);
+  line-height: 1.25;
+  font-weight: 400;
+  text-wrap: balance;
+}
+.heroPhoto {
+  position: relative;
+  width: 58%; /* no celular a foto é maior p/ a capa não ficar oca; 28% só no desktop */
+  max-width: 20rem;
+  aspect-ratio: 4 / 5;
+  margin: 1.5rem 0 0 auto;
+  overflow: hidden;
+}
+.heroImg {
+  object-fit: cover;
+}
+.names {
+  margin: auto 0 0;
+  padding-top: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 300;
+  font-size: clamp(3.2rem, 13vw, 12.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.names[data-scale="medium"] {
+  font-size: clamp(2.6rem, 10vw, 9.5rem);
+}
+.names[data-scale="long"] {
+  font-size: clamp(2rem, 7.2vw, 6.6rem);
+}
+.nameLine {
+  display: block;
+}
+.amp {
+  font-family: var(--pf-serif), "Instrument Serif", Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0;
+  margin-right: 0.12em;
+}
+@media (min-width: 900px) {
+  .heroPhoto {
+    width: 28%;
+    max-width: none;
+    margin-top: 2rem;
+  }
+  .heroPlace {
+    max-width: 40%;
+  }
+}
+
+/* ---------------------------------------------------------------- convite */
+
+.inviteLabel {
+  display: block;
+}
+.inviteWords {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.8vw, 2.4rem);
+  font-weight: 300;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+@media (min-width: 900px) {
+  .cols {
+    row-gap: 2rem;
+  }
+  .inviteLabel {
+    grid-column: 1 / span 3;
+    grid-row: 1;
+  }
+  .inviteCol {
+    grid-column: 7 / -1;
+    grid-row: 1;
+  }
+}
+
+/* --------------------------------------------------------------- história */
+
+.storyHead {
+  max-width: 34rem;
+}
+.table {
+  border-top: 1px solid var(--pf-line);
+}
+.row {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  column-gap: 1rem;
+  row-gap: 0.5rem;
+  padding-block: 1.5rem;
+  border-bottom: 1px solid var(--pf-line);
+}
+.rowMedia {
+  grid-row: 1 / span 3;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.thumb {
+  display: block;
+  width: 6rem;
+  height: 6rem;
+  object-fit: cover;
+}
+.num {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
+  color: var(--pf-muted);
+}
+.rowTitle {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pf-muted);
+}
+.rowHeadline {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.2vw, 1.8rem);
+  font-weight: 300;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+.rowHeadline span {
+  display: block;
+}
+.rowBody {
+  margin-top: 0.25rem;
+}
+@media (min-width: 900px) {
+  .storyHead {
+    grid-column: 1 / span 4;
+  }
+  .table {
+    grid-column: 1 / -1;
+  }
+  .row {
+    grid-template-columns: 6rem minmax(0, 3fr) minmax(0, 5fr) minmax(0, 8fr);
+    column-gap: 2rem;
+    align-items: start;
+  }
+  .rowMedia {
+    grid-row: auto;
+  }
+  .rowTitle {
+    padding-top: 0.35rem;
+  }
+  .rowBody {
+    margin-top: 0;
+  }
+}
+
+/* --------------------------------------------------------------- contagem */
+
+.count {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 1rem;
+  border-left: 1px solid var(--pf-line);
+}
+.countCell {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 0 0.75rem clamp(0.5rem, 1.5vw, 1.25rem);
+  border-right: 1px solid var(--pf-line);
+}
+.countNum {
+  font-size: clamp(2.8rem, 11vw, 11rem);
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+}
+.countLabel {
+  margin-top: 0.35rem;
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pf-muted);
+}
+
+/* ------------------------------------------------------------- programação */
+
+.programHead {
+  max-width: 36rem;
+}
+.program {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0 3rem;
+  border-top: 1px solid var(--pf-line);
+}
+.programItem {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  gap: 1rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--pf-line);
+}
+.time {
+  font-size: 1rem;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.programTitle {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 400;
+  line-height: 1.3;
+}
+.programNote {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--pf-muted);
+}
+@media (min-width: 900px) {
+  .programHead {
+    grid-column: 1 / span 5;
+  }
+  .program {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ------------------------------------------------------------------ local */
+
+.mapWrap {
+  position: relative;
+  border: 1px solid var(--pf-line);
+}
+.map {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border: 0;
+  filter: grayscale(1);
+}
+.placeCard {
+  padding: 1.25rem 1.25rem 1.5rem;
+  background: var(--pf-white);
+  border-top: 1px solid var(--pf-line);
+}
+.placeName {
+  margin: 0.5rem 0 0;
+  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+.placeCity {
+  margin: 0.35rem 0 0;
+  font-size: 0.95rem;
+  color: var(--pf-muted);
+}
+.placeLine {
+  margin: 0.75rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  letter-spacing: 0;
+}
+@media (min-width: 900px) {
+  .map {
+    aspect-ratio: 21 / 9;
+  }
+  .placeCard {
+    position: absolute;
+    left: 1.5rem;
+    bottom: 1.5rem;
+    width: min(24rem, calc(100% - 3rem));
+    border: 1px solid var(--pf-line);
+  }
+}
+
+/* ---------------------------------------------------------------- cartões */
+
+.cards {
+  display: grid;
+  gap: 2rem 2.5rem;
+}
+.card {
+  padding-top: 1rem;
+  border-top: 1px solid var(--pf-ink);
+}
+.cardTitle {
+  margin: 0.5rem 0 0;
+  font-size: clamp(1.25rem, 2vw, 1.6rem);
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+@media (min-width: 640px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 900px) {
+  .cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* -------------------------------------------------------------- presentes */
+
+.giftsHead {
+  max-width: 34rem;
+  margin-bottom: 2rem;
+}
+
+/* ---------------------------------------------------------------- galeria */
+
+/* 3 colunas (grade de 6 p/ as sobras): cada foto ocupa 2; na última linha, sobra de
+   2 fotos vira 3+3 e sobra de 1 vira panorâmica de 6. Sem célula vazia. */
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 2rem;
+  padding: 1px;
+  background: var(--pf-line);
+}
+.galleryGrid > * {
+  grid-column: span 2;
+}
+.galleryGrid > :nth-last-child(2):nth-child(3n + 1),
+.galleryGrid > :nth-last-child(1):nth-child(3n + 2) {
+  grid-column: span 3;
+}
+.galleryGrid > :nth-last-child(1):nth-child(3n + 1) {
+  grid-column: span 6;
+}
+.galleryGrid > :nth-last-child(2):nth-child(3n + 1) .galleryImg,
+.galleryGrid > :nth-last-child(1):nth-child(3n + 2) .galleryImg {
+  aspect-ratio: 3 / 2;
+}
+.galleryGrid > :nth-last-child(1):nth-child(3n + 1) .galleryImg {
+  aspect-ratio: 3 / 1;
+}
+.galleryBtn {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: var(--pf-white);
+  cursor: pointer;
+}
+.galleryBtn:focus-visible {
+  outline-offset: -3px;
+}
+.galleryImg {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  transition: opacity 0.18s ease;
+}
+.galleryBtn:hover .galleryImg {
+  opacity: 0.88;
+}
+
+.lightbox {
+  width: min(92vw, 760px);
+  max-height: 92vh;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: var(--pf-ink);
+  color: var(--pf-white);
+}
+.lightbox::backdrop {
+  background: rgba(17, 17, 17, 0.9);
+}
+.lightboxClose,
+.lightboxNav {
+  position: absolute;
+  z-index: 2;
+  width: 2.75rem;
+  height: 2.75rem;
+  font: inherit;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--pf-white);
+  background: rgba(17, 17, 17, 0.6);
+  border: 0;
+  cursor: pointer;
+}
+.lightboxClose {
+  top: 0.5rem;
+  right: 0.5rem;
+}
+.lightboxNav {
+  top: 50%;
+  transform: translateY(-50%);
+}
+.lightboxNav[data-dir="prev"] {
+  left: 0.5rem;
+}
+.lightboxNav[data-dir="next"] {
+  right: 0.5rem;
+}
+.lightboxFig {
+  margin: 0;
+}
+.lightboxImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 84vh;
+  object-fit: contain;
+}
+.lightboxCaption {
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------ encerramento */
+
+.closing {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+  align-items: end;
+}
+.closingText {
+  margin: 0;
+  max-width: 48rem;
+  font-size: clamp(1.5rem, 3.2vw, 2.8rem);
+  font-weight: 300;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.closingMedia {
+  width: 45%;
+  max-width: 14rem;
+}
+.closingImg {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+@media (min-width: 900px) {
+  .closing {
+    grid-template-columns: minmax(0, 1fr) 12rem;
+    gap: 4rem;
+  }
+  .closingMedia {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+/* ----------------------------------------------------------------- rodapé */
+
+.footer {
+  border-top: 1px solid var(--pf-ink);
+  padding-block: 1.25rem 1.5rem;
+}
+.footerLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+.footerMono {
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+.footerText {
+  flex-basis: 100%;
+  color: var(--pf-muted);
+}
+.footerCredit {
+  margin-left: auto;
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pf-muted);
+}
+@media (min-width: 900px) {
+  .footerText {
+    flex-basis: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .navLink,
+  .galleryImg {
+    transition: none;
+  }
+}

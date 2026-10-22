@@ -1,0 +1,959 @@
+/*
+ * Toscana: colinas e ciprestes. Creme-sol, areia, terracota, oliva.
+ * Marcellus (display) + Source Sans 3 (texto). Tudo escopado em .template.
+ *
+ * Contraste (WCAG, calculado):
+ *   ink #2b2620 / cream #f5efe3 = 13,09:1    muted #5c544a / cream = 6,50:1   muted / sand #ebe2d0 = 5,78:1
+ *   olive-ink #4a5635 / cream = 6,86:1 (eyebrows)   olive #5d6b43 / cream = 5,02:1 (só fios/ornamentos)
+ *   terra #c67b4e / cream = 2,89:1 -> NUNCA como texto; texto e botões usam terra-ink #a0552a / cream = 4,79:1
+ *   cream / olive #5d6b43 = 5,02:1 (contagem, rodapé)   cream / terra-ink = 4,79:1 (botões)
+ *   cream sobre scrim da capa (rgba ink .72 no pior caso claro ~ #5a4f44) = 7,1:1
+ */
+
+.template {
+  --tu-cream: #f5efe3;
+  --tu-sand: #ebe2d0;
+  --tu-terra: #c67b4e;
+  --tu-terra-ink: #a0552a;
+  --tu-olive: #5d6b43;
+  --tu-olive-ink: #4a5635;
+  --tu-olive-deep: #3f4a2e;
+  --tu-ink: #2b2620;
+  --tu-muted: #5c544a;
+  --tu-line: rgba(43, 38, 32, 0.16);
+  --tu-pad: clamp(1.25rem, 5vw, 3rem);
+
+  --font-serif: var(--tu-display), Georgia, serif;
+  --font-sans: var(--tu-sans), "Segoe UI", sans-serif;
+  --widget-card-radius: 6px;
+  --widget-btn-radius: 3px;
+  --widget-btn-case: uppercase;
+  --widget-btn-tracking: 0.16em;
+
+  --g-card: #fbf7ee;
+  --g-dialog-bg: #fbf7ee;
+  --g-border: rgba(43, 38, 32, 0.16);
+  --g-ink: #2b2620;
+  --g-muted: #5c544a; /* 6,9:1 sobre #fbf7ee */
+  --g-accent: #a0552a;
+  --g-on-accent: #f5efe3;
+  --g-price: #a0552a; /* 5,0:1 sobre #fbf7ee */
+  --g-radius: 6px;
+  --g-img-radius: 4px;
+  --g-img-filter: sepia(0.12) saturate(1.05);
+  --g-scrim: rgba(43, 38, 32, 0.58);
+  --g-error: #8d3d33;
+
+  --gf-bg: #ebe2d0;
+  --gf-card: #fbf7ee;
+  --gf-ink: #2b2620;
+  --gf-muted: #5c544a;
+  --gf-border: rgba(43, 38, 32, 0.16);
+  --gf-field: #fff;
+  --gf-accent: #a0552a;
+  --gf-on-accent: #f5efe3;
+  --gf-radius: 6px;
+  --gf-eyebrow: #4a5635;
+  --gf-error: #8d3d33;
+
+  font-family: var(--tu-sans), "Segoe UI", system-ui, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--tu-ink);
+  background: var(--tu-cream);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+:where(.template) :where(a, button):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+/* --------------------------------------------------------------- tipos */
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--tu-olive-ink);
+}
+.h2 {
+  margin: 0.6rem 0 0;
+  font-family: var(--tu-display);
+  font-weight: 400;
+  font-size: clamp(1.9rem, 4.2vw, 3rem);
+  line-height: 1.08;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.lead {
+  margin: 1rem 0 0;
+  max-width: 40rem;
+  font-size: clamp(1.02rem, 1.2vw, 1.15rem);
+  line-height: 1.6;
+  color: var(--tu-muted);
+}
+.body {
+  margin: 0.8rem 0 0;
+  max-width: 36rem;
+  line-height: 1.7;
+  color: var(--tu-muted);
+}
+.sectionHead {
+  max-width: 42rem;
+  margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  margin-top: 1.5rem;
+  padding: 0 1.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tu-cream);
+  background: var(--tu-terra-ink);
+  border: 1px solid var(--tu-terra-ink);
+  border-radius: 3px;
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+.btn:hover {
+  background: transparent;
+  color: var(--tu-terra-ink);
+  transform: translateY(-1px);
+}
+
+/* ----------------------------------------------------------------- nav */
+
+.nav {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 40;
+  color: var(--tu-ink);
+  border-bottom: 1px solid transparent;
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+.navLight {
+  color: var(--tu-cream);
+}
+.navSolid,
+.navLight.navSolid {
+  color: var(--tu-ink);
+  background: color-mix(in oklab, var(--tu-cream) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom-color: var(--tu-line);
+}
+.navInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  height: 4rem;
+  padding-inline: var(--tu-pad);
+}
+.navMono {
+  font-family: var(--tu-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  color: inherit;
+  text-decoration: none;
+}
+.navLinks {
+  display: none;
+  gap: clamp(1rem, 2.5vw, 2rem);
+}
+.navLink {
+  padding: 0.25rem 0;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+.navLink:hover {
+  border-bottom-color: currentColor;
+}
+.navToggle {
+  min-height: 2.75rem;
+  padding: 0 0.25rem;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.navMobile {
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--tu-pad) 1rem;
+}
+.navMobileLink {
+  padding: 0.8rem 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tu-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--tu-line);
+}
+@media (min-width: 880px) {
+  .navLinks {
+    display: flex;
+  }
+  .navToggle,
+  .navMobile {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------- capa */
+
+.hero {
+  position: relative;
+  min-height: calc(100svh - var(--demo-bar-h, 0px));
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  /* o texto fica acima das colinas */
+  padding: 6rem var(--tu-pad) calc(var(--tu-hills) + 1.5rem);
+  --tu-hills: clamp(7rem, 20vw, 15rem);
+  overflow: hidden;
+  isolation: isolate;
+  text-align: center;
+  color: var(--tu-cream);
+  background: var(--tu-cream);
+}
+.noPhoto .hero {
+  color: var(--tu-ink);
+}
+.heroMedia {
+  position: absolute;
+  inset: -10% 0 0;
+  z-index: -2;
+}
+.heroImg {
+  object-fit: cover;
+  filter: sepia(0.15) saturate(1.1);
+}
+.heroScrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(43, 38, 32, 0.42) 0%, rgba(43, 38, 32, 0) 30%),
+    linear-gradient(0deg, rgba(43, 38, 32, 0.86) 0%, rgba(43, 38, 32, 0.78) 38%, rgba(43, 38, 32, 0.6) 62%, rgba(43, 38, 32, 0.4) 78%, rgba(43, 38, 32, 0.15) 100%);
+}
+/* sem foto: sol terracota centrado nos nomes, céu creme; o conteúdo sobe para o meio */
+.noPhoto .hero {
+  justify-content: center;
+}
+.heroSun {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: -1;
+  width: min(135vw, 56rem);
+  translate: -50% -50%;
+  color: var(--tu-terra);
+  opacity: 0.5;
+}
+.heroSunSvg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.heroContent {
+  position: relative;
+  width: 100%;
+  max-width: 60rem;
+  margin-inline: auto;
+}
+.heroKicker {
+  margin: 0 0 1rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+.heroNames {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1em;
+  margin: 0;
+  font-family: var(--tu-display);
+  font-weight: 400;
+  font-size: clamp(2.6rem, 9vw, 6.4rem);
+  line-height: 1.02;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.heroContent[data-scale="medium"] .heroNames {
+  font-size: clamp(2.3rem, 7.5vw, 5.4rem);
+}
+.heroContent[data-scale="long"] .heroNames {
+  font-size: clamp(1.9rem, 6vw, 4.2rem);
+}
+.heroName {
+  display: block;
+}
+.heroAnd {
+  display: block;
+  font-family: var(--tu-sans);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.32em;
+  line-height: 1;
+  margin: 0.2em 0;
+  opacity: 0.92;
+}
+.heroMeta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem 1.5rem;
+  margin: 1.5rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  line-height: 1.6;
+}
+.heroHills {
+  position: absolute;
+  inset: auto 0 -2px;
+  height: var(--tu-hills);
+  z-index: 0;
+  color: var(--tu-olive-deep);
+  pointer-events: none;
+}
+.heroHillsSvg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.heroCypress {
+  color: #2f3822; /* mais escuro que as colinas: silhueta legível sobre a foto */
+  position: absolute;
+  right: clamp(0.5rem, 6vw, 8rem);
+  bottom: 12%;
+  height: 62%;
+  width: auto;
+}
+
+/* ------------------------------------------------------------- convite */
+
+.invite {
+  padding: clamp(3.5rem, 8vw, 6rem) var(--tu-pad);
+  text-align: center;
+}
+.inviteInner {
+  max-width: 44rem;
+  margin-inline: auto;
+}
+.inviteWords {
+  margin: 1rem 0 0;
+  font-family: var(--tu-display);
+  font-weight: 400;
+  font-size: clamp(1.65rem, 3.6vw, 2.6rem);
+  line-height: 1.25;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.inviteWords::first-letter {
+  text-transform: uppercase;
+}
+.inviteVine {
+  display: block;
+  width: 9rem;
+  height: auto;
+  margin: 1.5rem auto 0;
+  color: var(--tu-olive);
+}
+.inviteText {
+  margin: 1.5rem auto 0;
+  max-width: 36rem;
+  line-height: 1.7;
+  color: var(--tu-muted);
+}
+
+/* ------------------------------------------------------------ história */
+
+.story {
+  padding: clamp(2rem, 5vw, 4rem) var(--tu-pad) clamp(3.5rem, 8vw, 6rem);
+  background: linear-gradient(180deg, var(--tu-cream), var(--tu-sand) 18%, var(--tu-sand));
+}
+.storyHead {
+  max-width: 72rem;
+  margin-inline: auto;
+}
+.road {
+  position: relative;
+  max-width: 72rem;
+  margin: clamp(2rem, 5vw, 3.5rem) auto 0;
+  display: grid;
+  gap: clamp(2.5rem, 6vw, 5rem);
+}
+.roadSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: var(--tu-terra);
+  stroke-width: 2;
+  stroke-dasharray: 7 9;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+.chapter {
+  position: relative;
+  display: grid;
+  gap: 1.25rem;
+}
+.chapterFig {
+  position: relative;
+  margin: 0;
+}
+.chapterImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 4px;
+  filter: sepia(0.15) saturate(1.1);
+  box-shadow: 0 18px 40px -24px rgba(43, 38, 32, 0.5);
+}
+.chapterNum,
+.chapterNumInline {
+  font-family: var(--tu-display);
+  font-size: clamp(3.5rem, 7vw, 5.5rem);
+  line-height: 0.9;
+  color: var(--tu-terra-ink);
+}
+.chapterNum {
+  position: absolute;
+  left: -0.1em;
+  top: -0.55em;
+  padding: 0 0.15em;
+  background: var(--tu-sand);
+  border-radius: 3px;
+}
+.chapterNumInline {
+  display: block;
+  margin-bottom: 0.4rem;
+}
+.chapterBody {
+  align-self: center;
+}
+.chapterTitle {
+  margin: 0;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--tu-olive-ink);
+}
+.chapterHeadline {
+  margin: 0.6rem 0 0;
+  font-family: var(--tu-display);
+  font-weight: 400;
+  font-size: clamp(1.5rem, 2.8vw, 2.1rem);
+  line-height: 1.2;
+}
+.chapterHeadline span {
+  display: block;
+}
+@media (max-width: 899px) {
+  .roadSvg {
+    display: none;
+  }
+  .road::before {
+    content: "";
+    position: absolute;
+    left: 0.45rem;
+    top: 0;
+    bottom: 0;
+    border-left: 2px dashed var(--tu-terra);
+    opacity: 0.8;
+  }
+  .chapter {
+    padding-left: 1.75rem;
+  }
+  .chapterNum {
+    left: -2.35rem;
+    top: -0.3em;
+    font-size: 2.6rem;
+    background: none;
+  }
+}
+@media (min-width: 900px) {
+  .road {
+    gap: clamp(3rem, 7vw, 6rem);
+  }
+  .chapter {
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(2rem, 6vw, 5rem);
+  }
+  .chapterFig {
+    width: min(100%, 26rem);
+    justify-self: center;
+  }
+  .chapterAlt .chapterFig {
+    order: 2;
+  }
+  .chapterText .chapterBody {
+    grid-column: 1;
+    max-width: 30rem;
+    padding: 1.5rem;
+    background: color-mix(in oklab, var(--tu-cream) 85%, transparent);
+    border-radius: 4px;
+  }
+  .chapterAlt.chapterText .chapterBody {
+    grid-column: 2;
+  }
+}
+
+/* ------------------------------------------------------------ contagem */
+
+.count {
+  position: relative;
+  padding: clamp(3rem, 7vw, 5rem) var(--tu-pad);
+  text-align: center;
+  color: var(--tu-cream);
+  background: var(--tu-olive);
+  overflow: hidden;
+}
+.wheat {
+  position: absolute;
+  top: 50%;
+  height: min(78%, 20rem);
+  width: auto;
+  translate: 0 -50%;
+  color: var(--tu-cream);
+  opacity: 0.55;
+}
+.wheatLeft {
+  left: clamp(-1rem, 2vw, 4rem);
+  transform: scaleX(-1);
+}
+.wheatRight {
+  right: clamp(-1rem, 2vw, 4rem);
+}
+@media (max-width: 759px) {
+  .wheat {
+    display: none;
+  }
+}
+.countInner {
+  position: relative;
+}
+.countKicker {
+  margin: 0;
+  font-family: var(--tu-display);
+  font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+}
+.countGrid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem clamp(1.25rem, 5vw, 3.5rem);
+  margin-top: 1.25rem;
+}
+.countCell {
+  display: flex;
+  flex-direction: column;
+  min-width: 4.2rem;
+}
+.countNum {
+  font-family: var(--tu-display);
+  font-size: clamp(2.6rem, 6vw, 4.4rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.countLabel {
+  margin-top: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+.countDate {
+  margin: 1.25rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+.countDate:empty {
+  display: none;
+}
+
+/* ---------------------------------------------------------- programação */
+
+.menuSection {
+  padding: clamp(3.5rem, 8vw, 6rem) var(--tu-pad);
+}
+.menuHead {
+  max-width: 44rem;
+  margin-inline: auto;
+  text-align: center;
+}
+.menuHead .lead {
+  margin-inline: auto;
+}
+.menu {
+  list-style: none;
+  max-width: 44rem;
+  margin: clamp(1.75rem, 4vw, 2.75rem) auto 0;
+  padding: clamp(1.25rem, 4vw, 2.5rem) clamp(1rem, 4vw, 2.5rem);
+  border: 1px solid var(--tu-terra);
+  outline: 1px solid var(--tu-terra);
+  outline-offset: 4px;
+  background: #fbf7ee;
+}
+.menuRow + .menuRow {
+  margin-top: 1.1rem;
+}
+.menuLine {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+.menuTitle {
+  font-family: var(--tu-display);
+  font-size: clamp(1.1rem, 1.8vw, 1.35rem);
+  line-height: 1.25;
+}
+.menuDots {
+  flex: 1 1 1.5rem;
+  min-width: 1.5rem;
+  border-bottom: 2px dotted var(--tu-terra);
+  translate: 0 -0.3em;
+}
+.menuTime {
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  color: var(--tu-terra-ink);
+  white-space: nowrap;
+}
+.menuNote {
+  margin: 0.2rem 0 0;
+  max-width: 34rem;
+  font-style: italic;
+  font-size: 0.98rem;
+  line-height: 1.5;
+  color: var(--tu-muted);
+}
+
+/* --------------------------------------------------------------- local */
+
+.place {
+  display: grid;
+  gap: 2rem;
+  max-width: 76rem;
+  margin-inline: auto;
+  padding: clamp(1rem, 3vw, 3rem) var(--tu-pad) clamp(3.5rem, 8vw, 6rem);
+}
+.placeMap {
+  padding: 6px;
+  border: 1px solid var(--tu-terra);
+  background: var(--tu-cream);
+}
+.mapFrame {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border: 0;
+  filter: sepia(0.2);
+}
+.placeCity {
+  margin: 0.4rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--tu-muted);
+}
+.placeAddress {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+.placeAddress .body {
+  margin-top: 0.6rem;
+}
+.placeCypress {
+  flex: none;
+  width: 3.2rem;
+  height: auto;
+  margin-top: 0.6rem;
+  color: var(--tu-olive);
+}
+@media (min-width: 900px) {
+  .place {
+    grid-template-columns: 7fr 5fr;
+    align-items: center;
+    gap: clamp(2rem, 5vw, 4rem);
+  }
+}
+
+/* -------------------------------------------------------------- cartões */
+
+.cards {
+  padding: clamp(3rem, 7vw, 5rem) var(--tu-pad);
+  background: var(--tu-sand);
+}
+.cardsGrid {
+  display: grid;
+  gap: 1.5rem 2.5rem;
+  max-width: 72rem;
+  margin-inline: auto;
+}
+@media (min-width: 640px) {
+  .cardsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1000px) {
+  .cardsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.cardTitle {
+  margin: 0;
+  font-family: var(--tu-display);
+  font-weight: 400;
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+.cardSub {
+  margin: 0.3rem 0 0;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--tu-olive-ink);
+}
+.cardRule {
+  display: block;
+  width: 3rem;
+  height: 2px;
+  margin: 0.9rem 0;
+  background: var(--tu-terra);
+}
+.cardBody {
+  margin: 0;
+  line-height: 1.65;
+  color: var(--tu-muted); /* 5,78:1 sobre areia */
+}
+
+/* ------------------------------------------------------------ presentes */
+
+.gifts {
+  max-width: 76rem;
+  margin-inline: auto;
+  padding: clamp(3.5rem, 8vw, 6rem) var(--tu-pad);
+}
+
+/* -------------------------------------------------------------- galeria */
+
+.gallery {
+  padding: 0 var(--tu-pad) clamp(3.5rem, 8vw, 6rem);
+  max-width: 76rem;
+  margin-inline: auto;
+}
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+}
+@media (min-width: 640px) {
+  .galleryGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.9rem;
+  }
+}
+@media (min-width: 1024px) {
+  .galleryGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.galleryBtn {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--tu-sand);
+  cursor: pointer;
+}
+.galleryImg {
+  object-fit: cover;
+  filter: sepia(0.15) saturate(1.1);
+  transition: filter 0.25s ease, transform 0.4s ease;
+}
+.galleryBtn:hover .galleryImg {
+  filter: none;
+  transform: scale(1.03);
+}
+.lightbox {
+  width: min(92vw, 820px);
+  max-height: 92vh;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: var(--tu-cream);
+  box-shadow: 0 40px 100px rgba(43, 38, 32, 0.5);
+}
+.lightbox::backdrop {
+  background: rgba(43, 38, 32, 0.86);
+}
+.lightboxClose,
+.lightboxNav {
+  position: absolute;
+  z-index: 2;
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--tu-ink);
+  background: color-mix(in oklab, var(--tu-cream) 80%, transparent);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.lightboxClose {
+  top: 0.5rem;
+  right: 0.5rem;
+}
+.lightboxNav {
+  top: 50%;
+  translate: 0 -50%;
+}
+.lightboxNav[data-dir="prev"] {
+  left: 0.5rem;
+}
+.lightboxNav[data-dir="next"] {
+  right: 0.5rem;
+}
+.lightboxFig {
+  margin: 0;
+}
+.lightboxImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 84vh;
+  object-fit: contain;
+}
+.lightboxCaption {
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+  text-align: center;
+  color: var(--tu-muted);
+}
+
+/* ---------------------------------------------------------- encerramento */
+
+.closing {
+  background: var(--tu-cream);
+}
+.closingMedia {
+  position: relative;
+  height: clamp(20rem, 55vh, 38rem);
+  overflow: hidden;
+}
+.closingImg {
+  object-fit: cover;
+  filter: sepia(0.15) saturate(1.1);
+}
+.closingHills {
+  position: absolute;
+  inset: auto 0 -2px;
+  width: 100%;
+  height: clamp(6rem, 18vw, 13rem);
+  color: var(--tu-cream);
+}
+.closingText {
+  max-width: 44rem;
+  margin-inline: auto;
+  padding: clamp(2rem, 5vw, 3.5rem) var(--tu-pad) clamp(3.5rem, 8vw, 6rem);
+  text-align: center;
+}
+.closingVine {
+  display: block;
+  width: 9rem;
+  height: auto;
+  margin: 0 auto 1.25rem;
+  color: var(--tu-olive);
+}
+.closingQuote {
+  margin: 0;
+  font-family: var(--tu-display);
+  font-size: clamp(1.4rem, 2.8vw, 2rem);
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+/* --------------------------------------------------------------- rodapé */
+
+.footer {
+  padding: clamp(3rem, 7vw, 5rem) var(--tu-pad);
+  text-align: center;
+  color: var(--tu-cream);
+  background: var(--tu-olive);
+}
+.footer p {
+  margin: 0;
+}
+.footerMono {
+  font-family: var(--tu-display);
+  font-size: 1.6rem;
+  letter-spacing: 0.1em;
+}
+.footerNames {
+  margin-top: 0.5rem !important;
+  font-family: var(--tu-display);
+  font-size: clamp(1.3rem, 2.4vw, 1.8rem);
+  overflow-wrap: anywhere;
+}
+.footerText {
+  max-width: 36rem;
+  margin: 1rem auto 0 !important;
+  font-style: italic;
+  line-height: 1.6;
+}
+.footerMeta {
+  margin-top: 1.25rem !important;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+.footerCredit {
+  margin-top: 2rem !important;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}

@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { SHOWCASE_IDS, type ShowcaseId } from "./showcase";
 
+// Caminho absoluto + âncora: funciona na landing e nas outras páginas da marca (/modelos).
 const SECOES = [
-  { label: "Modelos", href: "#modelos" },
-  { label: "Site feito pela IA", href: "#ia" },
-  { label: "Presentes", href: "#presentes" },
-  { label: "Preço", href: "#preco" },
-  { label: "Dúvidas", href: "#duvidas" }
+  { label: "Modelos", href: "/modelos" },
+  { label: "Site feito pela IA", href: "/#ia" },
+  { label: "Presentes", href: "/#presentes" },
+  { label: "Preço", href: "/#preco" },
+  { label: "Dúvidas", href: "/#duvidas" }
 ];
 
 /**

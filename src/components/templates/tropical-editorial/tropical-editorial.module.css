@@ -1,0 +1,1115 @@
+/*
+ * Tropical Editorial — trópico com direção de arte de revista. Off-white, folhas em
+ * silhueta verde-mata (SVG do kit) saindo das bordas, Libre Caslon Display enorme nos
+ * nomes e nos números, Be Vietnam Pro em caixa alta nos dados. Papaia só em fios,
+ * no "&", nos numerais decorativos e no botão secundário.
+ *
+ * Contraste (WCAG, calculado com scripts/… python):
+ *   --te-ink   #1b2420 sobre --te-off #f3efe6 = 13,9:1 · sobre #faf8f3 = 15,1:1
+ *   --te-gray  #4e5955 sobre #f3efe6 = 6,3:1 · sobre #faf8f3 = 6,9:1 · sobre #fff = 7,2:1
+ *   --te-mata  #1f4d3f sobre #f3efe6 = 8,4:1 (eyebrows, títulos, números)
+ *   --te-off   #f3efe6 sobre --te-mata #1f4d3f = 8,4:1 · sobre --te-dark #143329 = 11,9:1
+ *   --te-off-soft (#f3efe6 a 80% sobre #143329 = #c6c8be) = 7,5:1
+ *   --te-papaya #e6793f sobre #f3efe6 = 2,6:1 → NUNCA texto; só fios e numerais aria-hidden
+ *   --te-papaya-text #c45f28 sobre #f3efe6 = 3,7:1 → só o "&" dos nomes (>= 40px)
+ *   --te-ink sobre --te-papaya #e6793f = 5,4:1 (botão secundário)
+ */
+
+.template {
+  --te-off: #f3efe6;
+  --te-paper: #faf8f3;
+  --te-mata: #1f4d3f;
+  --te-dark: #143329;
+  --te-papaya: #e6793f;
+  --te-papaya-text: #c45f28;
+  --te-ink: #1b2420;
+  --te-gray: #4e5955;
+  --te-off-soft: rgba(243, 239, 230, 0.8);
+  --te-line: rgba(31, 77, 63, 0.22);
+  --te-line-dark: rgba(243, 239, 230, 0.18);
+  --te-leaf-ghost: rgba(31, 77, 63, 0.07);
+  --te-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --te-serif: var(--te-display), "Libre Caslon Display", "Baskerville", Georgia, serif;
+  --te-sans-stack: var(--te-sans), "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+
+  /* Widgets compartilhados (presentes, Pix, confirmação, recados). */
+  --font-serif: var(--te-serif);
+  --font-sans: var(--te-sans-stack);
+  --widget-card-radius: 0px;
+  --widget-btn-radius: 0px;
+  --widget-btn-case: uppercase;
+  --widget-btn-tracking: 0.16em;
+
+  --g-card: var(--te-paper);
+  --g-dialog-bg: var(--te-paper);
+  --g-border: var(--te-line);
+  --g-ink: var(--te-ink);
+  --g-muted: var(--te-gray); /* 6,9:1 sobre #faf8f3 */
+  --g-accent: var(--te-mata);
+  --g-on-accent: var(--te-off);
+  --g-price: var(--te-mata);
+  --g-radius: 0px;
+  --g-img-radius: 0px;
+  --g-img-filter: none;
+  --g-scrim: rgba(20, 51, 41, 0.62);
+  --g-error: #8d3d33;
+
+  --gf-bg: var(--te-off);
+  --gf-card: var(--te-paper);
+  --gf-ink: var(--te-ink);
+  --gf-muted: var(--te-gray); /* 6,9:1 sobre #faf8f3 */
+  --gf-border: var(--te-line);
+  --gf-field: #ffffff;
+  --gf-accent: var(--te-mata);
+  --gf-on-accent: var(--te-off);
+  --gf-radius: 0px;
+  --gf-eyebrow: var(--te-mata);
+  --gf-error: #8d3d33;
+
+  font-family: var(--te-sans-stack);
+  font-weight: 400;
+  color: var(--te-ink);
+  background: var(--te-off);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+:where(.template) :where(a, button, iframe):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 76rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.1rem, 4vw, 3rem);
+}
+
+/* ------------------------------------------------------------ Tipografia */
+
+.eyebrow {
+  margin: 0 0 0.9rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--te-mata);
+}
+.onDark {
+  color: var(--te-off-soft);
+}
+.h2 {
+  margin: 0;
+  font-family: var(--te-serif);
+  font-weight: 400;
+  font-size: clamp(2rem, 1.3rem + 3.2vw, 3.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  color: var(--te-ink);
+}
+.kicker {
+  margin: 0 0 0.6rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--te-gray);
+}
+.lead {
+  margin: 1rem 0 0;
+  max-width: 34rem;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--te-gray);
+}
+.cover {
+  object-fit: cover;
+}
+.papayaRule {
+  display: block;
+  width: 3.5rem;
+  height: 3px;
+  background: var(--te-papaya);
+}
+
+.btnPapaya {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 1.5rem;
+  margin-top: 1.6rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--te-ink); /* 5,4:1 sobre o papaia */
+  background: var(--te-papaya);
+  transition:
+    background-color 180ms var(--te-ease),
+    transform 180ms var(--te-ease);
+}
+.btnPapaya:hover {
+  background: #ea8a57;
+  transform: translateY(-1px);
+}
+
+/* ------------------------------------------------------------------ Nav */
+
+.nav {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 30;
+  transition:
+    background-color 220ms var(--te-ease),
+    border-color 220ms var(--te-ease);
+  border-bottom: 1px solid transparent;
+}
+.navSolid {
+  background: rgba(243, 239, 230, 0.94);
+  border-color: var(--te-line);
+  backdrop-filter: blur(8px);
+}
+.navInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  max-width: 90rem;
+  margin-inline: auto;
+  padding: 0.6rem clamp(1.1rem, 3vw, 2.4rem);
+}
+.navMono {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--te-serif);
+  font-size: 1.35rem;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  color: var(--te-mata);
+}
+.navLinks {
+  display: none;
+}
+.navLink {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 0.8rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--te-ink);
+}
+.navLink::after {
+  content: "";
+  position: absolute;
+  left: 0.8rem;
+  right: 0.8rem;
+  bottom: 8px;
+  height: 2px;
+  background: var(--te-papaya);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 200ms var(--te-ease);
+}
+.navLink:hover::after {
+  transform: scaleX(1);
+}
+.navToggle {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 1rem;
+  border: 1px solid var(--te-mata);
+  background: transparent;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--te-mata);
+  cursor: pointer;
+}
+.navMobile {
+  display: grid;
+  padding: 0.4rem clamp(1.1rem, 3vw, 2.4rem) 1rem;
+  background: rgba(243, 239, 230, 0.98);
+  border-bottom: 1px solid var(--te-line);
+}
+.navMobileLink {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  border-top: 1px solid var(--te-line);
+  font-family: var(--te-serif);
+  font-size: 1.3rem;
+  text-decoration: none;
+  color: var(--te-ink);
+}
+@media (min-width: 900px) {
+  .navLinks {
+    display: flex;
+    gap: 0.2rem;
+  }
+  .navToggle,
+  .navMobile {
+    display: none;
+  }
+}
+
+/* ----------------------------------------------------------------- Capa */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  align-items: start;
+  min-height: calc(100svh - var(--demo-bar-h, 0px));
+  padding: calc(4.4rem + var(--demo-bar-h, 0px)) 0 2.5rem;
+  overflow: clip;
+  background: var(--te-off);
+}
+.heroLeaves,
+.heroFronds {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  color: var(--te-mata);
+}
+/* As folhas ficam na faixa de baixo (atrás da foto); a zona dos nomes, em cima, fica limpa. */
+.leafMonstera {
+  position: absolute;
+  left: -34vw;
+  bottom: -4vh;
+  width: min(90vw, 36rem);
+  height: auto;
+  transform: rotate(18deg);
+}
+.leafFrond {
+  position: absolute;
+  right: -34vw;
+  bottom: 2vh;
+  width: min(96vw, 40rem);
+  height: auto;
+  transform: rotate(-26deg);
+}
+.leafFrondB {
+  position: absolute;
+  right: -40vw;
+  bottom: -14vh;
+  top: auto;
+  width: min(80vw, 32rem);
+  height: auto;
+  transform: rotate(8deg);
+  opacity: 0.9;
+}
+.heroGrid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 1.6rem;
+  width: 100%;
+  max-width: 82rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.1rem, 4vw, 3rem);
+}
+.heroText {
+  position: relative;
+  z-index: 2;
+}
+.heroKicker {
+  margin: 0 0 1rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--te-mata);
+}
+.heroNames {
+  margin: 0;
+  font-family: var(--te-serif);
+  font-weight: 400;
+  font-size: clamp(3.1rem, 1.6rem + 7.8vw, 7.6rem);
+  line-height: 0.96;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  color: var(--te-ink);
+}
+.heroNames[data-scale="medium"] {
+  font-size: clamp(2.5rem, 1.2rem + 6.4vw, 6.2rem);
+}
+.heroNames[data-scale="long"] {
+  font-size: clamp(2rem, 1rem + 5vw, 4.8rem);
+}
+.heroName {
+  display: block;
+}
+.heroAmp {
+  display: inline-block;
+  margin-right: 0.18em;
+  color: var(--te-papaya-text); /* 3,7:1: só em >= 40px */
+  font-style: italic;
+}
+.heroMeta {
+  display: grid;
+  gap: 0.35rem;
+  width: fit-content;
+  max-width: 100%;
+  margin: 1.8rem 0 0 -0.6em;
+  padding: 0.5em 0.6em;
+  background: var(--te-off); /* etiqueta: legível mesmo quando uma folha alcança a linha */
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--te-ink);
+}
+.heroMetaLine {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.heroPhoto {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  aspect-ratio: 3 / 4;
+  width: 84%; /* no celular as folhas aparecem à esquerda e abaixo da foto */
+  justify-self: end;
+  background: var(--te-dark);
+}
+.heroNoPhoto {
+  align-items: center;
+  padding-bottom: clamp(14rem, 36vh, 20rem); /* faixa só de folhas, abaixo dos nomes */
+}
+.heroNoPhoto .heroText {
+  text-align: left;
+  max-width: 60rem;
+}
+.heroNoPhoto .heroNames {
+  font-size: clamp(3.4rem, 1.6rem + 9vw, 8rem);
+}
+.heroNoPhoto .heroNames[data-scale="medium"] {
+  font-size: clamp(2.7rem, 1.2rem + 7.4vw, 7rem);
+}
+.heroNoPhoto .heroNames[data-scale="long"] {
+  font-size: clamp(2.1rem, 1rem + 5.4vw, 5.4rem);
+}
+@media (min-width: 900px) {
+  .hero,
+  .heroNoPhoto {
+    align-items: center;
+    padding-top: calc(5.5rem + var(--demo-bar-h, 0px));
+    padding-bottom: 3rem;
+  }
+  .heroText {
+    padding-bottom: 6rem; /* empurra os nomes para cima: a zona das folhas fica abaixo */
+  }
+  .heroGrid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 38%);
+    align-items: start;
+    gap: 0;
+  }
+  .heroText {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    width: 72%; /* os nomes invadem a borda esquerda da foto */
+    padding-right: 0;
+  }
+  .heroPhoto {
+    grid-column: 2;
+    grid-row: 1;
+    max-height: calc(100svh - 9rem - var(--demo-bar-h, 0px));
+    width: auto;
+    height: calc(100svh - 9rem - var(--demo-bar-h, 0px));
+    max-width: 100%;
+    justify-self: end;
+  }
+  .leafMonstera {
+    left: -9vw;
+    bottom: -30vh;
+    width: min(44vw, 40rem);
+    transform: rotate(24deg);
+  }
+  .leafFrond {
+    right: -8vw;
+    bottom: -4vh;
+    width: min(50vw, 46rem);
+    transform: rotate(-32deg);
+  }
+  .leafFrondB {
+    right: -18vw;
+    top: 12%;
+    bottom: auto;
+    width: min(42vw, 36rem);
+    transform: rotate(-120deg);
+  }
+  .heroText {
+    max-width: 62%; /* a meta não entra na foto */
+  }
+  .heroNoPhoto .heroText {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+  .heroNoPhoto .leafFrondB {
+    right: -6vw;
+    opacity: 1;
+  }
+  .heroNoPhoto .leafMonstera {
+    width: min(40vw, 36rem);
+    bottom: -36vh; /* abaixo da zona dos nomes, que sem foto ocupa mais altura */
+  }
+}
+
+/* -------------------------------------------------------------- Convite */
+
+.invite {
+  padding: clamp(3.5rem, 8vw, 6rem) 0;
+  background: var(--te-mata);
+  color: var(--te-off);
+}
+.inviteGrid {
+  display: grid;
+  gap: 2rem;
+}
+.inviteWords {
+  margin: 0;
+  font-family: var(--te-serif);
+  font-weight: 400;
+  font-size: clamp(2rem, 1.2rem + 3.6vw, 4rem);
+  line-height: 1.06;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  color: var(--te-off);
+}
+.inviteBody .papayaRule {
+  margin-bottom: 1.4rem;
+}
+.inviteText {
+  margin: 0;
+  max-width: 34rem;
+  font-size: 1.08rem;
+  line-height: 1.7;
+  color: var(--te-off);
+}
+@media (min-width: 900px) {
+  .inviteGrid {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: end;
+    gap: 4rem;
+  }
+  .inviteBody {
+    padding-bottom: 0.4rem;
+  }
+}
+
+/* ------------------------------------------------------------- História */
+
+.story {
+  padding: clamp(3.5rem, 8vw, 6.5rem) 0;
+  background: var(--te-off);
+}
+.storyHead {
+  max-width: 40rem;
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+}
+.chapters {
+  display: grid;
+  gap: clamp(3rem, 6vw, 5rem);
+}
+.chapter {
+  display: grid;
+  gap: 1.4rem;
+}
+.chapterMedia {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 3 / 4;
+  width: min(100%, 26rem);
+  background: var(--te-dark);
+}
+.chapterBody {
+  max-width: 30rem;
+}
+.numeral {
+  display: block;
+  margin: 0 0 0.6rem -0.06em;
+  font-family: var(--te-serif);
+  font-size: clamp(5rem, 4rem + 6vw, 9rem);
+  line-height: 0.82;
+  color: var(--te-papaya); /* decorativo (aria-hidden): 2,6:1 não vale como texto */
+}
+.chapterTitle {
+  margin: 0 0 1rem;
+  font-family: var(--te-serif);
+  font-weight: 400;
+  font-size: clamp(1.7rem, 1.2rem + 2vw, 2.6rem);
+  line-height: 1.08;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  color: var(--te-ink);
+}
+.line {
+  display: block;
+}
+.chapterText {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.7;
+  color: var(--te-ink);
+}
+@media (min-width: 900px) {
+  .chapter {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: center;
+    gap: clamp(2rem, 5vw, 5rem);
+  }
+  .chapterMedia {
+    width: 100%;
+    max-width: 30rem;
+  }
+  .chapterBody {
+    padding-left: clamp(1rem, 4vw, 4rem);
+  }
+  .chapterAlt .chapterMedia {
+    order: 2;
+    justify-self: end;
+  }
+  .chapterAlt .chapterBody {
+    padding-left: 0;
+    padding-right: clamp(1rem, 4vw, 4rem);
+    justify-self: end;
+  }
+  .chaptersCols {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 3rem;
+  }
+  .chapterNoPhoto {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+  .chapterNoPhoto .chapterBody {
+    max-width: 40rem;
+    padding-left: 0;
+    padding-right: 0;
+    justify-self: start;
+  }
+}
+
+/* ------------------------------------------------------------- Contagem */
+
+.count {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  padding: clamp(3.5rem, 8vw, 6rem) 0;
+  background: var(--te-paper);
+  border-top: 1px solid var(--te-line);
+  border-bottom: 1px solid var(--te-line);
+}
+.countLeaf {
+  position: absolute;
+  right: -14%;
+  top: 50%;
+  z-index: 0;
+  width: min(70vw, 32rem);
+  height: auto;
+  transform: translateY(-50%) rotate(-24deg);
+  color: var(--te-leaf-ghost);
+  pointer-events: none;
+}
+.countInner {
+  position: relative;
+  z-index: 1;
+}
+.countRow {
+  display: grid;
+  gap: 1.5rem;
+  align-items: end;
+}
+.countDays {
+  display: grid;
+  margin: 0;
+}
+.countBig {
+  display: block;
+  margin: 0;
+  font-family: var(--te-serif);
+  font-size: clamp(5.5rem, 3rem + 14vw, 13rem);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: var(--te-mata);
+  overflow-wrap: anywhere;
+}
+.countLabel {
+  display: block;
+  margin-top: 0.6rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--te-gray);
+}
+.countSmall {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem 2.4rem;
+}
+.countUnit {
+  margin: 0;
+}
+.countNum {
+  display: block;
+  font-family: var(--te-serif);
+  font-size: clamp(2.4rem, 1.6rem + 3vw, 4rem);
+  line-height: 1;
+  color: var(--te-mata);
+  font-variant-numeric: tabular-nums;
+}
+.countFoot {
+  margin: 2rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--te-ink);
+}
+@media (min-width: 720px) {
+  .countRow {
+    grid-template-columns: auto 1fr;
+    gap: 3rem;
+  }
+  .countSmall {
+    padding-bottom: 0.6rem;
+  }
+}
+
+/* ---------------------------------------------------------- Programação */
+
+.program {
+  padding: clamp(3.5rem, 8vw, 6.5rem) 0;
+  background: var(--te-off);
+}
+.programGrid {
+  display: grid;
+  gap: 2.5rem;
+}
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 2px solid var(--te-mata);
+}
+.row {
+  display: grid;
+  grid-template-columns: minmax(5.2rem, auto) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: baseline;
+  padding: 1.2rem 0;
+  border-bottom: 1px solid var(--te-mata);
+}
+.rowTime {
+  font-family: var(--te-serif);
+  font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.2rem);
+  line-height: 1;
+  color: var(--te-mata);
+  font-variant-numeric: tabular-nums;
+}
+.rowMain {
+  display: grid;
+  gap: 0.25rem;
+}
+.rowTitle {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--te-ink);
+}
+.rowNote {
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: var(--te-gray);
+}
+@media (min-width: 900px) {
+  .programGrid {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+    gap: 5rem;
+    align-items: start;
+  }
+  .programHead {
+    position: sticky;
+    top: 6rem;
+  }
+}
+
+/* ---------------------------------------------------------------- Local */
+
+.place {
+  padding: clamp(3.5rem, 8vw, 6.5rem) 0;
+  background: var(--te-paper);
+  border-top: 1px solid var(--te-line);
+}
+.placeGrid {
+  display: grid;
+  gap: 2rem;
+}
+.mapFrame {
+  padding: 10px;
+  background: var(--te-mata);
+}
+.map {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border: 0;
+  background: var(--te-off);
+}
+.placeCity {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--te-mata);
+}
+.placeText {
+  margin: 1rem 0 0;
+  max-width: 30rem;
+  font-size: 1.02rem;
+  line-height: 1.65;
+  color: var(--te-ink);
+  overflow-wrap: anywhere;
+}
+@media (min-width: 900px) {
+  .placeGrid {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: center;
+    gap: 4rem;
+  }
+  .map {
+    aspect-ratio: 5 / 4;
+  }
+}
+
+/* -------------------------------------------------------------- Cartões */
+
+.cards {
+  padding: clamp(3rem, 7vw, 5.5rem) 0;
+  background: var(--te-off);
+  border-top: 1px solid var(--te-line);
+}
+.cardsGrid {
+  display: grid;
+  gap: 2.2rem;
+}
+.card {
+  display: grid;
+  gap: 0.6rem;
+  align-content: start;
+}
+.card .papayaRule {
+  margin-bottom: 0.8rem;
+}
+.cardMedia {
+  position: relative;
+  margin: 0 0 0.6rem;
+  aspect-ratio: 4 / 3;
+  background: var(--te-dark);
+}
+.cardTitle {
+  margin: 0;
+  font-family: var(--te-serif);
+  font-weight: 400;
+  font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.2rem);
+  line-height: 1.08;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  color: var(--te-ink);
+}
+.cardText {
+  margin: 0.2rem 0 0;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--te-ink);
+}
+@media (min-width: 720px) {
+  .cardsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2.5rem;
+  }
+}
+
+/* ------------------------------------------------------------ Presentes */
+
+.gifts {
+  padding: clamp(3.5rem, 8vw, 6.5rem) 0;
+  background: var(--te-off);
+  border-top: 1px solid var(--te-line);
+}
+.giftsHead {
+  max-width: 40rem;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+
+/* -------------------------------------------------------------- Galeria */
+
+.gallery {
+  padding: clamp(3.5rem, 8vw, 6.5rem) 0;
+  background: var(--te-paper);
+  border-top: 1px solid var(--te-line);
+}
+.galleryHead {
+  margin-bottom: clamp(1.8rem, 4vw, 2.6rem);
+}
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: clamp(9rem, 44vw, 12rem);
+  grid-auto-flow: dense;
+  gap: 0.6rem;
+}
+.galleryTall {
+  grid-row: span 2;
+}
+.galleryBtn {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: var(--te-dark);
+  cursor: pointer;
+  overflow: hidden;
+}
+.galleryBtn .cover {
+  transition: transform 300ms var(--te-ease);
+}
+.galleryBtn:hover .cover,
+.galleryBtn:focus-visible .cover {
+  transform: scale(1.03);
+}
+@media (min-width: 900px) {
+  .galleryGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-rows: clamp(14rem, 20vw, 18rem);
+    gap: 1rem;
+  }
+}
+
+.lightbox {
+  width: min(92vw, 56rem);
+  max-height: 92svh;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: var(--te-dark);
+  color: var(--te-off);
+}
+.lightbox::backdrop {
+  background: rgba(20, 51, 41, 0.92);
+}
+.lightboxClose,
+.lightboxNav {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: var(--te-off);
+  color: var(--te-dark);
+  font: inherit;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.lightboxClose {
+  top: 0.6rem;
+  right: 0.6rem;
+}
+.lightboxNav {
+  top: 50%;
+  transform: translateY(-50%);
+}
+.lightboxNav[data-dir="prev"] {
+  left: 0.6rem;
+}
+.lightboxNav[data-dir="next"] {
+  right: 0.6rem;
+}
+.lightboxFig {
+  margin: 0;
+}
+.lightboxImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 82svh;
+  object-fit: contain;
+}
+.lightboxCap {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: var(--te-off-soft);
+  border-top: 1px solid var(--te-line-dark);
+}
+
+/* --------------------------------------------------------- Encerramento */
+
+.final {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  padding: clamp(3.5rem, 8vw, 6.5rem) 0;
+  background: var(--te-dark);
+  color: var(--te-off);
+}
+.finalFrond {
+  position: absolute;
+  right: -22vw;
+  top: -10%;
+  z-index: 0;
+  width: min(90vw, 40rem);
+  height: auto;
+  transform: rotate(30deg);
+  color: var(--te-mata);
+  opacity: 0.55;
+  pointer-events: none;
+}
+.finalGrid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 2rem;
+}
+.finalMedia {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 3 / 4;
+  width: min(70%, 22rem);
+  background: var(--te-mata);
+}
+.finalBody .papayaRule {
+  margin-bottom: 1.4rem;
+}
+.finalText {
+  margin: 0;
+  max-width: 30rem;
+  font-family: var(--te-serif);
+  font-size: clamp(1.6rem, 1.2rem + 1.8vw, 2.6rem);
+  line-height: 1.22;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  color: var(--te-off);
+}
+.finalNames {
+  margin: 1.6rem 0 0;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--te-off-soft);
+  overflow-wrap: anywhere;
+}
+@media (min-width: 900px) {
+  .finalGrid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: center;
+    gap: 4rem;
+  }
+  .finalMedia {
+    width: min(100%, 26rem);
+  }
+  .finalNoPhoto .finalGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .finalNoPhoto .finalText {
+    max-width: 44rem;
+  }
+}
+
+/* --------------------------------------------------------------- Rodapé */
+
+.footer {
+  padding: 2rem 0 2.4rem;
+  background: var(--te-dark);
+  color: var(--te-off);
+  border-top: 1px solid var(--te-line-dark);
+}
+.footerInner {
+  display: grid;
+  gap: 1.4rem;
+  align-items: start;
+}
+.footerMono {
+  margin: 0;
+  font-family: var(--te-serif);
+  font-size: 2rem;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  color: var(--te-off);
+}
+.footerCol {
+  display: grid;
+  gap: 0.3rem;
+}
+.footerNames {
+  margin: 0;
+  font-family: var(--te-serif);
+  font-size: 1.15rem;
+  color: var(--te-off);
+  overflow-wrap: anywhere;
+}
+.footerMeta,
+.footerText,
+.footerCredit {
+  margin: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--te-off-soft);
+  overflow-wrap: anywhere;
+}
+.footerText {
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  max-width: 28rem;
+}
+@media (min-width: 900px) {
+  .footerInner {
+    grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+    gap: 3rem;
+  }
+  .footerCol:last-child {
+    justify-self: end;
+    text-align: right;
+  }
+}
+
+/* ------------------------------------------------------------ Movimento */
+
+@media (prefers-reduced-motion: reduce) {
+  .template * {
+    transition-duration: 0.01ms !important;
+    animation: none !important;
+  }
+}

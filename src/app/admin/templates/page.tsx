@@ -3,10 +3,10 @@ import { AdminShell } from "@/components/app/AdminShell";
 import { ADMIN_WEDDING_COLUMNS, fetchAll, formatPercent, templateIdOf } from "@/components/admin/data";
 import { StatStrip } from "@/components/admin/ui";
 import { requireAdmin } from "@/lib/auth";
-import { platformTemplates } from "@/lib/platform-data";
 import { createClient } from "@/lib/supabase/server";
+import { templateAsset } from "@/lib/template-assets";
 import { TEMPLATE_CHOICES } from "@/lib/template-options";
-import { TEMPLATE_IDS, TEMPLATE_NAMES } from "@/lib/wedding";
+import { TEMPLATES, TEMPLATE_FAMILIES } from "@/lib/templates/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -25,16 +25,16 @@ export default async function AdminTemplatesPage() {
     usage.set(id, item);
   }
 
-  const rows = TEMPLATE_IDS.map((id) => {
-    const catalog = platformTemplates.find((template) => template.id === id);
-    const choice = TEMPLATE_CHOICES.find((template) => template.id === id);
+  const rows = TEMPLATES.map((template) => {
+    const id = template.id;
+    const family = TEMPLATE_FAMILIES.find((f) => f.id === template.family)?.label ?? template.family;
     return {
       id,
-      name: TEMPLATE_NAMES[id],
-      description: choice?.tagline ?? catalog?.description ?? "Sem descrição no catálogo.",
-      image: catalog?.previewImage ?? null,
-      swatch: choice?.swatch ?? null,
-      offered: Boolean(choice),
+      name: template.name,
+      description: `${family} · ${template.tagline}`,
+      image: templateAsset(id, "phone"),
+      swatch: template.swatch,
+      offered: template.status === "active",
       usage: usage.get(id) ?? { total: 0, published: 0, lastUsedAt: null }
     };
   }).sort((a, b) => b.usage.total - a.usage.total || Number(b.offered) - Number(a.offered) || a.name.localeCompare(b.name, "pt-BR"));
@@ -77,9 +77,9 @@ export default async function AdminTemplatesPage() {
           <ul className="mt-3 divide-y divide-line border-t border-line">
             {rows.map((row) => (
               <li key={row.id} className="grid gap-4 px-5 py-4 sm:grid-cols-[7.5rem_minmax(0,1fr)_minmax(0,14rem)] sm:items-center">
-                <div className="relative hidden aspect-[4/3] overflow-hidden rounded-lg bg-bg-2 sm:block">
+                <div className="relative hidden aspect-[3/4] overflow-hidden rounded-lg bg-bg-2 sm:block">
                   {row.image ? (
-                    <Image src={row.image} alt={`Prévia do modelo ${row.name}`} fill sizes="120px" className="object-cover" />
+                    <Image src={row.image} alt={`Prévia do modelo ${row.name}`} fill sizes="120px" className="object-cover object-top" />
                   ) : row.swatch ? (
                     <span className="grid h-full grid-cols-3" aria-hidden>
                       {row.swatch.map((color) => (

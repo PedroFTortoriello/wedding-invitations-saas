@@ -1,0 +1,1070 @@
+/*
+ * Ramo de Oliveira — marfim, oliva escuro e ramos em traço fino. Forum (caixa alta
+ * espaçada nos nomes e títulos, baixa nas frases) + Lato 300/400/700 no texto.
+ * Mediterrâneo tranquilo: molduras duplas (border + outline), fios, cantos retos.
+ *
+ * Contraste (WCAG, calculado):
+ *   ink #262b20 / marfim #f3efe4 12,6:1 · / marfim-2 #eae4d4 11,4:1 · / card #fbf9f2 13,8:1
+ *   gray #565b4b / marfim 6,1:1 · / marfim-2 5,5:1 · / card 6,7:1
+ *   olive #3b4a2e / marfim 8,3:1 · / marfim-2 7,5:1 (eyebrows, títulos, preço)
+ *   marfim #f3efe4 sobre olive 8,3:1 (faixas, botões) · soft #cfd3bf sobre olive 6,2:1 (eyebrow na faixa)
+ *   olive-light #9ba67c / marfim 2,3:1: SÓ ornamentos e fios, nunca texto.
+ *   erro #8d3d33 / card 7,0:1
+ */
+
+.template {
+  --ob-ivory: #f3efe4;
+  --ob-ivory-2: #eae4d4;
+  --ob-card: #fbf9f2;
+  --ob-olive-light: #9ba67c;
+  --ob-olive: #3b4a2e;
+  --ob-ink: #262b20;
+  --ob-gray: #565b4b;
+  --ob-on-olive: #f3efe4;
+  --ob-on-olive-soft: #cfd3bf;
+  --ob-line: rgba(59, 74, 46, 0.35);
+  --ob-gutter: clamp(1.25rem, 5vw, 3rem);
+  --ob-serif: var(--ob-display), "Times New Roman", serif;
+  --ob-sans-stack: var(--ob-sans), "Segoe UI", system-ui, sans-serif;
+
+  /* widgets */
+  --font-serif: var(--ob-serif);
+  --font-sans: var(--ob-sans-stack);
+  --widget-card-radius: 0px;
+  --widget-btn-radius: 0px;
+  --widget-btn-case: uppercase;
+  --widget-btn-tracking: 0.14em;
+  --g-card: #fbf9f2;
+  --g-dialog-bg: #f3efe4;
+  --g-border: rgba(59, 74, 46, 0.35);
+  --g-ink: #262b20;
+  --g-muted: #565b4b; /* 6,7:1 sobre card */
+  --g-accent: #3b4a2e;
+  --g-on-accent: #f3efe4;
+  --g-price: #3b4a2e;
+  --g-radius: 0px;
+  --g-img-radius: 0px;
+  --g-img-filter: none;
+  --g-scrim: rgba(38, 43, 32, 0.55);
+  --g-error: #8d3d33;
+  --gf-bg: #eae4d4;
+  --gf-card: #fbf9f2;
+  --gf-ink: #262b20;
+  --gf-muted: #565b4b;
+  --gf-border: rgba(59, 74, 46, 0.35);
+  --gf-field: #f3efe4;
+  --gf-accent: #3b4a2e;
+  --gf-on-accent: #f3efe4;
+  --gf-radius: 0px;
+  --gf-eyebrow: #3b4a2e;
+  --gf-error: #8d3d33;
+
+  font-family: var(--ob-sans-stack);
+  font-weight: 400;
+  color: var(--ob-ink);
+  background: var(--ob-ivory);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+:where(.template) :where(a, button):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+/* "Não poderei ir" do GuestForms vem com estilo inline sem altura: alvo de toque >= 44px */
+.template :global(#confirmar) form button[type="button"] {
+  min-height: 44px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 74rem;
+  margin-inline: auto;
+  padding-inline: var(--ob-gutter);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Moldura dupla: fio oliva e um segundo fio a 8px (outline), cantos retos. */
+.frame {
+  display: block;
+  padding: 0;
+  border: 1px solid var(--ob-olive);
+  outline: 1px solid var(--ob-olive);
+  outline-offset: 7px;
+  background: var(--ob-ivory-2);
+}
+
+/* ------------------------------------------------------------ tipografia */
+
+.eyebrow {
+  margin: 0;
+  font-family: var(--ob-sans-stack);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ob-olive);
+}
+.eyebrowOnOlive {
+  color: var(--ob-on-olive-soft);
+}
+
+.h2 {
+  margin: 0.7rem 0 0;
+  font-family: var(--ob-serif);
+  font-weight: 400;
+  font-size: clamp(1.55rem, 3.2vw, 2.3rem);
+  line-height: 1.15;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.lead {
+  margin: 1rem 0 0;
+  max-width: 38rem;
+  font-size: 1.05rem;
+  font-weight: 300;
+  line-height: 1.65;
+  color: var(--ob-ink);
+}
+
+.body {
+  margin: 0.9rem 0 0;
+  max-width: 36rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--ob-ink);
+}
+
+.sectionHead {
+  max-width: 44rem;
+}
+.sectionHeadCenter {
+  margin-inline: auto;
+  text-align: center;
+}
+.sectionHeadCenter .lead {
+  margin-inline: auto;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding-inline: 1.7rem;
+  border: 1px solid var(--ob-olive);
+  background: var(--ob-olive);
+  color: var(--ob-on-olive);
+  font-family: var(--ob-sans-stack);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.btn:hover {
+  background: var(--ob-ink);
+  border-color: var(--ob-ink);
+}
+
+/* ramos pequenos (marcadores) */
+/* ramos pequenos: stroke reforçado via prop (1.3 no viewBox de 320 some abaixo de ~90px) */
+.branchMini {
+  width: 52px;
+  height: auto;
+  color: var(--ob-olive);
+}
+.branchCard {
+  display: block;
+  width: 76px;
+  height: auto;
+  color: var(--ob-olive);
+}
+
+/* ------------------------------------------------------------------ nav */
+
+.nav {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 40;
+  border-bottom: 1px solid transparent;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+.navSolid {
+  background: color-mix(in srgb, var(--ob-ivory) 90%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom-color: var(--ob-line);
+}
+.navInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  height: 4rem;
+}
+.navMono {
+  position: relative;
+  z-index: 1;
+  font-family: var(--ob-serif);
+  font-size: 1.2rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ob-olive);
+  text-decoration: none;
+}
+.navLinks {
+  display: none;
+  gap: clamp(1rem, 2.4vw, 2rem);
+}
+.navLink {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ob-ink);
+  text-decoration: none;
+  padding-block: 0.25rem;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+.navLink:hover {
+  border-bottom-color: var(--ob-olive);
+}
+.navToggle {
+  min-height: 44px;
+  padding: 0 0.25rem;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ob-ink);
+  cursor: pointer;
+}
+.navMobile {
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--ob-gutter) 1rem;
+  background: var(--ob-ivory);
+  border-bottom: 1px solid var(--ob-line);
+}
+.navMobileLink {
+  padding: 0.8rem 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ob-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--ob-line);
+}
+@media (min-width: 900px) {
+  .navLinks {
+    display: flex;
+  }
+  .navToggle {
+    display: none;
+  }
+}
+
+/* ----------------------------------------------------------------- capa */
+
+.hero {
+  position: relative;
+  min-height: calc(100svh - var(--demo-bar-h, 0px));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* respiro p/ os ramos dos cantos não encostarem no texto (nomes longos) */
+  padding: 7.5rem var(--ob-gutter) 5rem;
+  overflow: hidden;
+  isolation: isolate;
+}
+.heroBranch {
+  position: absolute;
+  z-index: 0;
+  display: block;
+  width: clamp(170px, 44vw, 560px);
+  color: var(--ob-olive);
+  pointer-events: none;
+}
+/* o ramo nasce embaixo à esquerda e sobe à direita; espelhado na vertical sai do canto superior esquerdo */
+.heroBranchTL {
+  top: 3.5rem; /* abaixo da nav: não cruza o monograma */
+  left: -20%;
+  transform: scaleY(-1);
+}
+/* espelhado na horizontal sai do canto inferior direito */
+.heroBranchBR {
+  bottom: -2%;
+  right: -22%;
+  transform: scaleX(-1);
+}
+.sway {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform-origin: 6% 85%;
+}
+.heroInner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 44rem;
+  text-align: center;
+}
+.heroInnerBoxed {
+  max-width: 36rem;
+  padding: clamp(2rem, 6vw, 3.5rem) clamp(1.25rem, 5vw, 3rem);
+  border: 1px solid var(--ob-olive);
+  outline: 1px solid var(--ob-olive);
+  outline-offset: 7px;
+  background: color-mix(in srgb, var(--ob-ivory) 82%, transparent);
+}
+
+.names {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35em;
+  font-family: var(--ob-serif);
+  font-weight: 400;
+  line-height: 1.12;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.names[data-scale="short"] {
+  font-size: clamp(1.75rem, 6vw, 3rem);
+}
+.names[data-scale="medium"] {
+  font-size: clamp(1.4rem, 4.6vw, 2.5rem);
+}
+.names[data-scale="long"] {
+  font-size: clamp(1.15rem, 3.6vw, 1.9rem);
+}
+.name {
+  display: block;
+  padding-left: 0.16em; /* compensa o tracking do último caractere */
+}
+.amp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9em;
+  font-size: 0.6em;
+  letter-spacing: 0;
+  color: var(--ob-olive);
+}
+.amp::before,
+.amp::after {
+  content: "";
+  width: 2.4em;
+  height: 1px;
+  background: var(--ob-olive-light);
+}
+
+.heroPhoto {
+  position: relative;
+  width: min(66vw, 300px);
+  margin: 1.9rem 0 0;
+}
+.heroFrame {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+}
+.heroImg {
+  object-fit: cover;
+}
+.heroRule {
+  display: block;
+  width: 4rem;
+  height: 1px;
+  margin: 1.75rem 0 0;
+  background: var(--ob-olive);
+}
+.heroMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 1.9rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  line-height: 1.5;
+  color: var(--ob-ink);
+}
+.heroInnerBoxed .heroMeta {
+  margin-top: 1.5rem;
+}
+.heroPlace {
+  font-weight: 400;
+  color: var(--ob-gray); /* 6,1:1 sobre marfim */
+}
+.heroLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 1rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ob-olive);
+  text-decoration: underline;
+  text-underline-offset: 6px;
+  text-decoration-color: var(--ob-olive-light);
+  transition: text-decoration-color 0.2s ease;
+}
+.heroLink:hover {
+  text-decoration-color: var(--ob-olive);
+}
+
+@media (min-width: 900px) {
+  .hero {
+    padding-top: 6rem;
+    padding-bottom: 3rem;
+  }
+  .heroBranch {
+    width: clamp(420px, 38vw, 620px);
+  }
+  .heroBranchTL {
+    top: 3rem;
+    left: -5%;
+  }
+  .heroBranchBR {
+    bottom: -1%;
+    right: -5%;
+  }
+  .heroPhoto {
+    width: clamp(240px, 38svh, 360px);
+    margin-top: 2.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sway {
+    animation: obSway 9s ease-in-out infinite;
+  }
+  .heroBranchBR .sway,
+  .closingBranchBR .sway {
+    animation-delay: -4.5s;
+  }
+}
+@keyframes obSway {
+  0%,
+  100% {
+    transform: rotate(-1deg);
+  }
+  50% {
+    transform: rotate(1deg);
+  }
+}
+
+/* -------------------------------------------------------------- convite */
+
+.invite {
+  padding: clamp(3.5rem, 8vw, 6rem) var(--ob-gutter);
+  background: var(--ob-olive);
+  color: var(--ob-on-olive);
+}
+.inviteInner {
+  max-width: 42rem;
+  margin-inline: auto;
+  text-align: center;
+}
+.inviteWords {
+  margin: 0.9rem 0 0;
+  font-family: var(--ob-serif);
+  font-weight: 400;
+  font-size: clamp(1.7rem, 4vw, 2.8rem);
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.inviteBranch {
+  display: block;
+  width: min(60%, 220px);
+  height: auto;
+  margin: 1.5rem auto 0;
+  color: var(--ob-on-olive);
+  opacity: 0.85;
+  transform: rotate(14deg);
+}
+.inviteText {
+  margin: 1.25rem auto 0;
+  max-width: 34rem;
+  font-size: 1.02rem;
+  font-weight: 300;
+  line-height: 1.75;
+  color: var(--ob-on-olive); /* 8,3:1 sobre oliva */
+}
+
+/* ------------------------------------------------------------- história */
+
+.story {
+  padding: clamp(3.5rem, 8vw, 6rem) 0;
+}
+.chapters {
+  display: grid;
+  gap: clamp(3rem, 6vw, 5rem);
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+}
+.chapter {
+  display: grid;
+  gap: 1.75rem;
+  align-items: center;
+}
+.chapterPhoto {
+  width: min(78%, 300px);
+  margin: 0 auto 0 0;
+  padding: 0 8px 8px 0;
+}
+.chapterFlip .chapterPhoto {
+  margin: 0 0 0 auto;
+}
+.chapterImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+.chapterNum {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--ob-serif);
+  font-size: 1.15rem;
+  letter-spacing: 0.2em;
+  color: var(--ob-olive);
+}
+.chapterTitle {
+  margin: 0.6rem 0 0;
+  font-family: var(--ob-sans-stack);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ob-gray);
+}
+.chapterHeadline {
+  margin: 0.5rem 0 0;
+  font-family: var(--ob-serif);
+  font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+  line-height: 1.25;
+  color: var(--ob-ink);
+  text-wrap: balance;
+}
+.chapterHeadline span {
+  display: block;
+}
+.chapterNoPhoto .chapterText {
+  padding-left: 1.25rem;
+  border-left: 1px solid var(--ob-olive-light);
+}
+@media (min-width: 900px) {
+  .chapter {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(2.5rem, 6vw, 6rem);
+  }
+  .chapterFlip .chapterPhoto {
+    order: 2;
+  }
+  .chapterPhoto,
+  .chapterFlip .chapterPhoto {
+    width: min(100%, 360px);
+    margin: 0 auto;
+  }
+  .chapterNoPhoto {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 44rem;
+  }
+}
+
+/* ------------------------------------------------------------- contagem */
+
+.count {
+  padding: clamp(2.5rem, 6vw, 4rem) 0;
+  background: var(--ob-ivory-2);
+  border-top: 1px solid var(--ob-line);
+  border-bottom: 1px solid var(--ob-line);
+}
+.countInner {
+  text-align: center;
+}
+.countGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  max-width: 44rem;
+  margin: 1.5rem auto 0;
+  border-top: 1px solid var(--ob-olive);
+  border-bottom: 1px solid var(--ob-olive);
+}
+.countCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1.1rem 0.25rem;
+  border-left: 1px solid var(--ob-line);
+}
+.countCell:first-child {
+  border-left: 0;
+}
+.countNum {
+  font-family: var(--ob-serif);
+  font-size: clamp(1.9rem, 7vw, 3.4rem);
+  line-height: 1;
+  color: var(--ob-ink);
+  font-variant-numeric: tabular-nums;
+}
+.countLabel {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ob-gray); /* 5,5:1 sobre marfim-2 */
+}
+.countDate {
+  margin: 1.25rem 0 0;
+  font-family: var(--ob-serif);
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  color: var(--ob-ink);
+}
+
+/* ---------------------------------------------------------- programação */
+
+.schedule {
+  padding: clamp(3.5rem, 8vw, 6rem) 0;
+}
+.scheduleGrid {
+  display: grid;
+  gap: 2rem;
+}
+.scheduleHead {
+  max-width: 30rem;
+}
+.program {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--ob-olive);
+}
+.programRow {
+  display: grid;
+  grid-template-columns: 4.2rem 1rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.25rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--ob-line);
+}
+.programTime {
+  font-family: var(--ob-serif);
+  font-size: 1.35rem;
+  letter-spacing: 0.04em;
+  color: var(--ob-olive);
+  font-variant-numeric: tabular-nums;
+}
+.programDot {
+  align-self: start;
+  margin-top: 0.55em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ob-olive);
+}
+.programMain {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding-left: 0.5rem;
+}
+.programTitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ob-ink);
+}
+.programNote {
+  font-size: 0.95rem;
+  font-weight: 300;
+  line-height: 1.55;
+  color: var(--ob-ink);
+}
+@media (min-width: 900px) {
+  .scheduleGrid {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: clamp(3rem, 8vw, 7rem);
+    align-items: start;
+  }
+  .programRow {
+    grid-template-columns: 5rem 1.25rem minmax(0, 1fr);
+  }
+}
+
+/* ---------------------------------------------------------------- local */
+
+.place {
+  padding: clamp(3.5rem, 8vw, 6rem) 0;
+  background: var(--ob-ivory-2);
+}
+.placeGrid {
+  display: grid;
+  gap: 2.5rem;
+}
+.placeText {
+  max-width: 34rem;
+}
+.placeCity {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ob-gray); /* 5,5:1 sobre marfim-2 */
+}
+.placeAddress {
+  margin: 0.8rem 0 0;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: var(--ob-ink);
+}
+.placeText .btn {
+  margin-top: 1.5rem;
+}
+.map {
+  padding: 8px;
+}
+.mapFrameBox {
+  background: var(--ob-ivory);
+}
+.mapFrame {
+  display: block;
+  width: 100%;
+  height: clamp(260px, 44vw, 420px);
+  border: 0;
+}
+@media (min-width: 900px) {
+  .placeGrid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(2.5rem, 6vw, 5rem);
+    align-items: center;
+  }
+}
+
+/* -------------------------------------------------------------- cartões */
+
+.cards {
+  padding: clamp(3.5rem, 8vw, 6rem) 0;
+}
+.cardList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2.5rem clamp(1.5rem, 4vw, 3rem);
+}
+.card {
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--ob-olive);
+}
+.cardTitle {
+  margin: 0.9rem 0 0;
+  font-family: var(--ob-serif);
+  font-weight: 400;
+  font-size: 1.25rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.25;
+  color: var(--ob-ink);
+}
+.cardSub {
+  margin: 0.4rem 0 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ob-olive);
+}
+.cardBody {
+  margin: 0.8rem 0 0;
+  font-size: 0.98rem;
+  line-height: 1.65;
+  color: var(--ob-ink);
+}
+@media (min-width: 640px) {
+  .cardList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 900px) {
+  .cardList {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ------------------------------------------------------------ presentes */
+
+.gifts {
+  padding: clamp(3.5rem, 8vw, 6rem) 0;
+  background: var(--ob-ivory-2);
+}
+.gifts .sectionHead {
+  margin-bottom: 2.25rem;
+}
+
+/* -------------------------------------------------------------- galeria */
+
+.gallery {
+  padding: clamp(3.5rem, 8vw, 6rem) 0;
+}
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1.25rem, 4vw, 2.5rem);
+  margin-top: clamp(2.25rem, 5vw, 3.5rem);
+  padding: 8px;
+}
+.shot {
+  min-width: 0;
+}
+.shotBtn {
+  width: 100%;
+  cursor: pointer;
+  transition: outline-offset 0.2s ease, background-color 0.2s ease;
+}
+.shotBtn:hover {
+  outline-offset: 4px;
+  background: var(--ob-olive-light);
+}
+.shotImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+@media (min-width: 900px) {
+  .galleryGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.lightbox {
+  max-width: min(92vw, 1100px);
+  max-height: 92vh;
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--ob-olive);
+  background: var(--ob-ivory);
+  color: var(--ob-ink);
+  overflow: visible;
+}
+.lightbox::backdrop {
+  background: rgba(38, 43, 32, 0.78);
+}
+.lbClose,
+.lbNav {
+  position: absolute;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--ob-olive);
+  background: var(--ob-ivory);
+  color: var(--ob-olive);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.lbClose {
+  top: -16px;
+  right: -16px;
+}
+.lbNav {
+  top: 50%;
+  transform: translateY(-50%);
+}
+.lbNav[data-dir="prev"] {
+  left: -16px;
+}
+.lbNav[data-dir="next"] {
+  right: -16px;
+}
+.lbFig {
+  margin: 0;
+  padding: 10px;
+}
+.lbImg {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: 80vh;
+  height: auto;
+  margin-inline: auto;
+  object-fit: contain;
+}
+.lbCap {
+  padding: 0.6rem 0.25rem 0;
+  font-size: 0.85rem;
+  color: var(--ob-gray);
+  text-align: center;
+}
+
+/* --------------------------------------------------------- encerramento */
+
+.closing {
+  padding: clamp(3.5rem, 8vw, 6rem) 0 clamp(3rem, 6vw, 5rem);
+}
+.closingMedia {
+  position: relative;
+  max-width: 66rem;
+  margin-inline: auto;
+}
+.closingImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+.closingBranch {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  width: clamp(130px, 30vw, 300px);
+  color: var(--ob-olive);
+  pointer-events: none;
+}
+.closingBranchTL {
+  top: -9%;
+  left: -4%;
+  transform: scaleY(-1);
+}
+.closingBranchBR {
+  bottom: -9%;
+  right: -4%;
+  transform: scaleX(-1);
+}
+.closingText {
+  max-width: 38rem;
+  margin: 2.5rem auto 0;
+  text-align: center;
+}
+.closingTextOnly {
+  margin-top: 0;
+}
+.closingBranchSmall {
+  display: block;
+  width: 110px;
+  height: auto;
+  margin: 0 auto 0.75rem;
+  color: var(--ob-olive-light);
+}
+.closingQuote {
+  margin: 0;
+  font-family: var(--ob-serif);
+  font-size: clamp(1.35rem, 2.8vw, 2rem);
+  line-height: 1.35;
+  color: var(--ob-ink);
+  text-wrap: balance;
+}
+.closingNames {
+  margin: 1.25rem 0 0;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ob-olive);
+}
+@media (min-width: 900px) {
+  .closingImg {
+    aspect-ratio: 21 / 10;
+  }
+  .closingBranchTL {
+    left: -6%;
+  }
+  .closingBranchBR {
+    right: -6%;
+  }
+}
+
+/* --------------------------------------------------------------- rodapé */
+
+.footer {
+  padding: 3rem 0 2.5rem;
+  background: var(--ob-olive);
+  color: var(--ob-on-olive);
+}
+.footerInner {
+  text-align: center;
+}
+.footerMono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 0;
+  font-family: var(--ob-serif);
+  font-size: 1.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.footerBranch {
+  width: clamp(56px, 14vw, 90px);
+  height: auto;
+  flex: none;
+  color: var(--ob-on-olive);
+  opacity: 0.85;
+}
+.footerBranchFlip {
+  transform: scaleX(-1);
+}
+.footerText {
+  margin: 1.1rem auto 0;
+  max-width: 34rem;
+  font-family: var(--ob-serif);
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: var(--ob-on-olive);
+}
+.footerMeta {
+  margin: 0.9rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  letter-spacing: 0.04em;
+  color: var(--ob-on-olive-soft); /* 6,2:1 sobre oliva */
+}
+.footerCredit {
+  margin: 1.25rem 0 0;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ob-on-olive-soft);
+}
