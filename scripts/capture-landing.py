@@ -332,11 +332,16 @@ def capture_capa(browser, base: str) -> None:
 
 def main() -> None:
     only = sys.argv[2:]
-    if len(sys.argv) not in (2, 3) or not sys.argv[1].startswith("http") or only not in ([], ["tour"], ["capa"]):
-        sys.exit("Uso: python scripts/capture-landing.py <URL do servidor, ex.: http://localhost:3000> [tour|capa]")
+    if len(sys.argv) not in (2, 3) or not sys.argv[1].startswith("http") or only not in ([], ["tour"], ["capa"], ["og"]):
+        sys.exit("Uso: python scripts/capture-landing.py <URL do servidor, ex.: http://localhost:3000> [tour|capa|og]")
     base = sys.argv[1].rstrip("/")
     with sync_playwright() as p:
         browser = p.chromium.launch()
+        # og: só o card de compartilhamento (lê o preço em platform-data.ts; não abre o site).
+        if only == ["og"]:
+            render_og(browser)
+            browser.close()
+            return
         if only != ["capa"]:
             capture_tours(browser, base)
         if only != ["tour"]:

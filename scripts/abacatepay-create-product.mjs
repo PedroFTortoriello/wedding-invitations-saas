@@ -1,8 +1,8 @@
 // Cria (uma vez) um produto da taxa de publicação na AbacatePay v2 e imprime o id
 // para colar no .env. Os preços têm que bater com src/lib/platform-data.ts.
 //
-// Uso: node scripts/abacatepay-create-product.mjs padrao   (R$89,90 → ABACATEPAY_PUBLISH_PRODUCT_ID)
-//      node scripts/abacatepay-create-product.mjs ia       (R$149,90 → ABACATEPAY_AI_PRODUCT_ID)
+// Uso: node scripts/abacatepay-create-product.mjs padrao   (R$149,90 → ABACATEPAY_PUBLISH_PRODUCT_ID)
+//      node scripts/abacatepay-create-product.mjs ia       (R$199,90 → ABACATEPAY_AI_PRODUCT_ID)
 // (lê ABACATEPAY_API_KEY do .env ou do ambiente)
 
 import { readFileSync } from "node:fs";
@@ -31,14 +31,14 @@ const PRODUCTS = {
   padrao: {
     env: "ABACATEPAY_PUBLISH_PRODUCT_ID",
     externalId: "publish-fee",
-    cents: 8990,
+    cents: 14990,
     name: "Publicação do site de casamento",
     description: "Taxa única para publicar o site de casamento."
   },
   ia: {
     env: "ABACATEPAY_AI_PRODUCT_ID",
     externalId: "ai-site-fee",
-    cents: 14990,
+    cents: 19990,
     name: "Site de casamento feito pela IA",
     description: "Taxa única para publicar o site de casamento montado pela IA."
   }

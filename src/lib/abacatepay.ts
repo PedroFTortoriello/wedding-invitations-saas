@@ -3,7 +3,7 @@ import { AI_SITE_FEE_BRL, PUBLISH_FEE_BRL } from "@/lib/platform-data";
 
 const ABACATEPAY_BASE_URL = process.env.ABACATEPAY_BASE_URL || "https://api.abacatepay.com/v2";
 
-/** The publishing fee in centavos — AbacatePay expects integer cents (R$89,90 -> 8990). */
+/** The publishing fee in centavos — AbacatePay expects integer cents (R$149,90 -> 14990). */
 export const PUBLISH_FEE_CENTS = Math.round(PUBLISH_FEE_BRL * 100);
 /** The "Site feito pela IA" publishing fee in centavos. */
 export const AI_SITE_FEE_CENTS = Math.round(AI_SITE_FEE_BRL * 100);
@@ -137,9 +137,11 @@ async function resolveProductId(apiKey: string, kind: ProductKind): Promise<stri
 /**
  * Cria o checkout hospedado (somente PIX) da taxa única de publicação na API v2
  * (POST /v2/checkouts/create). Os itens da v2 referenciam um PRODUTO; o id vem do
- * env do produto (recomendado) ou é criado automaticamente. O site feito pela IA
- * usa outro produto e outro externalId: a AbacatePay deduplica por externalId e
- * devolveria o checkout do preço padrão aberto antes da geração.
+ * env do produto (recomendado) ou é criado automaticamente. O externalId leva o tipo e
+ * o preço ("p14990-<uuid>" / "ia19990-<uuid>"): a AbacatePay deduplica por externalId e,
+ * sem isso, devolveria um checkout aberto antes com outro preço (o padrão aberto antes da
+ * geração, ou a taxa antiga antes de uma mudança de preço), que o guarda de valor abaixo
+ * recusaria e deixaria o casal sem conseguir pagar.
  */
 export async function createPublishCharge(input: CreatePublishChargeInput): Promise<PublishCharge> {
   const apiKey = process.env.ABACATEPAY_API_KEY;
@@ -163,7 +165,7 @@ export async function createPublishCharge(input: CreatePublishChargeInput): Prom
       // Volta para /publicar, que acompanha a confirmação do Pix e mostra o site no ar.
       returnUrl: `${input.appUrl}/publicar`,
       completionUrl: `${input.appUrl}/publicar?pagamento=concluido`,
-      externalId: input.ai ? `ia-${input.weddingId}` : input.weddingId,
+      externalId: `${kind === "ai" ? "ia" : "p"}${expectedCents}-${input.weddingId}`,
       metadata: { weddingId: input.weddingId }
     })
   });
@@ -239,9 +241,11 @@ export function parseAbacatePayWebhook(payload: unknown): AbacatePayWebhookResul
 
   const chargeMeta = asRecord(charge.metadata) ?? asRecord(data.metadata) ?? {};
   const status = typeof charge.status === "string" ? charge.status.toUpperCase() : "";
-  // externalId é o principal ("<uuid>" ou "ia-<uuid>"); a v2 pode carregar o id só em metadata.weddingId.
+  // externalId é o principal: "p<centavos>-<uuid>" / "ia<centavos>-<uuid>" (atuais) ou "<uuid>" /
+  // "ia-<uuid>" (checkouts abertos antes de nov/2026, que ainda podem ser pagos). A v2 pode
+  // carregar o id só em metadata.weddingId. Um uuid nunca começa com "p" nem "i" (só hex).
   const weddingId =
-    (typeof charge.externalId === "string" && charge.externalId.replace(/^ia-/, "")) ||
+    (typeof charge.externalId === "string" && charge.externalId.replace(/^(?:ia|p)\d*-/, "")) ||
     (typeof chargeMeta.weddingId === "string" ? chargeMeta.weddingId : undefined) ||
     undefined;
   const chargeId = typeof charge.id === "string" ? charge.id : undefined;

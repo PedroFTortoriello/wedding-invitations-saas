@@ -16,13 +16,16 @@ export const platformName = "Noivar";
 /** WhatsApp de suporte, formato E.164 sem "+" (para links wa.me). */
 export const supportWhatsApp = "5511942716215";
 
-/** Taxa única de publicação paga pelo casal (site montado por eles no editor). */
-export const PUBLISH_FEE_BRL = 89.9;
-export const PUBLISH_FEE_LABEL = "R$ 89,90";
-
-/** Taxa única de publicação do "Site feito pela IA" (cobrada se o casal gerou o site com a IA). */
-export const AI_SITE_FEE_BRL = 149.9;
-export const AI_SITE_FEE_LABEL = "R$ 149,90";
+/**
+ * Taxas únicas de publicação (preços de 09/11/2026): R$ 149,90 para o site montado pelo casal
+ * no editor e R$ 199,90 se o casal gerou o site com a IA. O preço do produto na AbacatePay
+ * (ABACATEPAY_PUBLISH_PRODUCT_ID / ABACATEPAY_AI_PRODUCT_ID) tem que bater com estes valores:
+ * o checkout recusa se divergir (lib/abacatepay.ts).
+ */
+export const PUBLISH_FEE_BRL = 149.9;
+export const PUBLISH_FEE_LABEL = "R$ 149,90";
+export const AI_SITE_FEE_BRL = 199.9;
+export const AI_SITE_FEE_LABEL = "R$ 199,90";
 
 /** Gerações por casamento (cada uma custa tokens; o resto o casal ajusta no editor) e fotos por geração. */
 export const MAX_AI_GENERATIONS = 3;

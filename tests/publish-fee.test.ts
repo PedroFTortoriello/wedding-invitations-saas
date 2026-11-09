@@ -1,8 +1,9 @@
 import crypto from "node:crypto";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   AI_SITE_FEE_CENTS,
   PUBLISH_FEE_CENTS,
+  createPublishCharge,
   isWebhookSecretValid,
   isWebhookSignatureValid,
   parseAbacatePayWebhook,
@@ -10,13 +11,60 @@ import {
 } from "@/lib/abacatepay";
 
 describe("PUBLISH_FEE_CENTS", () => {
-  it("is the R$89,90 fee as integer centavos (8990) — AbacatePay expects cents", () => {
-    expect(PUBLISH_FEE_CENTS).toBe(8990);
+  it("is the R$149,90 fee as integer centavos (14990) — AbacatePay expects cents", () => {
+    expect(PUBLISH_FEE_CENTS).toBe(14990);
     expect(Number.isInteger(PUBLISH_FEE_CENTS)).toBe(true);
   });
 
-  it("charges R$149,90 (14990) for the site made by the AI", () => {
-    expect(AI_SITE_FEE_CENTS).toBe(14990);
+  it("charges R$199,90 (19990) for the site made by the AI", () => {
+    expect(AI_SITE_FEE_CENTS).toBe(19990);
+  });
+});
+
+describe("createPublishCharge", () => {
+  const uuid = "2b0c6f1e-0000-4000-8000-000000000000";
+  const ENV = {
+    ABACATEPAY_API_KEY: "k",
+    ABACATEPAY_PUBLISH_PRODUCT_ID: "prod_padrao",
+    ABACATEPAY_AI_PRODUCT_ID: "prod_ia"
+  };
+
+  /** fetch falso: guarda o corpo enviado e responde um checkout com o valor dado. */
+  function mockCheckout(amount: number) {
+    const bodies: Record<string, unknown>[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: string, init: RequestInit) => {
+        bodies.push(JSON.parse(String(init.body)));
+        const data = { id: "chk_1", url: "https://pay.test/chk_1", status: "PENDING", amount };
+        return new Response(JSON.stringify({ success: true, data }), { status: 200 });
+      })
+    );
+    return bodies;
+  }
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    for (const key of Object.keys(ENV)) delete process.env[key];
+  });
+
+  it("externalId leva tipo e preço (p14990-<uuid> no padrão, ia19990-<uuid> na IA) e o produto certo", async () => {
+    Object.assign(process.env, ENV);
+    const padrao = mockCheckout(14990);
+    const charge = await createPublishCharge({ weddingId: uuid, appUrl: "https://noivar.test" });
+    expect(charge.amountCents).toBe(14990);
+    expect(padrao[0]).toMatchObject({ externalId: `p14990-${uuid}`, items: [{ id: "prod_padrao", quantity: 1 }] });
+
+    const ia = mockCheckout(19990);
+    await createPublishCharge({ weddingId: uuid, appUrl: "https://noivar.test", ai: true });
+    expect(ia[0]).toMatchObject({ externalId: `ia19990-${uuid}`, items: [{ id: "prod_ia", quantity: 1 }] });
+  });
+
+  it("recusa um checkout cujo valor não bate com a taxa (produto ainda no preço antigo)", async () => {
+    Object.assign(process.env, ENV);
+    mockCheckout(8990);
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    await expect(createPublishCharge({ weddingId: uuid, appUrl: "https://noivar.test" })).rejects.toThrow(/valor incorreto/);
   });
 });
 
@@ -128,6 +176,17 @@ describe("parseAbacatePayWebhook", () => {
       data: { checkout: { id: "c7", externalId: "ia-2b0c6f1e-0000-4000-8000-000000000000", amount: 14990 } }
     });
     expect(r.weddingId).toBe("2b0c6f1e-0000-4000-8000-000000000000");
+  });
+
+  it("strips the price-bearing prefixes (p14990-, ia19990-) and keeps a bare uuid untouched", () => {
+    const uuid = "2b0c6f1e-0000-4000-8000-000000000000";
+    for (const externalId of [`p14990-${uuid}`, `ia19990-${uuid}`, uuid]) {
+      const r = parseAbacatePayWebhook({
+        event: "checkout.completed",
+        data: { checkout: { id: "c8", externalId, amount: 14990 } }
+      });
+      expect(r.weddingId, externalId).toBe(uuid);
+    }
   });
 
   it("falls back to metadata.weddingId when externalId is absent (v2)", () => {

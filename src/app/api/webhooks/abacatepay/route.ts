@@ -20,7 +20,7 @@ const str = (value: unknown) => (typeof value === "string" ? value : undefined);
  * after(): nunca muda a resposta do webhook nem provoca reenvio. Os identificadores
  * de anúncio vêm do `publish_checkout_started` (o webhook não tem cookies do casal).
  */
-async function recordPurchase(weddingId: string, chargeId: string, amountCents: number) {
+async function recordPurchase(weddingId: string, chargeId: string, webhookCents: number | undefined) {
   try {
     const admin = createAdminClient();
     // Reentrega: mark_publish_paid é idempotente e devolve true de novo. Erro de consulta
@@ -32,7 +32,32 @@ async function recordPurchase(weddingId: string, chargeId: string, amountCents: 
       .eq("wedding_id", weddingId)
       .eq("event", "publish_paid")
       .limit(1);
-    if (already?.length) return;
+    if (already?.length) {
+      // Reentrega do mesmo charge é normal. Um SEGUNDO charge pago do mesmo casamento (Pix
+      // aberto antes de uma troca de preço e pago depois do novo) é dinheiro a devolver: vai
+      // para o painel de erros do admin, para o estorno manual (PRODUCTION.md, migração de preço).
+      const { count } = await admin
+        .from("publish_payments")
+        .select("id", { count: "exact", head: true })
+        .eq("wedding_id", weddingId)
+        .eq("status", "paid");
+      if ((count ?? 0) > 1) {
+        await logServerError("webhook.abacatepay.duplicate_paid", new Error("segunda taxa paga no mesmo casamento"), {
+          weddingId,
+          path: PATH,
+          detail: { chargeId, amountCents: webhookCents ?? null, paidCount: count }
+        });
+      }
+      return;
+    }
+
+    // Valor pago: o do webhook ou, se ele não trouxer, o gravado na criação do checkout. A taxa
+    // vigente é o último recurso: um checkout aberto antes de uma troca de preço paga o valor antigo.
+    const { data: payment } =
+      webhookCents === undefined
+        ? await admin.from("publish_payments").select("amount_cents").eq("provider_charge_id", chargeId).maybeSingle()
+        : { data: null };
+    const amountCents = webhookCents ?? (payment ? Number(payment.amount_cents) : PUBLISH_FEE_CENTS);
 
     await recordFunnelEvent({ event: "publish_paid", weddingId, path: PATH, detail: { chargeId, amountCents } });
 
@@ -175,7 +200,7 @@ export async function POST(request: Request) {
     const { weddingId, chargeId } = result;
     // Antes da resposta: a tela /publicar consulta o status logo depois do Pix.
     await autoPublish(weddingId);
-    after(() => recordPurchase(weddingId, chargeId, result.amountCents ?? PUBLISH_FEE_CENTS));
+    after(() => recordPurchase(weddingId, chargeId, result.amountCents));
   }
 
   return NextResponse.json({ received: true, recognized: recognized === true });

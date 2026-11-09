@@ -14,7 +14,7 @@ import { rowToWeddingSite } from "@/lib/wedding";
 import { getOwnedWeddingRow, isAiMade } from "@/lib/wedding-server";
 import { PurchaseTracker } from "../dashboard/PurchaseTracker";
 import { PublishStatus } from "./PublishStatus";
-import { hasRecentPurchase } from "./recent-purchase";
+import { recentPurchaseCents } from "./recent-purchase";
 import { LiveNow, SiteCard, StatusLayout, type SiteCardData } from "./SiteLive";
 
 export const dynamic = "force-dynamic";
@@ -56,7 +56,7 @@ export default async function PublishPage({ searchParams }: { searchParams: Prom
   };
 
   // Modo suporte: nunca dispara o Purchase da campanha no navegador do admin.
-  const recentPurchase = support ? false : await hasRecentPurchase(row.id, row.publish_paid_at);
+  const paidCents = support ? null : await recentPurchaseCents(row.id, row.publish_paid_at);
   const inactive = site.status === "suspended" || site.status === "expired";
 
   let content: ReactNode;
@@ -124,7 +124,7 @@ export default async function PublishPage({ searchParams }: { searchParams: Prom
           Voltar ao editor
         </Link>
       </header>
-      {recentPurchase ? <PurchaseTracker weddingId={row.id} value={fee.brl} /> : null}
+      {paidCents != null ? <PurchaseTracker weddingId={row.id} value={paidCents / 100} /> : null}
       {content}
     </div>
   );

@@ -54,7 +54,7 @@ O `publicar`, em ordem:
 3. já houve post hoje (dia de São Paulo) → `já publicado hoje`, sucesso;
 4. pega o próximo `approved` com `scheduled_for` vazio ou até hoje (menor data primeiro, sem
    data por último) e o reserva (`publishing`, `attempts` + 1);
-5. refaz as checagens duras (tamanho, URL no texto, link, `topic_tag`);
+5. refaz as checagens duras (tamanho, URL no texto, link, `topic_tag` e valores em R$ fora da ficha de fatos);
 6. cria o container, espera 30 s, confere o status (até 5 vezes, de minuto em minuto),
    publica, busca o permalink e grava `published`;
 7. ping de sucesso ou `/fail`. Erro depois da reserva grava `failed` com o erro completo na
@@ -382,7 +382,7 @@ sudo tail -n 40 /opt/noivar-threads/threads-bot.log
    ```
    Ou Supabase → **Table Editor** → `threads_posts` → `status` de `draft` para `approved`. Texto
    editado por lá não passa de novo pelas regras de marca e de repetição; só pelas checagens duras
-   na hora de publicar (tamanho, URL no texto, link, `topic_tag`).
+   na hora de publicar (tamanho, URL no texto, link, `topic_tag` e valores em R$ fora da ficha).
 3. **Antes de a fila acabar.** O resumo do `fila` mostra os aprovados restantes e o último
    `scheduled_for`; gere o próximo lote antes de zerar (fila vazia = dia sem post + alerta).
    `scheduled_for` é a data mínima: um dia perdido só empurra a fila.
@@ -460,3 +460,8 @@ tbot publicar --simular
 ```
 
 Se vier migration nova junto, aplique antes (§3). `.env`, token e log não mudam.
+
+Troca de preço no código (`MONEY_OK` e ficha de fatos) = atualizar o bot na VPS no mesmo dia do
+deploy do site e rodar `tbot publicar --simular`, que acusa valor fora da ficha no próximo post
+elegível antes de o cron rodar. Para a fila inteira: `node scripts/threads-bot.mjs fila --json`
+no PC e procurar o valor antigo (ex.: 89,90), descartando ou reescrevendo o que achar.

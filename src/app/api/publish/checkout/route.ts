@@ -76,8 +76,8 @@ export async function POST(request: Request) {
     const ai = await isAiMade(admin, weddingId);
     const charge = await createPublishCharge({ weddingId, appUrl, ai });
 
-    // A AbacatePay deduplica por externalId (= weddingId): reabrir o checkout do
-    // mesmo casamento devolve o MESMO bill_id. Um insert puro estoura a unique
+    // A AbacatePay deduplica por externalId (tipo + preço + weddingId): reabrir o
+    // checkout do mesmo casamento, no mesmo preço, devolve o MESMO bill_id. Um insert puro estoura a unique
     // de provider_charge_id (500) mesmo sendo o mesmo pagamento pendente — então
     // fazemos upsert idempotente e só reabrimos a URL da cobrança existente.
     const { error: insertError } = await admin.from("publish_payments").upsert(

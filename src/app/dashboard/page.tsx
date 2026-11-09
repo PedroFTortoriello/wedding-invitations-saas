@@ -15,7 +15,7 @@ import { getOwnedWeddingRow, isAiMade } from "@/lib/wedding-server";
 import { getMercadoPagoConnectionSummary } from "@/lib/mercadopago-server";
 import { rowToWeddingSite } from "@/lib/wedding";
 import { formatCurrency, publishFee } from "@/lib/platform-data";
-import { hasRecentPurchase } from "../publicar/recent-purchase";
+import { recentPurchaseCents } from "../publicar/recent-purchase";
 import { CardGiftsPanel } from "./CardGiftsPanel";
 import { generateCoordinatorLinkAction, revokeCoordinatorLinkAction } from "./coordinator-actions";
 import { PurchaseTracker } from "./PurchaseTracker";
@@ -73,13 +73,13 @@ export default async function DashboardPage({
   const mercadoPagoConfigured = Boolean(process.env.MERCADOPAGO_CLIENT_ID && process.env.MERCADOPAGO_CLIENT_SECRET);
 
   // Tudo em paralelo: cada consulta é uma ida ao Supabase — em série, somariam.
-  const [{ data: guests }, { data: messages }, { data: gifts }, mpConnection, recentPurchase, aiMade] = await Promise.all([
+  const [{ data: guests }, { data: messages }, { data: gifts }, mpConnection, paidCents, aiMade] = await Promise.all([
     supabase.from("guests").select("*").eq("wedding_id", row.id).order("created_at", { ascending: false }),
     supabase.from("messages").select("*").eq("wedding_id", row.id).order("created_at", { ascending: false }),
     supabase.from("cash_gifts").select("*").eq("wedding_id", row.id).order("created_at", { ascending: false }),
     mercadoPagoConfigured ? getMercadoPagoConnectionSummary(row.id) : Promise.resolve(null),
     // Modo suporte: nunca dispara o Purchase da campanha no navegador do admin.
-    support ? false : hasRecentPurchase(row.id, row.publish_paid_at),
+    support ? null : recentPurchaseCents(row.id, row.publish_paid_at),
     isAiMade(supabase, row.id).catch(() => false)
   ]);
   const fee = publishFee(aiMade);
@@ -168,7 +168,7 @@ export default async function DashboardPage({
       support={support}
     >
       <>
-        {recentPurchase ? <PurchaseTracker weddingId={row.id} value={fee.brl} /> : null}
+        {paidCents != null ? <PurchaseTracker weddingId={row.id} value={paidCents / 100} /> : null}
         {mpFlash ? <Notice tone={mpFlash.ok ? "success" : "error"}>{mpFlash.text}</Notice> : null}
 
         {/* Site: a foto de capa carrega o cartão (faixa no celular, coluna no desktop). */}

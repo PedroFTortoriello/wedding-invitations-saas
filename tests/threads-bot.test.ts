@@ -227,16 +227,32 @@ describe("validatePost — expressões proibidas (sem acento e caixa, palavra in
 
 describe("validatePost — valores, percentuais e ressalvas", () => {
   it("aceita os valores da ficha de fatos, com ou sem espaço", () => {
-    expect(check("Montar: R$ 0. Publicar: R$ 89,90, uma vez, via Pix.")).toEqual([]);
-    expect(check("Publicar custa R$89,90 uma vez.")).toEqual([]);
-    expect(check("Se a IA montar o site, publicar custa R$ 149,90 uma vez.")).toEqual([]);
-    expect(check("No editor, R$ 89,90. Site feito pela IA: R$149,90.")).toEqual([]);
+    expect(check("Montar: R$ 0. Publicar: R$ 149,90, uma vez, via Pix.")).toEqual([]);
+    expect(check("Publicar custa R$149,90 uma vez.")).toEqual([]);
+    expect(check("Se a IA montar o site, publicar custa R$ 199,90 uma vez.")).toEqual([]);
+    expect(check("No editor, R$ 149,90. Site feito pela IA: R$199,90.")).toEqual([]);
     expect(check("Presente via Pix: 0% de taxa, 100% para vocês.")).toEqual([]);
   });
 
-  it("R$ 149,90 é só o preço da IA", () => {
-    expect(check("Publicar, uma vez: R$ 149,90.").join()).toMatch(/site feito pela IA/);
-    expect(check("Publicar custa R$149,90 uma vez, via Pix.").join()).toMatch(/site feito pela IA/);
+  it("R$ 199,90 é só o preço da IA (a sigla, não o verbo 'ia')", () => {
+    expect(check("Publicar, uma vez: R$ 199,90.").join()).toMatch(/site feito pela IA/);
+    expect(check("Publicar custa R$199,90 uma vez, via Pix.").join()).toMatch(/site feito pela IA/);
+    expect(check("Quem ia montar sozinho paga R$ 199,90.").join()).toMatch(/site feito pela IA/);
+    expect(check("Se a IA montar: R$ 199,90.")).toEqual([]);
+  });
+
+  it("post de IA com R$ 149,90 (preço antigo da IA) não passa, nem na hora de publicar", () => {
+    expect(check("Deixem a IA montar. Publicar, uma vez, via Pix: R$ 149,90.").join()).toMatch(/custa R\$ 199,90/);
+    expect(validatePost({ text: "Deixem a IA montar. Publicar, uma vez, via Pix: R$ 149,90." }, { mode: "hard" }).join()).toMatch(
+      /custa R\$ 199,90/
+    );
+    expect(check("A tia ia confirmar e esqueceu. Publicar custa R$ 149,90.")).toEqual([]);
+  });
+
+  it("preço antigo (R$ 89,90) é valor fora da ficha, inclusive na hora de publicar (mode hard)", () => {
+    expect(check("Publicar custa R$ 89,90 uma vez.").join()).toMatch(/valor fora da ficha de fatos: R\$89,90/);
+    expect(validatePost({ text: "Publicar custa R$ 89,90 uma vez." }, { mode: "hard" }).join()).toMatch(/R\$89,90/);
+    expect(validatePost({ text: "Publicar custa R$ 149,90 uma vez." }, { mode: "hard" })).toEqual([]);
   });
 
   it("recusa valor ou percentual inventado", () => {

@@ -19,19 +19,47 @@ infraestrutura (Fase 0), que depende das suas contas.
 4. Em **Project Settings → API**, copie `Project URL`, `anon public key` e
    `service_role key`.
 
-### 0.2 AbacatePay (taxa de publicação — R$ 89,90 padrão / R$ 149,90 site feito pela IA, API v2)
+### 0.2 AbacatePay (taxa de publicação — R$ 149,90 padrão / R$ 199,90 site feito pela IA, API v2)
 1. **Rotacione** a chave que esteve no `.env` local (trate-a como comprometida).
 2. Pegue a `API key` de produção (v2).
 3. **Produtos da taxa** (a v2 cobra a partir de um produto; são dois). Se deixar
    `ABACATEPAY_PUBLISH_PRODUCT_ID` / `ABACATEPAY_AI_PRODUCT_ID` em branco, o app cria o
    produto automaticamente no 1º pagamento e loga o id. Recomendado, porém, criá-los uma
    vez e fixar os ids (com `ABACATEPAY_API_KEY` no `.env`):
-   `node scripts/abacatepay-create-product.mjs padrao` (R$ 89,90) e
-   `node scripts/abacatepay-create-product.mjs ia` (R$ 149,90).
+   `node scripts/abacatepay-create-product.mjs padrao` (R$ 149,90) e
+   `node scripts/abacatepay-create-product.mjs ia` (R$ 199,90).
    O preço do produto tem que bater com `src/lib/platform-data.ts`, senão o checkout recusa.
-   > Migração de preço (out/2026): o produto antigo de R$ 149,90 que estava em
-   > `ABACATEPAY_PUBLISH_PRODUCT_ID` pode virar o `ABACATEPAY_AI_PRODUCT_ID`; crie um
-   > novo de R$ 89,90 para o padrão.
+   > **Migração de preço (nov/2026)**: o padrão passou de R$ 89,90 para R$ 149,90 e a IA de
+   > R$ 149,90 para R$ 199,90. O passo a passo está na seção 1 (Deploy). Pontos que não dá
+   > para errar:
+   > - Os DOIS produtos têm que estar no preço novo no deploy que sobe o código:
+   >   `ABACATEPAY_PUBLISH_PRODUCT_ID` → produto de 14990 e `ABACATEPAY_AI_PRODUCT_ID` →
+   >   produto de 19990. Serve como padrão o produto que no painel da AbacatePay se chama
+   >   "Publicação do site de casamento" a R$ 149,90 (o de antes de out/2026); se o único
+   >   produto de 14990 for o "Site de casamento feito pela IA", crie um novo com `padrao`
+   >   (o checkout confere só o valor, mas o nome aparece para quem paga).
+   > - Com produto no preço velho o checkout recusa todo pagamento ("valor incorreto no
+   >   provedor"). Pior: a AbacatePay guarda esse checkout recusado com o externalId novo
+   >   (`p14990-<uuid>`) e o devolve de novo depois de corrigir o env. Se algum casal clicou em
+   >   Publicar nessa janela, cancele o checkout dele no painel da AbacatePay (ou espere
+   >   expirar). Para achar: `funnel_events` com `event = 'publish_checkout_failed'` e
+   >   `detail.message` contendo "valor incorreto".
+   > - Checkouts abertos antes, no preço antigo (externalId `<uuid>` / `ia-<uuid>`), continuam
+   >   pagáveis e publicam normalmente, sem colidir com os novos. Um casal pode acabar pagando
+   >   os dois QR (antigo e novo): o webhook registra `webhook.abacatepay.duplicate_paid` no
+   >   painel de erros do admin. Estorne o SEGUNDO pagamento no painel da AbacatePay e marque
+   >   só essa linha de `publish_payments` como `refunded`; o primeiro segue válido (não zerar
+   >   `publish_paid_at`). Para listar: `select wedding_id from publish_payments where
+   >   status = 'paid' group by wedding_id having count(*) > 1`.
+   > - Casais afetados pela mudança e que ainda não pagaram (geraram com a IA lendo R$ 149,90,
+   >   ou têm Pix de R$ 89,90 pendente): os Termos prometem aviso por e-mail antes de a
+   >   mudança valer. Liste-os e avise (ou decida honrar o preço antigo caso a caso):
+   >   `select w.id, w.slug, p.email from weddings w join profiles p on p.id = w.owner_id
+   >   where w.publish_paid_at is null and (exists (select 1 from ai_generations g where
+   >   g.wedding_id = w.id) or exists (select 1 from publish_payments pp where
+   >   pp.wedding_id = w.id and pp.status = 'pending'))`.
+   > - O bot do Threads na VPS precisa do script novo no mesmo dia (THREADS.md §13) e a fila
+   >   `threads_posts` não pode ter post aprovado com R$ 89,90 ou "IA… R$ 149,90".
 4. Configure a URL do webhook no painel:
    `https://SEU-DOMINIO/api/webhooks/abacatepay?webhookSecret=SEGREDO`
    (o `SEGREDO` precisa bater com `ABACATEPAY_WEBHOOK_SECRET`).
@@ -76,7 +104,7 @@ e o site segue só com Pix.
 Veja `.env.example`. Necessárias:
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (server-only)
-- `ABACATEPAY_API_KEY`, `ABACATEPAY_PUBLISH_PRODUCT_ID`, `ABACATEPAY_WEBHOOK_SECRET`
+- `ABACATEPAY_API_KEY`, `ABACATEPAY_PUBLISH_PRODUCT_ID`, `ABACATEPAY_AI_PRODUCT_ID`, `ABACATEPAY_WEBHOOK_SECRET`
 - `ABACATEPAY_WEBHOOK_SIGNING_SECRET` (opcional)
 - `APP_URL` = URL pública real (ex.: `https://noivar.com.br`)
 - Cartão (opcional): `MERCADOPAGO_CLIENT_ID`, `MERCADOPAGO_CLIENT_SECRET`,
@@ -98,15 +126,40 @@ update public.profiles set role = 'admin' where email = 'voce@exemplo.com';
 ```
 
 ## 1. Deploy
-Merge da branch `feat/saas-production` na `main` (a Vercel publica `main`).
-Gates locais antes do merge: `npm run typecheck && npm run lint && npm run test && npm run build`.
+Gates locais: `npm run typecheck && npm run lint && npm run test && npm run build`. Publicação pela
+CLI da Vercel (`vercel deploy --prod`, conta `pedroftdev`, projeto `noivar`); a `main` do GitHub
+não participa.
+
+Quando o deploy muda preço (como em nov/2026), a ordem importa:
+1. Com a chave de **produção**, crie os produtos que faltam e confira o valor no painel da
+   AbacatePay: `node scripts/abacatepay-create-product.mjs ia` (R$ 199,90) e, se não for
+   reaproveitar o produto antigo de R$ 149,90, `padrao`.
+2. Na Vercel → Production, troque `ABACATEPAY_PUBLISH_PRODUCT_ID` e `ABACATEPAY_AI_PRODUCT_ID`.
+   **Não clique em Redeploy**: variável nova só vale em deploy novo, e redeploy da deployment
+   atual roda o código velho com os produtos novos (o guarda de valor recusa todo checkout).
+3. Só então faça o deploy do código (nasce com env novo + código novo).
+4. Valide sem pagar (passo 4 do smoke test): o valor na página da AbacatePay tem que ser o do botão.
+5. Sharing Debugger da Meta (developers.facebook.com/tools/debug): cole a URL da home e
+   "Scrape Again" até o card mostrar o preço novo. A imagem OG tem o preço escrito e a Meta
+   guarda o card antigo por semanas; repita para outras URLs já compartilhadas.
+6. Bot do Threads: copie o script para a VPS (THREADS.md §13) e limpe a fila
+   (`node scripts/threads-bot.mjs fila --json --n 200`; `descartar` só apaga rascunho, post
+   aprovado volta a rascunho ou é apagado no Table Editor de `threads_posts`).
+7. Atualize o `.env` local com os ids novos dos produtos.
+Não apague os produtos antigos: checkouts abertos no preço velho continuam pagáveis e um
+rollback da Vercel volta a usá-los.
 
 ## 2. Smoke test (após o deploy)
 1. **Cadastro** → cria conta e cai no onboarding.
 2. **Onboarding** → cria o casamento (slug único) e vai ao editor.
 3. **Editor** → edita nomes/mensagem/cor/chave Pix e **salva**.
-4. **Publicar** → dashboard → "Publicar site — R$ 89,90" (R$ 149,90 se gerou pela IA em `/ia`) → paga no AbacatePay →
-   volta com `?publicacao=paga` → "Publicar agora" → status `published`.
+4. **Publicar** → dashboard → `/publicar` → "Publicar por R$ 149,90" (R$ 199,90 num casamento que
+   gerou pela IA em `/ia`) → clique. **Sem pagar**: a página da AbacatePay tem que mostrar o mesmo
+   valor do botão; valor diferente ou o erro "valor incorreto no provedor" = produto do env errado.
+   Em `/admin` (ou `publish_payments` no Table Editor) a linha pendente tem `amount_cents` 14990 /
+   19990. Feche sem pagar; o Pix expira sozinho. Pagamento real: volta em
+   `/publicar?pagamento=concluido` e o webhook publica o site sozinho (status `published`);
+   "Publicar agora" só aparece se a publicação automática falhar.
 5. **Site público** → `/casamento/SEU-SLUG` renderiza os dados reais.
 6. **RSVP** → confirmar presença no site → aparece em `/convidados`.
 7. **Presente Pix** → gerar Pix copia-e-cola no site → aparece pendente em

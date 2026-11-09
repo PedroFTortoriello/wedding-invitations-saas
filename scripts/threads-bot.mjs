@@ -102,12 +102,18 @@ const BANNED = [
   "comenta aqui", "comente aqui", "marque uma amiga", "marca uma amiga", "sorteio", "só hoje", "promoção",
   "imperdível", "corre que", "gerações ilimitadas", "edições ilimitadas", "4 modelos", "quatro modelos"
 ];
-const MONEY_OK = ["R$89,90", "R$149,90", "R$0", "R$10.000", "R$389"];
+const MONEY_OK = ["R$149,90", "R$199,90", "R$0", "R$10.000", "R$389"];
 const PERCENT_OK = ["0%", "3,89%", "100%"];
 // "Noivar" com N maiúsculo é a marca; "noivar" minúsculo é o verbo e passa.
 const MASCULINE_BRAND = /(?<![\p{L}\p{N}])(?:[Oo]|[AaDdNn][Oo]|[Pp]elo)\s+Noivar(?![\p{L}\p{N}])/u;
+// A sigla IA, em maiúsculas e palavra inteira: "ia" (pretérito de ir) não conta.
+const HAS_IA = /(?<![\p{L}\p{N}])IA(?![\p{L}\p{N}])/u;
 
-/** Regras do lote semanal. mode "hard" = só o que a API e a política de link exigem (vale na hora de publicar). */
+/**
+ * Regras do lote semanal. mode "hard" = o que a API e a política de link exigem, mais os valores
+ * em R$ da ficha de fatos (vale na hora de publicar: post aprovado antes de uma troca de preço
+ * não sai com o valor velho).
+ */
 export function validatePost(post, { history = [], today = todaySaoPaulo(), mode = "full" } = {}) {
   if (!post || typeof post !== "object" || Array.isArray(post)) return ["o post precisa ser um objeto JSON"];
   const { text, link_url: link, topic_tag: tag } = post;
@@ -119,6 +125,7 @@ export function validatePost(post, { history = [], today = todaySaoPaulo(), mode
     const length = threadsLength(text);
     if (length > MAX_LENGTH) issues.push(`text com ${length} caracteres na contagem do Threads (máximo ${MAX_LENGTH})`);
     if (containsUrl(text)) issues.push("text tem URL ou domínio: o link vai só em link_url");
+    issues.push(...moneyIssues(text));
   }
   if (link != null) {
     const linkIssues = typeof link === "string" ? validateLink(link) : ["precisa ser texto ou null"];
@@ -156,6 +163,24 @@ function isIsoDate(value) {
   return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(value);
 }
 
+/** Valores em R$ do texto, normalizados ("R$ 149,90" -> "R$149,90"). */
+function moneyValues(text) {
+  return [...text.matchAll(/R\$\s*\d[\d.,]*/gi)].map((m) =>
+    m[0].replace(/\s+/g, "").replace(/[.,]+$/, "").toUpperCase()
+  );
+}
+
+/** Valores em R$: fora da ficha, ou R$ 149,90 num post de IA. Roda nos dois modos (ver validatePost). */
+function moneyIssues(text) {
+  const money = moneyValues(text);
+  const issues = money.filter((value) => !MONEY_OK.includes(value)).map((value) => `valor fora da ficha de fatos: ${value}`);
+  // Até 09/11/2026 R$ 149,90 era o preço da IA: post antigo que junta IA e 149,90 sem o 199,90 sai errado.
+  if (money.includes("R$149,90") && HAS_IA.test(text) && !money.includes("R$199,90")) {
+    issues.push("R$ 149,90 é o preço de publicar no editor; o site feito pela IA custa R$ 199,90 (post com IA cita os dois ou só o da IA)");
+  }
+  return issues;
+}
+
 function contentIssues(text) {
   const norm = ` ${normalize(text)} `;
   const has = (phrase) => norm.includes(` ${normalize(phrase)} `);
@@ -168,14 +193,11 @@ function contentIssues(text) {
   if (has("mural")) issues.push('não existe "mural": os recados ficam no painel do casal');
   for (const phrase of BANNED) if (has(phrase)) issues.push(`expressão proibida: "${phrase}"`);
 
-  const money = [...text.matchAll(/R\$\s*\d[\d.,]*/gi)].map((m) =>
-    m[0].replace(/\s+/g, "").replace(/[.,]+$/, "").toUpperCase()
-  );
+  const money = moneyValues(text); // valores fora da ficha já saíram em validatePost (modo hard)
   const percents = [...text.matchAll(/\d[\d.,]*\s*%/g)].map((m) => m[0].replace(/\s+/g, ""));
-  for (const value of money) if (!MONEY_OK.includes(value)) issues.push(`valor fora da ficha de fatos: ${value}`);
   for (const value of percents) if (!PERCENT_OK.includes(value)) issues.push(`percentual fora da ficha de fatos: ${value}`);
-  if (money.includes("R$149,90") && !has("ia")) {
-    issues.push("R$ 149,90 é só o preço do site feito pela IA: diga IA no texto (publicar no editor custa R$ 89,90)");
+  if (money.includes("R$199,90") && !HAS_IA.test(text)) {
+    issues.push("R$ 199,90 é só o preço do site feito pela IA: diga IA no texto (publicar no editor custa R$ 149,90)");
   }
   if ((percents.includes("0%") || / sem taxas? | taxa zero /.test(norm)) && !has("pix")) {
     issues.push('"0%", "sem taxa" e "taxa zero" valem só no Pix: diga Pix no texto');
